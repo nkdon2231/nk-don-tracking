@@ -1,0 +1,2270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#111111" />
+  <title>N.K DON | Shipment Tracking</title>
+
+  <style>
+    :root {
+      --ink: #111111;
+      --dark: #181818;
+      --paper: #f7f6f2;
+      --white: #ffffff;
+      --steel: #707070;
+      --line: #deddd8;
+      --signal: #d6a84f;
+      --green: #21874a;
+      --blue: #246bce;
+      --orange: #d97916;
+      --red: #c93636;
+      --shadow: 0 15px 45px rgba(0,0,0,.08);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .code {
+      font-family: "Courier New", monospace;
+      letter-spacing: .04em;
+    }
+
+    /* NAVIGATION */
+
+    header {
+      background: var(--ink);
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav {
+      max-width: 1180px;
+      margin: auto;
+      min-height: 72px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .brand {
+      font-weight: 900;
+      font-size: 21px;
+      letter-spacing: .08em;
+    }
+
+    .brand span {
+      display: block;
+      font-size: 10px;
+      color: #bbb;
+      letter-spacing: .18em;
+      margin-top: 1px;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-btn {
+      border: 1px solid #444;
+      background: transparent;
+      color: white;
+      padding: 9px 13px;
+      border-radius: 9px;
+      font-size: 13px;
+    }
+
+    .nav-btn:hover {
+      background: #292929;
+    }
+
+    /* PAGES */
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    /* CUSTOMER */
+
+    .hero {
+      max-width: 1180px;
+      margin: auto;
+      padding: 75px 20px 50px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 55px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--steel);
+      margin-bottom: 15px;
+    }
+
+    h1 {
+      font-size: clamp(42px, 7vw, 78px);
+      line-height: .95;
+      letter-spacing: -.05em;
+      margin-bottom: 22px;
+    }
+
+    .hero-copy {
+      color: #555;
+      max-width: 590px;
+      font-size: 18px;
+    }
+
+    .track-card {
+      background: var(--white);
+      padding: 28px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--line);
+    }
+
+    .track-card h2 {
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+
+    .track-card p {
+      color: var(--steel);
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .track-form {
+      display: flex;
+      gap: 9px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid #cfcfcf;
+      background: white;
+      border-radius: 10px;
+      padding: 13px 14px;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--ink);
+      box-shadow: 0 0 0 3px rgba(0,0,0,.06);
+    }
+
+    .primary {
+      background: var(--ink);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 13px 20px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .primary:hover {
+      background: #333;
+    }
+
+    .gold {
+      background: var(--signal);
+      color: #111;
+    }
+
+    .danger {
+      background: var(--red);
+      color: white;
+    }
+
+    .secondary {
+      background: #eee;
+      color: #111;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 15px;
+      font-weight: 700;
+    }
+
+    /* RESULTS */
+
+    .results {
+      max-width: 900px;
+      margin: 0 auto 60px;
+      padding: 0 20px;
+    }
+
+    .result-card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .result-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+
+    .tracking-number {
+      font-size: 23px;
+      font-weight: 900;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 7px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .status-processing {
+      background: #fff0d9;
+      color: #925300;
+    }
+
+    .status-transit {
+      background: #e5efff;
+      color: #245ea9;
+    }
+
+    .status-arrived {
+      background: #e7f6ec;
+      color: #1d713d;
+    }
+
+    .status-delivered {
+      background: #d8f2df;
+      color: #176b35;
+    }
+
+    .status-delayed {
+      background: #ffe4e4;
+      color: #a42626;
+    }
+
+    .status-default {
+      background: #eee;
+      color: #555;
+    }
+
+    .shipment-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+
+    .shipment-field {
+      padding: 17px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .shipment-field:nth-child(odd) {
+      border-right: 1px solid var(--line);
+    }
+
+    .field-label {
+      color: var(--steel);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 4px;
+    }
+
+    .field-value {
+      font-weight: 700;
+    }
+
+    .notice {
+      background: #f2f2ef;
+      border-left: 4px solid var(--signal);
+      padding: 13px 15px;
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 30px;
+    }
+
+    /* TIMELINE */
+
+    .timeline {
+      position: relative;
+      padding-left: 30px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 7px;
+      bottom: 7px;
+      width: 2px;
+      background: #ddd;
+    }
+
+    .event {
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    .event::before {
+      content: "";
+      position: absolute;
+      left: -28px;
+      top: 5px;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--ink);
+      border: 3px solid var(--paper);
+      box-sizing: content-box;
+    }
+
+    .event-date {
+      font-size: 11px;
+      color: var(--steel);
+      font-family: "Courier New", monospace;
+    }
+
+    .event-title {
+      font-weight: 800;
+      margin-top: 3px;
+    }
+
+    .event-location {
+      font-size: 13px;
+      color: #666;
+    }
+
+    /* ADMIN */
+
+    .admin-page {
+      min-height: calc(100vh - 72px);
+      background: var(--ink);
+      color: white;
+      padding: 40px 20px 80px;
+    }
+
+    .admin-container {
+      max-width: 1150px;
+      margin: auto;
+    }
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .admin-header h1 {
+      font-size: 38px;
+      margin: 0;
+    }
+
+    .admin-header p {
+      color: #999;
+    }
+
+    .admin-card {
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 25px;
+    }
+
+    .admin-card h2 {
+      font-size: 20px;
+      margin-bottom: 18px;
+    }
+
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .admin-field label {
+      display: block;
+      font-size: 11px;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 6px;
+    }
+
+    .admin-field.full {
+      grid-column: 1 / -1;
+    }
+
+    .admin-card input,
+    .admin-card select,
+    .admin-card textarea {
+      background: #292929;
+      color: white;
+      border-color: #444;
+    }
+
+    .admin-card input:focus,
+    .admin-card select:focus,
+    .admin-card textarea:focus {
+      border-color: var(--signal);
+    }
+
+    .shipments-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .shipment-row {
+      background: #292929;
+      border: 1px solid #3b3b3b;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .shipment-row-info strong {
+      display: block;
+      font-family: "Courier New", monospace;
+      margin-bottom: 4px;
+    }
+
+    .shipment-row-info small {
+      color: #aaa;
+    }
+
+    .row-actions {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .small-btn {
+      padding: 8px 11px;
+      border-radius: 8px;
+      border: none;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .edit-btn {
+      background: #eee;
+      color: #111;
+    }
+
+    .view-btn {
+      background: var(--signal);
+      color: #111;
+    }
+
+    .delete-btn {
+      background: #532525;
+      color: #ffb0b0;
+    }
+
+    /* LOGIN */
+
+    .login-wrap {
+      max-width: 420px;
+      margin: 80px auto;
+    }
+
+    .login-card {
+      background: #1e1e1e;
+      border: 1px solid #333;
+      padding: 30px;
+      border-radius: var(--radius);
+    }
+
+    .login-card h1 {
+      font-size: 35px;
+      margin-bottom: 8px;
+    }
+
+    .login-card p {
+      color: #999;
+      margin-bottom: 25px;
+    }
+
+    .login-card label {
+      display: block;
+      color: #aaa;
+      font-size: 12px;
+      margin-bottom: 7px;
+    }
+
+    .login-card input {
+      margin-bottom: 14px;
+    }
+
+    .error {
+      color: #ff8d8d;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    /* EMPTY */
+
+    .empty {
+      text-align: center;
+      padding: 35px 15px;
+      color: #888;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    footer {
+      background: var(--ink);
+      color: #999;
+      text-align: center;
+      padding: 30px 20px;
+      font-size: 12px;
+    }
+
+    /* MOBILE */
+
+    @media (max-width: 800px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+
+      .hero {
+        padding-top: 45px;
+      }
+
+      h1 {
+        font-size: 52px;
+      }
+
+      .admin-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-field.full {
+        grid-column: auto;
+      }
+
+      .shipment-row {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .row-actions {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .nav {
+        min-height: 62px;
+      }
+
+      .nav-btn {
+        padding: 8px 9px;
+        font-size: 11px;
+      }
+
+      .hero {
+        padding: 40px 15px;
+      }
+
+      .hero-copy {
+        font-size: 16px;
+      }
+
+      .track-form {
+        flex-direction: column;
+      }
+
+      .track-card {
+        padding: 20px;
+      }
+
+      .result-card {
+        padding: 20px;
+      }
+
+      .result-top {
+        flex-direction: column;
+      }
+
+      .shipment-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .shipment-field:nth-child(odd) {
+        border-right: none;
+      }
+
+      .admin-page {
+        padding: 25px 15px 60px;
+      }
+
+      .admin-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .admin-header h1 {
+        font-size: 32px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <nav class="nav">
+    <div class="brand">
+      N.K DON
+      <span>SHIPMENT TRACKING</span>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn" onclick="showPage('home')">Track Shipment</button>
+      <button class="nav-btn" onclick="showPage('admin')">Owner Login</button>
+    </div>
+  </nav>
+</header>
+
+
+<!-- CUSTOMER PAGE -->
+
+<main id="homePage" class="page active">
+
+  <section class="hero">
+    <div class="hero-grid">
+
+      <div>
+        <div class="eyebrow">N.K DON Logistics</div>
+
+        <h1>Track your shipment.</h1>
+
+        <p class="hero-copy">
+          Enter your N.K DON tracking ID to view the current shipment
+          status, route, estimated delivery and tracking history.
+        </p>
+      </div>
+
+      <div class="track-card">
+        <h2>Track shipment</h2>
+
+        <p>
+          Enter your N.K DON tracking ID below.
+        </p>
+
+        <div class="track-form">
+          <input
+            id="trackingInput"
+            class="code"
+            type="text"
+            placeholder="NKD-7A29-X4P8"
+            autocomplete="off"
+          />
+
+          <button class="primary" onclick="trackShipment()">
+            Track
+          </button>
+        </div>
+
+        <p style="margin-top:15px;font-size:11px;">
+          Example: <span class="code">NKD-7A29-X4P8</span>
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+
+  <section id="trackingResults" class="results hidden">
+  </section>
+
+  <footer>
+    © <span id="year"></span> N.K DON. All rights reserved.
+    <br><br>
+    N.K DON tracking IDs are independent order/tracking references
+    issued by N.K DON. They are not DHL, FedEx, UPS or other carrier-issued
+    tracking numbers.
+  </footer>
+
+</main>
+
+
+<!-- ADMIN PAGE -->
+
+<main id="adminPage" class="page admin-page">
+
+  <div class="admin-container">
+
+    <!-- LOGIN -->
+
+    <div id="loginSection" class="login-wrap">
+
+      <div class="login-card">
+
+        <h1>Owner Login</h1>
+
+        <p>
+          Private N.K DON shipment management.
+        </p>
+
+        <label>Owner passcode</label>
+
+        <input
+          id="passcodeInput"
+          type="password"
+          placeholder="Enter passcode"
+          autocomplete="current-password"
+        />
+
+        <button class="primary" style="width:100%;" onclick="login()">
+          Sign in
+        </button>
+
+        <div id="loginError" class="error"></div>
+
+        <p style="font-size:11px;margin-top:20px;">
+          Prototype note: this standalone version uses browser-based
+          protection. It is not a substitute for server-side authentication.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <!-- DASHBOARD -->
+
+    <div id="dashboardSection" class="hidden">
+
+      <div class="admin-header">
+
+        <div>
+          <div class="eyebrow" style="color:#aaa;">
+            N.K DON Operations
+          </div>
+
+          <h1>Shipments</h1>
+
+          <p>Manage your tracking records.</p>
+        </div>
+
+        <button class="secondary" onclick="logout()">
+          Sign out
+        </button>
+
+      </div>
+
+
+      <!-- CREATE / EDIT -->
+
+      <div class="admin-card">
+
+        <h2 id="formTitle">Create shipment</h2>
+
+        <div class="admin-grid">
+
+          <div class="admin-field">
+            <label>Tracking ID</label>
+
+            <input
+              id="shipmentTrackingId"
+              class="code"
+              placeholder="Automatically generated"
+              readonly
+            />
+          </div>
+
+          <div class="admin-field">
+            <label>Service type</label>
+
+            <select id="shipmentService">
+              <option>Domestic Courier</option>
+              <option>International Air Freight</option>
+              <option>International Sea Freight</option>
+            </select>
+          </div>
+
+          <div class="admin-field">
+            <label>Origin</label>
+
+            <input
+              id="shipmentOrigin"
+              placeholder="Owerri, Nigeria"
+            />
+          </div>
+
+          <div class="admin-field">
+            <label>Destination</label>
+
+            <input
+              id="shipmentDestination"
+              placeholder="Lagos, Nigeria"
+            />
+          </div>
+
+          <div class="admin-field">
+            <label>Estimated delivery</label>
+
+            <input
+              id="shipmentDelivery"
+              type="date"
+            />
+          </div>
+
+          <div class="admin-field">
+            <label>Recipient name</label>
+
+            <input
+              id="shipmentRecipient"
+              placeholder="Recipient"
+            />
+          </div>
+
+          <div class="admin-field">
+            <label>Package description</label>
+
+            <input
+              id="shipmentDescription"
+              placeholder="Parcel / documents / goods"
+            />
+          </div>
+
+          <div class="admin-field">
+            <label>Carrier reference (private)</label>
+
+            <input
+              id="shipmentCarrierReference"
+              placeholder="Optional"
+            />
+          </div>
+
+          <div class="admin-field full">
+
+            <label>First tracking event</label>
+
+            <textarea
+              id="shipmentEvent"
+              rows="3"
+              placeholder="Shipment received and processed."
+            ></textarea>
+
+          </div>
+
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;">
+
+          <button
+            class="primary gold"
+            onclick="saveShipment()"
+          >
+            Save shipment
+          </button>
+
+          <button
+            id="cancelEditButton"
+            class="secondary hidden"
+            onclick="cancelEdit()"
+          >
+            Cancel edit
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- ADD EVENT -->
+
+      <div id="eventCard" class="admin-card hidden">
+
+        <h2>Add tracking event</h2>
+
+        <div class="admin-grid">
+
+          <div class="admin-field">
+            <label>Shipment</label>
+
+            <select id="eventShipment"></select>
+          </div>
+
+          <div class="admin-field">
+            <label>Location</label>
+
+            <input
+              id="eventLocation"
+              placeholder="Port Harcourt, Nigeria"
+            />
+          </div>
+
+          <div class="admin-field">
+            <label>Status</label>
+
+            <select id="eventStatus">
+              <option value="Processing">Processing</option>
+              <option value="In Transit">In Transit</option>
+              <option value="Arrived">Arrived</option>
+              <option value="Delivered">Delivered</option>
+              <option value="Delayed">Delayed</option>
+            </select>
+          </div>
+
+          <div class="admin-field full">
+
+            <label>Event description</label>
+
+            <textarea
+              id="eventDescription"
+              rows="3"
+              placeholder="Shipment has departed the facility."
+            ></textarea>
+
+          </div>
+
+        </div>
+
+        <button
+          class="primary gold"
+          style="margin-top:18px;"
+          onclick="addTrackingEvent()"
+        >
+          Add event
+        </button>
+
+      </div>
+
+
+      <!-- SHIPMENT LIST -->
+
+      <div class="admin-card">
+
+        <h2>All shipments</h2>
+
+        <div id="shipmentsList" class="shipments-list"></div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</main>
+
+
+<script>
+
+  /*
+   ============================================================
+   N.K DON TRACKING SYSTEM
+   ============================================================
+
+   This standalone version uses localStorage.
+
+   Tracking IDs are N.K DON's own references.
+   They are NOT carrier-issued tracking numbers.
+
+   For a real production system:
+   - Move data to a secure database.
+   - Move authentication to server-side authentication.
+   - Never store real passwords in client-side JavaScript.
+  */
+
+
+  // ----------------------------------------------------------
+  // BASIC SETTINGS
+  // ----------------------------------------------------------
+
+  const DEMO_PASSCODE = "NKDON2026";
+
+  const STORAGE_KEY = "nkdon_shipments_v1";
+
+  let editingId = null;
+
+
+  // ----------------------------------------------------------
+  // INITIAL SAMPLE DATA
+  // ----------------------------------------------------------
+
+  const starterShipments = [
+
+    {
+      id: "NKD-7A29-X4P8",
+      service: "Domestic Courier",
+      origin: "Port Harcourt, Nigeria",
+      destination: "Lagos, Nigeria",
+      delivery: "2026-09-27",
+      recipient: "Sample Recipient",
+      description: "Parcel",
+      carrierReference: "",
+      events: [
+        {
+          status: "In Transit",
+          location: "Port Harcourt, Nigeria",
+          description: "Shipment has departed the N.K DON processing facility.",
+          timestamp: "2026-09-23T08:30:00"
+        },
+        {
+          status: "Processing",
+          location: "Port Harcourt, Nigeria",
+          description: "Shipment received and processed.",
+          timestamp: "2026-09-22T14:20:00"
+        }
+      ]
+    },
+
+    {
+      id: "NKD-B7Q4-M8Z2",
+      service: "International Air Freight",
+      origin: "Lagos, Nigeria",
+      destination: "Dubai, UAE",
+      delivery: "2026-10-01",
+      recipient: "Sample International Recipient",
+      description: "Commercial package",
+      carrierReference: "",
+      events: [
+        {
+          status: "Processing",
+          location: "Lagos, Nigeria",
+          description: "Shipment is being prepared for international dispatch.",
+          timestamp: "2026-09-23T10:00:00"
+        }
+      ]
+    }
+
+  ];
+
+
+  // ----------------------------------------------------------
+  // DATABASE
+  // ----------------------------------------------------------
+
+  function getShipments() {
+
+    const stored = localStorage.getItem(STORAGE_KEY);
+
+    if (!stored) {
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(starterShipments)
+      );
+
+      return starterShipments;
+
+    }
+
+    try {
+
+      return JSON.parse(stored);
+
+    } catch (error) {
+
+      console.error(error);
+
+      return [];
+
+    }
+
+  }
+
+
+  function saveDatabase(shipments) {
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(shipments)
+    );
+
+  }
+
+
+  // ----------------------------------------------------------
+  // TRACKING ID
+  // ----------------------------------------------------------
+
+  function generateTrackingId() {
+
+    const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+    function group(length) {
+
+      let result = "";
+
+      for (let i = 0; i < length; i++) {
+
+        result += alphabet[
+          Math.floor(Math.random() * alphabet.length)
+        ];
+
+      }
+
+      return result;
+
+    }
+
+    return "NKD-" + group(4) + "-" + group(4);
+
+  }
+
+
+  // ----------------------------------------------------------
+  // NORMALIZE ID
+  // ----------------------------------------------------------
+
+  function normalizeTrackingId(value) {
+
+    return value
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, "");
+
+  }
+
+
+  // ----------------------------------------------------------
+  // STATUS HELPERS
+  // ----------------------------------------------------------
+
+  function getLatestEvent(shipment) {
+
+    if (!shipment.events || shipment.events.length === 0) {
+      return null;
+    }
+
+    return [...shipment.events].sort(
+      (a, b) =>
+        new Date(b.timestamp) - new Date(a.timestamp)
+    )[0];
+
+  }
+
+
+  function getStatusClass(status) {
+
+    const normalized = status.toLowerCase();
+
+    if (normalized === "processing") {
+      return "status-processing";
+    }
+
+    if (normalized === "in transit") {
+      return "status-transit";
+    }
+
+    if (normalized === "arrived") {
+      return "status-arrived";
+    }
+
+    if (normalized === "delivered") {
+      return "status-delivered";
+    }
+
+    if (normalized === "delayed") {
+      return "status-delayed";
+    }
+
+    return "status-default";
+
+  }
+
+
+  // ----------------------------------------------------------
+  // FORMAT DATE
+  // ----------------------------------------------------------
+
+  function formatDate(date) {
+
+    if (!date) return "—";
+
+    return new Date(date).toLocaleDateString(
+      "en-GB",
+      {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      }
+    );
+
+  }
+
+
+  function formatDateTime(date) {
+
+    if (!date) return "—";
+
+    return new Date(date).toLocaleString(
+      "en-GB",
+      {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      }
+    );
+
+  }
+
+
+  // ----------------------------------------------------------
+  // PAGE NAVIGATION
+  // ----------------------------------------------------------
+
+  function showPage(page) {
+
+    document
+      .getElementById("homePage")
+      .classList.remove("active");
+
+    document
+      .getElementById("adminPage")
+      .classList.remove("active");
+
+    if (page === "home") {
+
+      document
+        .getElementById("homePage")
+        .classList.add("active");
+
+    } else {
+
+      document
+        .getElementById("adminPage")
+        .classList.add("active");
+
+      checkSession();
+
+    }
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+  }
+
+
+  // ----------------------------------------------------------
+  // CUSTOMER TRACKING
+  // ----------------------------------------------------------
+
+  function trackShipment() {
+
+    const input =
+      document.getElementById("trackingInput");
+
+    const trackingId =
+      normalizeTrackingId(input.value);
+
+    const results =
+      document.getElementById("trackingResults");
+
+    if (!trackingId) {
+
+      results.classList.remove("hidden");
+
+      results.innerHTML = `
+        <div class="result-card">
+          <strong>Please enter a tracking ID.</strong>
+        </div>
+      `;
+
+      return;
+
+    }
+
+    const shipments = getShipments();
+
+    const shipment = shipments.find(
+      item =>
+        normalizeTrackingId(item.id) === trackingId
+    );
+
+    results.classList.remove("hidden");
+
+    if (!shipment) {
+
+      results.innerHTML = `
+        <div class="result-card">
+
+          <div style="font-size:35px;margin-bottom:10px;">
+            ×
+          </div>
+
+          <h2>Shipment not found</h2>
+
+          <p style="color:#666;margin-top:8px;">
+            We couldn't find a shipment matching
+            <strong class="code">${escapeHTML(trackingId)}</strong>.
+            Please check the tracking ID and try again.
+          </p>
+
+        </div>
+      `;
+
+      return;
+
+    }
+
+    renderTrackingResult(shipment);
+
+  }
+
+
+  function renderTrackingResult(shipment) {
+
+    const results =
+      document.getElementById("trackingResults");
+
+    const latest =
+      getLatestEvent(shipment);
+
+    const status =
+      latest ? latest.status : "Processing";
+
+    const events =
+      [...shipment.events].sort(
+        (a, b) =>
+          new Date(b.timestamp) -
+          new Date(a.timestamp)
+      );
+
+    results.innerHTML = `
+
+      <div class="result-card">
+
+        <div class="result-top">
+
+          <div>
+
+            <div class="field-label">
+              N.K DON Tracking ID
+            </div>
+
+            <div class="tracking-number code">
+              ${escapeHTML(shipment.id)}
+            </div>
+
+          </div>
+
+          <span class="status ${getStatusClass(status)}">
+            ${escapeHTML(status)}
+          </span>
+
+        </div>
+
+
+        <div class="notice">
+
+          This is an independent N.K DON tracking record.
+          The tracking ID shown above is issued by N.K DON
+          and is not a DHL, FedEx, UPS or other carrier-issued
+          tracking number.
+
+        </div>
+
+
+        <div class="shipment-grid">
+
+          <div class="shipment-field">
+            <div class="field-label">Origin</div>
+            <div class="field-value">
+              ${escapeHTML(shipment.origin || "—")}
+            </div>
+          </div>
+
+          <div class="shipment-field">
+            <div class="field-label">Destination</div>
+            <div class="field-value">
+              ${escapeHTML(shipment.destination || "—")}
+            </div>
+          </div>
+
+          <div class="shipment-field">
+            <div class="field-label">Service</div>
+            <div class="field-value">
+              ${escapeHTML(shipment.service || "—")}
+            </div>
+          </div>
+
+          <div class="shipment-field">
+            <div class="field-label">Estimated delivery</div>
+            <div class="field-value">
+              ${formatDate(shipment.delivery)}
+            </div>
+          </div>
+
+          <div class="shipment-field">
+            <div class="field-label">Recipient</div>
+            <div class="field-value">
+              ${escapeHTML(shipment.recipient || "—")}
+            </div>
+          </div>
+
+          <div class="shipment-field">
+            <div class="field-label">Package</div>
+            <div class="field-value">
+              ${escapeHTML(shipment.description || "—")}
+            </div>
+          </div>
+
+        </div>
+
+
+        <h3 style="margin-bottom:20px;">
+          Shipment history
+        </h3>
+
+        <div class="timeline">
+
+          ${
+            events.length
+              ? events.map(event => `
+
+                <div class="event">
+
+                  <div class="event-date">
+                    ${formatDateTime(event.timestamp)}
+                  </div>
+
+                  <div class="event-title">
+                    ${escapeHTML(event.status)}
+                  </div>
+
+                  <div class="event-location">
+                    ${escapeHTML(event.location || "")}
+                  </div>
+
+                  <div style="font-size:13px;margin-top:3px;">
+                    ${escapeHTML(event.description || "")}
+                  </div>
+
+                </div>
+
+              `).join("")
+              : `
+                <div class="empty">
+                  No tracking events yet.
+                </div>
+              `
+          }
+
+        </div>
+
+      </div>
+    `;
+
+    results.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+  }
+
+
+  // ----------------------------------------------------------
+  // LOGIN
+  // ----------------------------------------------------------
+
+  function login() {
+
+    const passcode =
+      document.getElementById("passcodeInput").value;
+
+    const error =
+      document.getElementById("loginError");
+
+    if (passcode === DEMO_PASSCODE) {
+
+      sessionStorage.setItem(
+        "nkdon_admin_session",
+        "true"
+      );
+
+      error.textContent = "";
+
+      showDashboard();
+
+    } else {
+
+      error.textContent =
+        "Incorrect passcode.";
+
+    }
+
+  }
+
+
+  function checkSession() {
+
+    const loggedIn =
+      sessionStorage.getItem(
+        "nkdon_admin_session"
+      ) === "true";
+
+    if (loggedIn) {
+
+      showDashboard();
+
+    } else {
+
+      showLogin();
+
+    }
+
+  }
+
+
+  function showLogin() {
+
+    document
+      .getElementById("loginSection")
+      .classList.remove("hidden");
+
+    document
+      .getElementById("dashboardSection")
+      .classList.add("hidden");
+
+  }
+
+
+  function showDashboard() {
+
+    document
+      .getElementById("loginSection")
+      .classList.add("hidden");
+
+    document
+      .getElementById("dashboardSection")
+      .classList.remove("hidden");
+
+    document
+      .getElementById("eventCard")
+      .classList.remove("hidden");
+
+    renderShipments();
+
+    refreshEventShipmentList();
+
+  }
+
+
+  function logout() {
+
+    sessionStorage.removeItem(
+      "nkdon_admin_session"
+    );
+
+    showLogin();
+
+  }
+
+
+  // ----------------------------------------------------------
+  // CREATE SHIPMENT
+  // ----------------------------------------------------------
+
+  function prepareNewShipment() {
+
+    editingId = null;
+
+    document.getElementById(
+      "formTitle"
+    ).textContent = "Create shipment";
+
+    document.getElementById(
+      "shipmentTrackingId"
+    ).value = generateTrackingId();
+
+    document.getElementById(
+      "shipmentOrigin"
+    ).value = "";
+
+    document.getElementById(
+      "shipmentDestination"
+    ).value = "";
+
+    document.getElementById(
+      "shipmentDelivery"
+    ).value = "";
+
+    document.getElementById(
+      "shipmentRecipient"
+    ).value = "";
+
+    document.getElementById(
+      "shipmentDescription"
+    ).value = "";
+
+    document.getElementById(
+      "shipmentCarrierReference"
+    ).value = "";
+
+    document.getElementById(
+      "shipmentEvent"
+    ).value =
+      "Shipment received and processed.";
+
+    document.getElementById(
+      "cancelEditButton"
+    ).classList.add("hidden");
+
+  }
+
+
+  function saveShipment() {
+
+    const trackingId =
+      document.getElementById(
+        "shipmentTrackingId"
+      ).value || generateTrackingId();
+
+    const service =
+      document.getElementById(
+        "shipmentService"
+      ).value;
+
+    const origin =
+      document.getElementById(
+        "shipmentOrigin"
+      ).value.trim();
+
+    const destination =
+      document.getElementById(
+        "shipmentDestination"
+      ).value.trim();
+
+    const delivery =
+      document.getElementById(
+        "shipmentDelivery"
+      ).value;
+
+    const recipient =
+      document.getElementById(
+        "shipmentRecipient"
+      ).value.trim();
+
+    const description =
+      document.getElementById(
+        "shipmentDescription"
+      ).value.trim();
+
+    const carrierReference =
+      document.getElementById(
+        "shipmentCarrierReference"
+      ).value.trim();
+
+    const eventDescription =
+      document.getElementById(
+        "shipmentEvent"
+      ).value.trim();
+
+
+    if (!origin || !destination) {
+
+      alert(
+        "Please enter the shipment origin and destination."
+      );
+
+      return;
+
+    }
+
+
+    const shipments = getShipments();
+
+
+    if (editingId) {
+
+      const shipment =
+        shipments.find(
+          item => item.id === editingId
+        );
+
+      if (!shipment) return;
+
+      shipment.service = service;
+      shipment.origin = origin;
+      shipment.destination = destination;
+      shipment.delivery = delivery;
+      shipment.recipient = recipient;
+      shipment.description = description;
+      shipment.carrierReference = carrierReference;
+
+      if (eventDescription) {
+
+        shipment.events.push({
+          status:
+            getLatestEvent(shipment)?.status ||
+            "Processing",
+
+          location: origin,
+
+          description: eventDescription,
+
+          timestamp:
+            new Date().toISOString()
+
+        });
+
+      }
+
+      saveDatabase(shipments);
+
+      alert("Shipment updated successfully.");
+
+      cancelEdit();
+
+      renderShipments();
+
+      refreshEventShipmentList();
+
+      return;
+
+    }
+
+
+    const newShipment = {
+
+      id: normalizeTrackingId(trackingId),
+
+      service,
+
+      origin,
+
+      destination,
+
+      delivery,
+
+      recipient,
+
+      description,
+
+      carrierReference,
+
+      events: [
+
+        {
+
+          status: "Processing",
+
+          location: origin,
+
+          description:
+            eventDescription ||
+            "Shipment received and processed.",
+
+          timestamp:
+            new Date().toISOString()
+
+        }
+
+      ]
+
+    };
+
+
+    shipments.unshift(newShipment);
+
+    saveDatabase(shipments);
+
+    alert(
+      "Shipment created.\n\nTracking ID: " +
+      newShipment.id
+    );
+
+    renderShipments();
+
+    refreshEventShipmentList();
+
+    prepareNewShipment();
+
+  }
+
+
+  // ----------------------------------------------------------
+  // EDIT SHIPMENT
+  // ----------------------------------------------------------
+
+  function editShipment(id) {
+
+    const shipments = getShipments();
+
+    const shipment =
+      shipments.find(
+        item => item.id === id
+      );
+
+    if (!shipment) return;
+
+    editingId = id;
+
+    document.getElementById(
+      "formTitle"
+    ).textContent =
+      "Edit " + shipment.id;
+
+    document.getElementById(
+      "shipmentTrackingId"
+    ).value = shipment.id;
+
+    document.getElementById(
+      "shipmentService"
+    ).value = shipment.service;
+
+    document.getElementById(
+      "shipmentOrigin"
+    ).value = shipment.origin;
+
+    document.getElementById(
+      "shipmentDestination"
+    ).value =
+      shipment.destination;
+
+    document.getElementById(
+      "shipmentDelivery"
+    ).value =
+      shipment.delivery || "";
+
+    document.getElementById(
+      "shipmentRecipient"
+    ).value =
+      shipment.recipient || "";
+
+    document.getElementById(
+      "shipmentDescription"
+    ).value =
+      shipment.description || "";
+
+    document.getElementById(
+      "shipmentCarrierReference"
+    ).value =
+      shipment.carrierReference || "";
+
+    document.getElementById(
+      "shipmentEvent"
+    ).value = "";
+
+    document.getElementById(
+      "cancelEditButton"
+    ).classList.remove("hidden");
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+  }
+
+
+  function cancelEdit() {
+
+    editingId = null;
+
+    document.getElementById(
+      "formTitle"
+    ).textContent =
+      "Create shipment";
+
+    prepareNewShipment();
+
+  }
+
+
+  // ----------------------------------------------------------
+  // DELETE
+  // ----------------------------------------------------------
+
+  function deleteShipment(id) {
+
+    const shipment =
+      getShipments().find(
+        item => item.id === id
+      );
+
+    if (!shipment) return;
+
+    const confirmed =
+      confirm(
+        "Delete shipment " +
+        shipment.id +
+        "?\n\nThis cannot be undone."
+      );
+
+    if (!confirmed) return;
+
+    const shipments =
+      getShipments().filter(
+        item => item.id !== id
+      );
+
+    saveDatabase(shipments);
+
+    renderShipments();
+
+    refreshEventShipmentList();
+
+  }
+
+
+  // ----------------------------------------------------------
+  // ADD EVENT
+  // ----------------------------------------------------------
+
+  function refreshEventShipmentList() {
+
+    const select =
+      document.getElementById(
+        "eventShipment"
+      );
+
+    const shipments =
+      getShipments();
+
+    select.innerHTML = shipments.length
+      ? shipments.map(
+          shipment =>
+            `<option value="${escapeHTML(shipment.id)}">
+              ${escapeHTML(shipment.id)}
+            </option>`
+        ).join("")
+      : `<option>No shipments</option>`;
+
+  }
+
+
+  function addTrackingEvent() {
+
+    const shipmentId =
+      document.getElementById(
+        "eventShipment"
+      ).value;
+
+    const location =
+      document.getElementById(
+        "eventLocation"
+      ).value.trim();
+
+    const status =
+      document.getElementById(
+        "eventStatus"
+      ).value;
+
+    const description =
+      document.getElementById(
+        "eventDescription"
+      ).value.trim();
+
+
+    if (!shipmentId ||
+        !location ||
+        !description) {
+
+      alert(
+        "Please complete the event fields."
+      );
+
+      return;
+
+    }
+
+
+    const shipments = getShipments();
+
+    const shipment =
+      shipments.find(
+        item => item.id === shipmentId
+      );
+
+    if (!shipment) {
+
+      alert("Shipment not found.");
+
+      return;
+
+    }
+
+
+    shipment.events.push({
+
+      status,
+
+      location,
+
+      description,
+
+      timestamp:
+        new Date().toISOString()
+
+    });
+
+
+    saveDatabase(shipments);
+
+    document.getElementById(
+      "eventLocation"
+    ).value = "";
+
+    document.getElementById(
+      "eventDescription"
+    ).value = "";
+
+    renderShipments();
+
+    alert("Tracking event added.");
+
+  }
+
+
+  // ----------------------------------------------------------
+  // ADMIN SHIPMENT LIST
+  // ----------------------------------------------------------
+
+  function renderShipments() {
+
+    const list =
+      document.getElementById(
+        "shipmentsList"
+      );
+
+    const shipments =
+      getShipments();
+
+    if (!shipments.length) {
+
+      list.innerHTML = `
+        <div class="empty">
+          No shipments have been created yet.
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    list.innerHTML =
+      shipments.map(shipment => {
+
+        const latest =
+          getLatestEvent(shipment);
+
+        const status =
+          latest
+            ? latest.status
+            : "Processing";
+
+        return `
+
+          <div class="shipment-row">
+
+            <div class="shipment-row-info">
+
+              <strong>
+                ${escapeHTML(shipment.id)}
+              </strong>
+
+              <small>
+                ${escapeHTML(
+                  shipment.origin || "—"
+                )}
+                →
+                ${escapeHTML(
+                  shipment.destination || "—"
+                )}
+                ·
+                ${escapeHTML(status)}
+              </small>
+
+            </div>
+
+            <div class="row-actions">
+
+              <button
+                class="small-btn view-btn"
+                onclick="viewShipment('${escapeJS(shipment.id)}')"
+              >
+                View
+              </button>
+
+              <button
+                class="small-btn edit-btn"
+                onclick="editShipment('${escapeJS(shipment.id)}')"
+              >
+                Edit
+              </button>
+
+              <button
+                class="small-btn delete-btn"
+                onclick="deleteShipment('${escapeJS(shipment.id)}')"
+              >
+                Delete
+              </button>
+
+            </div>
+
+          </div>
+
+        `;
+
+      }).join("");
+
+  }
+
+
+  function viewShipment(id) {
+
+    showPage("home");
+
+    document.getElementById(
+      "trackingInput"
+    ).value = id;
+
+    trackShipment();
+
+  }
+
+
+  // ----------------------------------------------------------
+  // SECURITY HELPERS
+  // ----------------------------------------------------------
+
+  function escapeHTML(value) {
+
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+
+  function escapeJS(value) {
+
+    return String(value ?? "")
+      .replace(/\\/g, "\\\\")
+      .replace(/'/g, "\\'");
+
+  }
+
+
+  // ----------------------------------------------------------
+  // ENTER KEY
+  // ----------------------------------------------------------
+
+  document
+    .getElementById("trackingInput")
+    .addEventListener(
+      "keydown",
+      function(event) {
+
+        if (event.key === "Enter") {
+          trackShipment();
+        }
+
+      }
+    );
+
+
+  document
+    .getElementById("passcodeInput")
+    .addEventListener(
+      "keydown",
+      function(event) {
+
+        if (event.key === "Enter") {
+          login();
+        }
+
+      }
+    );
+
+
+  // ----------------------------------------------------------
+  // STARTUP
+  // ----------------------------------------------------------
+
+  document.getElementById(
+    "year"
+  ).textContent =
+    new Date().getFullYear();
+
+  prepareNewShipment();
+
+</script>
+
+</body>
+</html>
