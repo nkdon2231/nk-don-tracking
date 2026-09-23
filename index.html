@@ -1,4 +1,2119 @@
-DOCTYPE html>
+DOC<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>NKDON Tracking Logistics | Consignment Management & Shipment Tracking</title>
+  <meta name="theme-color" content="#0b1220" />
+  <meta name="description" content="NKDON Tracking Logistics — Professional consignment management and shipment tracking platform." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: {
+              950: '#060b14',
+              900: '#0b1220',
+              800: '#111b2e',
+              700: '#1a2740',
+              600: '#243552',
+              500: '#2f4468'
+            },
+            gold: {
+              300: '#fcd34d',
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706'
+            }
+          },
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #0b1220; color: #e2e8f0; }
+    .glass { background: rgba(11, 18, 32, 0.92); backdrop-filter: blur(14px); }
+    .card { background: #111b2e; border: 1px solid #1a2740; border-radius: 12px; }
+    .card-elevated { box-shadow: 0 4px 24px -6px rgba(0,0,0,0.45); }
+    .input { background: #0b1220; border: 1px solid #243552; border-radius: 10px; padding: 0.7rem 1rem; font-size: 16px; width: 100%; color: #e2e8f0; transition: border-color .15s; }
+    .input:focus { outline: none; border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,0.15); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; font-weight: 600; border-radius: 10px; transition: all .15s; cursor: pointer; }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-gold { background: linear-gradient(135deg, #f59e0b, #d97706); color: #0b1220; }
+    .btn-gold:hover:not(:disabled) { filter: brightness(1.08); }
+    .btn-navy { background: #1a2740; color: #e2e8f0; border: 1px solid #243552; }
+    .btn-navy:hover:not(:disabled) { background: #243552; }
+    .btn-danger { background: rgba(185,28,28,0.2); color: #fca5a5; border: 1px solid rgba(185,28,28,0.35); }
+    .btn-danger:hover:not(:disabled) { background: rgba(185,28,28,0.35); }
+    .status-pill { display: inline-flex; align-items: center; padding: 0.2rem 0.65rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.02em; }
+    .timeline-line { position: absolute; left: 11px; top: 24px; bottom: -8px; width: 2px; background: #243552; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .skeleton { background: linear-gradient(90deg, #1a2740 25%, #243552 50%, #1a2740 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .drawer { transform: translateX(100%); transition: transform .25s ease; }
+    .drawer.open { transform: translateX(0); }
+    .modal-backdrop { background: rgba(0,0,0,0.65); }
+    table.data-table th { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; font-weight: 600; }
+    .progress-step.active .step-dot { background: #f59e0b; border-color: #f59e0b; }
+    .progress-step.done .step-dot { background: #10b981; border-color: #10b981; }
+    .progress-step.exception .step-dot { background: #f59e0b; border-color: #f59e0b; }
+    @media print {
+      body * { visibility: hidden; }
+      #print-area, #print-area * { visibility: visible; }
+      #print-area { position: absolute; left: 0; top: 0; width: 100%; }
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- TOAST -->
+  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] hidden px-5 py-3 rounded-xl bg-navy-800 border border-navy-600 text-sm font-medium shadow-xl max-w-sm text-center"></div>
+
+  <!-- CONFIRM DIALOG -->
+  <div id="confirm-modal" class="hidden fixed inset-0 z-[90] flex items-center justify-center modal-backdrop p-4">
+    <div class="card card-elevated w-full max-w-sm p-6">
+      <h3 id="confirm-title" class="font-bold text-lg mb-2">Confirm</h3>
+      <p id="confirm-msg" class="text-sm text-slate-400 mb-6"></p>
+      <div class="flex gap-3">
+        <button onclick="closeConfirm(false)" class="btn btn-navy flex-1 py-2.5 text-sm">Cancel</button>
+        <button id="confirm-ok" class="btn btn-danger flex-1 py-2.5 text-sm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== PUBLIC PORTAL ===================== -->
+  <div id="public-portal">
+    <!-- Public Header -->
+    <header class="sticky top-0 z-40 glass border-b border-navy-700">
+      <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-gold-500 to-gold-600 flex items-center justify-center text-navy-950 font-extrabold text-sm tracking-tight shadow-lg shadow-gold-500/20">NK</div>
+          <div>
+            <div class="font-bold text-sm leading-tight tracking-tight">NKDON Tracking Logistics</div>
+            <div class="text-[10px] text-slate-400 leading-tight">Consignment Management & Shipment Tracking</div>
+          </div>
+        </div>
+        <nav class="hidden md:flex items-center gap-6 text-sm">
+          <a href="#track" class="text-slate-300 hover:text-gold-400 transition">Track Consignment</a>
+          <a href="#services" class="text-slate-300 hover:text-gold-400 transition">Services</a>
+          <a href="#about" class="text-slate-300 hover:text-gold-400 transition">About</a>
+          <a href="#support" class="text-slate-300 hover:text-gold-400 transition">Support</a>
+          <button onclick="showOwnerLogin()" class="btn btn-gold px-4 py-2 text-xs">Owner Access</button>
+        </nav>
+        <button onclick="toggleMobileNav()" class="md:hidden p-2 rounded-lg hover:bg-navy-700 text-slate-300">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+      <!-- Mobile nav -->
+      <div id="mobile-nav" class="hidden md:hidden border-t border-navy-700 px-4 py-3 space-y-2">
+        <a href="#track" onclick="toggleMobileNav()" class="block py-2 text-sm text-slate-300">Track Consignment</a>
+        <a href="#services" onclick="toggleMobileNav()" class="block py-2 text-sm text-slate-300">Services</a>
+        <a href="#about" onclick="toggleMobileNav()" class="block py-2 text-sm text-slate-300">About</a>
+        <a href="#support" onclick="toggleMobileNav()" class="block py-2 text-sm text-slate-300">Support</a>
+        <button onclick="showOwnerLogin(); toggleMobileNav()" class="btn btn-gold w-full py-2.5 text-sm mt-2">Owner Access</button>
+      </div>
+    </header>
+
+    <!-- Hero / Track -->
+    <section id="track" class="relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-b from-navy-900 via-navy-950 to-navy-900"></div>
+      <div class="absolute inset-0 opacity-30" style="background-image: radial-gradient(circle at 20% 30%, rgba(245,158,11,0.12) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(245,158,11,0.08) 0%, transparent 40%);"></div>
+      <div class="relative max-w-3xl mx-auto px-4 pt-16 pb-12 md:pt-24 md:pb-16 text-center">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-navy-800 border border-navy-600 text-[11px] text-gold-400 font-medium mb-6 tracking-wide uppercase">
+          <span class="w-1.5 h-1.5 rounded-full bg-gold-400"></span>
+          Secure Consignment Tracking
+        </div>
+        <h1 class="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight mb-4">
+          Track Every<br class="hidden sm:block" /> <span class="text-gold-400">Recorded Milestone</span>
+        </h1>
+        <p class="text-slate-400 text-sm md:text-base max-w-xl mx-auto mb-10 leading-relaxed">
+          Enter your NKDON consignment reference to view recorded shipment status, location updates, and operational milestones.
+        </p>
+
+        <!-- Tracking Search -->
+        <div class="card card-elevated p-2 md:p-3 max-w-2xl mx-auto">
+          <form id="track-form" onsubmit="handlePublicTrack(event)" class="flex flex-col sm:flex-row gap-2">
+            <div class="relative flex-1">
+              <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input id="track-input" type="text" class="input pl-11 border-0 bg-navy-900 focus:ring-0" placeholder="Enter Consignment / Tracking Number" autocomplete="off" spellcheck="false" />
+            </div>
+            <button type="submit" id="track-btn" class="btn btn-gold px-6 py-3 text-sm whitespace-nowrap">
+              <span id="track-btn-text">TRACK CONSIGNMENT</span>
+              <svg id="track-spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            </button>
+          </form>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-4">Example format: NKDON-XXXXXXXX · Case sensitive recommended</p>
+      </div>
+    </section>
+
+    <!-- Tracking Result Area -->
+    <section id="track-result-section" class="hidden max-w-5xl mx-auto px-4 pb-16">
+      <div id="track-result"></div>
+    </section>
+
+    <!-- Services (secondary) -->
+    <section id="services" class="border-t border-navy-800 bg-navy-950/50">
+      <div class="max-w-6xl mx-auto px-4 py-14">
+        <h2 class="text-xl font-bold mb-2">Operational Services</h2>
+        <p class="text-sm text-slate-400 mb-8 max-w-2xl">NKDON provides structured consignment registration, milestone tracking, and delivery documentation for authorized shipments.</p>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="card p-5">
+            <div class="w-9 h-9 rounded-lg bg-navy-700 flex items-center justify-center mb-3 text-gold-400">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </div>
+            <h3 class="font-semibold text-sm mb-1">Consignment Registration</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">Structured capture of shipper, consignee, route, and package details under controlled operational records.</p>
+          </div>
+          <div class="card p-5">
+            <div class="w-9 h-9 rounded-lg bg-navy-700 flex items-center justify-center mb-3 text-gold-400">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <h3 class="font-semibold text-sm mb-1">Milestone Tracking</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">Recorded facility events, status changes, and location updates visible through the public tracking portal.</p>
+          </div>
+          <div class="card p-5">
+            <div class="w-9 h-9 rounded-lg bg-navy-700 flex items-center justify-center mb-3 text-gold-400">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <h3 class="font-semibold text-sm mb-1">Documentation</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">Consignment notes, shipment summaries, and delivery confirmation records generated from operational data.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About (secondary) -->
+    <section id="about" class="border-t border-navy-800">
+      <div class="max-w-6xl mx-auto px-4 py-14">
+        <h2 class="text-xl font-bold mb-2">About NKDON</h2>
+        <p class="text-sm text-slate-400 max-w-3xl leading-relaxed">
+          NKDON Tracking Logistics operates an internal consignment management platform designed for accurate shipment registration, controlled status lifecycle management, and transparent milestone visibility for authorized parties. All tracking references are independent NKDON internal references.
+        </p>
+      </div>
+    </section>
+
+    <!-- Support -->
+    <section id="support" class="border-t border-navy-800 bg-navy-950/50">
+      <div class="max-w-6xl mx-auto px-4 py-14">
+        <h2 class="text-xl font-bold mb-2">Customer Support</h2>
+        <p class="text-sm text-slate-400 mb-6">For shipment inquiries, contact the operations desk with your full consignment number.</p>
+        <div class="flex flex-wrap gap-3">
+          <a href="https://wa.me/" target="_blank" rel="noopener" class="btn btn-navy px-5 py-2.5 text-sm">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.523 5.853L.057 23.43a.5.5 0 00.61.61l5.577-1.466A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.94 9.94 0 01-5.086-1.394l-.364-.216-3.724.98.995-3.648-.237-.375A9.94 9.94 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+            WhatsApp Support
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-navy-800 bg-navy-950">
+      <div class="max-w-6xl mx-auto px-4 py-10">
+        <div class="flex flex-col md:flex-row md:items-start justify-between gap-8">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-500 to-gold-600 flex items-center justify-center text-navy-950 font-bold text-xs">NK</div>
+              <span class="font-bold text-sm">NKDON Tracking Logistics</span>
+            </div>
+            <p class="text-xs text-slate-500 max-w-xs">Consignment Management & Shipment Tracking</p>
+          </div>
+          <div class="text-xs text-slate-500 max-w-md leading-relaxed">
+            <strong class="text-slate-400">Important Notice:</strong> NKDON tracking references are independent internal shipment references created by NKDON Tracking Logistics and are not DHL, FedEx, UPS or other carrier-issued tracking numbers.
+          </div>
+        </div>
+        <div class="mt-8 pt-6 border-t border-navy-800 text-[11px] text-slate-600 flex flex-wrap justify-between gap-2">
+          <span>&copy; <span id="year"></span> NKDON Tracking Logistics. All rights reserved.</span>
+          <button onclick="showOwnerLogin()" class="text-slate-500 hover:text-gold-400">Owner Access</button>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ===================== OWNER LOGIN ===================== -->
+  <div id="owner-login" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-navy-950 px-4">
+    <div class="w-full max-w-md">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-gold-500 to-gold-600 mb-4 shadow-lg shadow-gold-500/25 text-navy-950 font-extrabold text-lg">NK</div>
+        <h1 class="text-xl font-bold tracking-tight">Owner Operations Center</h1>
+        <p class="text-slate-400 text-sm mt-1">Authorized administrator access only</p>
+      </div>
+      <div class="card card-elevated p-6">
+        <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1.5">Email</label>
+            <input id="login-email" type="email" required class="input" placeholder="admin@nkdon.com" autocomplete="username" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1.5">Password</label>
+            <input id="login-password" type="password" required class="input" placeholder="••••••••" autocomplete="current-password" />
+          </div>
+          <div id="login-error" class="hidden text-sm text-red-400 bg-red-950/40 border border-red-900/50 rounded-lg px-3 py-2"></div>
+          <button type="submit" id="login-btn" class="btn btn-gold w-full py-3 text-sm">
+            <span id="login-btn-text">Sign In</span>
+            <svg id="login-spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+          </button>
+          <button type="button" onclick="handlePasswordReset()" class="w-full text-xs text-slate-400 hover:text-gold-400 pt-1">Forgot password?</button>
+        </form>
+      </div>
+      <p class="text-center text-xs text-slate-600 mt-6">
+        <button onclick="showPublicPortal()" class="hover:text-slate-400">← Return to public tracking</button>
+      </p>
+    </div>
+  </div>
+
+  <!-- ===================== ADMIN APP ===================== -->
+  <div id="admin-app" class="hidden min-h-screen flex">
+    <!-- Sidebar (desktop) -->
+    <aside id="sidebar" class="hidden lg:flex flex-col w-60 bg-navy-950 border-r border-navy-800 fixed inset-y-0 left-0 z-30">
+      <div class="p-4 border-b border-navy-800 flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-gold-500 to-gold-600 flex items-center justify-center text-navy-950 font-bold text-sm">NK</div>
+        <div>
+          <div class="font-bold text-xs leading-tight">NKDON</div>
+          <div class="text-[10px] text-slate-500">Operations</div>
+        </div>
+      </div>
+      <nav class="flex-1 p-3 space-y-0.5 overflow-y-auto">
+        <button onclick="adminNav('overview')" data-nav="overview" class="admin-nav w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-left text-gold-400 bg-navy-800">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg>
+          Overview
+        </button>
+        <button onclick="adminNav('consignments')" data-nav="consignments" class="admin-nav w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-left text-slate-400 hover:bg-navy-800 hover:text-slate-200">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          Consignments
+        </button>
+        <button onclick="adminNav('new')" data-nav="new" class="admin-nav w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-left text-slate-400 hover:bg-navy-800 hover:text-slate-200">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          New Consignment
+        </button>
+        <button onclick="adminNav('detail')" data-nav="detail" class="admin-nav hidden w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-left text-slate-400 hover:bg-navy-800 hover:text-slate-200">
+          Detail
+        </button>
+        <button onclick="adminNav('analytics')" data-nav="analytics" class="admin-nav w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-left text-slate-400 hover:bg-navy-800 hover:text-slate-200">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Analytics
+        </button>
+        <button onclick="adminNav('activity')" data-nav="activity" class="admin-nav w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-left text-slate-400 hover:bg-navy-800 hover:text-slate-200">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Activity Log
+        </button>
+        <button onclick="adminNav('settings')" data-nav="settings" class="admin-nav w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-left text-slate-400 hover:bg-navy-800 hover:text-slate-200">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Settings
+        </button>
+      </nav>
+      <div class="p-3 border-t border-navy-800">
+        <div class="text-[10px] text-slate-500 mb-2 truncate px-1" id="admin-email-display"></div>
+        <button onclick="handleLogout()" class="btn btn-navy w-full py-2 text-xs">Sign Out</button>
+      </div>
+    </aside>
+
+    <!-- Mobile top bar -->
+    <div class="lg:hidden fixed top-0 inset-x-0 z-40 glass border-b border-navy-800 px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <button onclick="toggleAdminMobileMenu()" class="p-1.5 rounded-lg hover:bg-navy-700">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <span class="font-bold text-sm">NKDON Ops</span>
+      </div>
+      <button onclick="handleLogout()" class="text-xs text-slate-400 hover:text-white">Sign Out</button>
+    </div>
+
+    <!-- Mobile slide menu -->
+    <div id="admin-mobile-menu" class="lg:hidden fixed inset-0 z-50 hidden">
+      <div class="absolute inset-0 bg-black/60" onclick="toggleAdminMobileMenu()"></div>
+      <div class="absolute left-0 top-0 bottom-0 w-64 bg-navy-950 border-r border-navy-800 p-4 overflow-y-auto">
+        <div class="flex items-center gap-2 mb-6">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-500 to-gold-600 flex items-center justify-center text-navy-950 font-bold text-xs">NK</div>
+          <span class="font-bold text-sm">NKDON Operations</span>
+        </div>
+        <nav class="space-y-1">
+          <button onclick="adminNav('overview'); toggleAdminMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-navy-800">Overview</button>
+          <button onclick="adminNav('consignments'); toggleAdminMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-navy-800">Consignments</button>
+          <button onclick="adminNav('new'); toggleAdminMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-navy-800">New Consignment</button>
+          <button onclick="adminNav('analytics'); toggleAdminMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-navy-800">Analytics</button>
+          <button onclick="adminNav('activity'); toggleAdminMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-navy-800">Activity Log</button>
+          <button onclick="adminNav('settings'); toggleAdminMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-navy-800">Settings</button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <main class="flex-1 lg:ml-60 pt-14 lg:pt-0 min-h-screen bg-navy-900">
+      <!-- OVERVIEW -->
+      <section id="admin-overview" class="p-4 md:p-6 space-y-6">
+        <div>
+          <h2 class="text-lg font-bold">Operations Overview</h2>
+          <p class="text-xs text-slate-400">Live statistics from NKDON consignment records</p>
+        </div>
+        <div id="kpi-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+        <div class="grid lg:grid-cols-2 gap-4">
+          <div class="card p-4">
+            <h3 class="text-sm font-semibold mb-3">Status Distribution</h3>
+            <div class="h-48"><canvas id="adminStatusChart"></canvas></div>
+          </div>
+          <div class="card p-4">
+            <h3 class="text-sm font-semibold mb-3">Recent Consignments</h3>
+            <div id="admin-recent" class="space-y-2 max-h-48 overflow-y-auto"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONSIGNMENTS TABLE -->
+      <section id="admin-consignments" class="hidden p-4 md:p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold">Consignment Register</h2>
+            <p class="text-xs text-slate-400">Search, filter and manage shipments</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="btn btn-navy px-3 py-2 text-xs">Export CSV</button>
+            <label class="btn btn-navy px-3 py-2 text-xs cursor-pointer">
+              Import CSV
+              <input type="file" accept=".csv" onchange="importCSV(event)" class="hidden" />
+            </label>
+            <button onclick="adminNav('new')" class="btn btn-gold px-3 py-2 text-xs">New</button>
+          </div>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <input id="admin-search" type="search" placeholder="Search tracking, reference, sender, recipient..." oninput="debouncedFilter()" class="input flex-1 text-sm" />
+          <select id="admin-status-filter" onchange="filterAdminTable()" class="input sm:w-44 text-sm">
+            <option value="">All Statuses</option>
+          </select>
+          <select id="admin-dest-filter" onchange="filterAdminTable()" class="input sm:w-40 text-sm">
+            <option value="">All Destinations</option>
+          </select>
+        </div>
+        <div class="card overflow-x-auto">
+          <table class="data-table w-full text-left text-sm min-w-[900px]">
+            <thead>
+              <tr class="border-b border-navy-700">
+                <th class="px-3 py-3">Consignment</th>
+                <th class="px-3 py-3">Reference</th>
+                <th class="px-3 py-3">Sender</th>
+                <th class="px-3 py-3">Recipient</th>
+                <th class="px-3 py-3">Route</th>
+                <th class="px-3 py-3">Status</th>
+                <th class="px-3 py-3">Location</th>
+                <th class="px-3 py-3">ETA</th>
+                <th class="px-3 py-3">Updated</th>
+                <th class="px-3 py-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-table-body"></tbody>
+          </table>
+          <div id="admin-table-empty" class="hidden p-10 text-center text-sm text-slate-500">No consignments found</div>
+        </div>
+        <div class="flex items-center justify-between text-xs text-slate-400">
+          <span id="pagination-info"></span>
+          <div class="flex gap-2">
+            <button onclick="changePage(-1)" id="page-prev" class="btn btn-navy px-3 py-1.5 text-xs">Prev</button>
+            <button onclick="changePage(1)" id="page-next" class="btn btn-navy px-3 py-1.5 text-xs">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- NEW / EDIT CONSIGNMENT -->
+      <section id="admin-new" class="hidden p-4 md:p-6">
+        <div class="max-w-3xl mx-auto">
+          <div class="flex items-center gap-3 mb-6">
+            <button onclick="adminNav('consignments')" class="text-slate-400 hover:text-white">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <div>
+              <h2 id="form-title" class="text-lg font-bold">New Consignment</h2>
+              <p class="text-xs text-slate-400">All required fields marked with *</p>
+            </div>
+          </div>
+          <form id="shipment-form" onsubmit="saveShipment(event)" class="space-y-6">
+            <input type="hidden" id="edit-shipment-id" />
+
+            <div class="card p-5 space-y-4">
+              <h3 class="text-xs font-semibold text-gold-400 uppercase tracking-wider">Identification</h3>
+              <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Consignment / Tracking Number *</label>
+                  <input id="f-tracking" required class="input text-sm" placeholder="Auto-generated if blank on create" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Reference Number</label>
+                  <input id="f-reference" class="input text-sm" />
+                </div>
+              </div>
+            </div>
+
+            <div class="card p-5 space-y-4">
+              <h3 class="text-xs font-semibold text-gold-400 uppercase tracking-wider">Shipper</h3>
+              <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Sender Name *</label>
+                  <input id="f-sender-name" required class="input text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Sender Phone</label>
+                  <input id="f-sender-phone" type="tel" class="input text-sm" />
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-xs text-slate-400 mb-1">Sender Email</label>
+                  <input id="f-sender-email" type="email" class="input text-sm" />
+                </div>
+              </div>
+            </div>
+
+            <div class="card p-5 space-y-4">
+              <h3 class="text-xs font-semibold text-gold-400 uppercase tracking-wider">Consignee</h3>
+              <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Recipient Name *</label>
+                  <input id="f-recipient-name" required class="input text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Recipient Phone</label>
+                  <input id="f-recipient-phone" type="tel" class="input text-sm" />
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-xs text-slate-400 mb-1">Recipient Email</label>
+                  <input id="f-recipient-email" type="email" class="input text-sm" />
+                </div>
+              </div>
+            </div>
+
+            <div class="card p-5 space-y-4">
+              <h3 class="text-xs font-semibold text-gold-400 uppercase tracking-wider">Route</h3>
+              <div class="grid sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Origin *</label>
+                  <input id="f-origin" required class="input text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Destination *</label>
+                  <input id="f-destination" required class="input text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Current Location</label>
+                  <input id="f-current-location" class="input text-sm" />
+                </div>
+              </div>
+            </div>
+
+            <div class="card p-5 space-y-4">
+              <h3 class="text-xs font-semibold text-gold-400 uppercase tracking-wider">Shipment</h3>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Package Description</label>
+                <input id="f-package-description" class="input text-sm" />
+              </div>
+              <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Quantity</label>
+                  <input id="f-quantity" type="number" min="1" value="1" class="input text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Weight (kg)</label>
+                  <input id="f-weight" type="number" step="0.01" class="input text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Dimensions</label>
+                  <input id="f-dimensions" class="input text-sm" placeholder="L×W×H cm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Shipment Type</label>
+                  <select id="f-shipment-type" class="input text-sm">
+                    <option value="">—</option>
+                    <option>Parcel</option>
+                    <option>Document</option>
+                    <option>Freight</option>
+                    <option>Express</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Shipping Method</label>
+                <input id="f-shipping-method" class="input text-sm" placeholder="e.g. Road, Air, Express" />
+              </div>
+            </div>
+
+            <div class="card p-5 space-y-4">
+              <h3 class="text-xs font-semibold text-gold-400 uppercase tracking-wider">Delivery</h3>
+              <div class="grid sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Pickup Date</label>
+                  <input id="f-pickup-date" type="date" class="input text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Estimated Delivery</label>
+                  <input id="f-estimated-delivery" type="date" class="input text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Actual Delivery</label>
+                  <input id="f-actual-delivery" type="date" class="input text-sm" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Delivery Instructions</label>
+                <textarea id="f-delivery-instructions" rows="2" class="input text-sm"></textarea>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Delivery Contact</label>
+                <input id="f-delivery-contact" class="input text-sm" />
+              </div>
+            </div>
+
+            <div class="card p-5 space-y-4">
+              <h3 class="text-xs font-semibold text-gold-400 uppercase tracking-wider">Value / Insurance</h3>
+              <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Declared Value</label>
+                  <input id="f-declared-value" type="number" step="0.01" class="input text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Currency</label>
+                  <input id="f-currency" class="input text-sm" value="NGN" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Insurance Status</label>
+                  <select id="f-insurance-status" class="input text-sm">
+                    <option value="">—</option>
+                    <option>None</option>
+                    <option>Requested</option>
+                    <option>Covered</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Insurance Value</label>
+                  <input id="f-insurance-value" type="number" step="0.01" class="input text-sm" />
+                </div>
+              </div>
+            </div>
+
+            <div class="card p-5 space-y-4">
+              <h3 class="text-xs font-semibold text-gold-400 uppercase tracking-wider">Operations</h3>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Status *</label>
+                <select id="f-status" required class="input text-sm"></select>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Internal Notes (private)</label>
+                <textarea id="f-internal-notes" rows="2" class="input text-sm"></textarea>
+              </div>
+            </div>
+
+            <div class="flex gap-3 sticky bottom-0 bg-navy-900 py-4 border-t border-navy-800 -mx-4 px-4 md:mx-0 md:px-0">
+              <button type="button" onclick="adminNav('consignments')" class="btn btn-navy flex-1 py-3 text-sm">Cancel</button>
+              <button type="submit" id="save-btn" class="btn btn-gold flex-1 py-3 text-sm">Save Consignment</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- DETAIL VIEW -->
+      <section id="admin-detail" class="hidden p-4 md:p-6">
+        <div id="detail-view"></div>
+      </section>
+
+      <!-- ANALYTICS -->
+      <section id="admin-analytics" class="hidden p-4 md:p-6 space-y-6">
+        <div>
+          <h2 class="text-lg font-bold">Analytics</h2>
+          <p class="text-xs text-slate-400">Derived from actual consignment records</p>
+        </div>
+        <div id="analytics-content" class="grid lg:grid-cols-2 gap-4"></div>
+      </section>
+
+      <!-- ACTIVITY LOG -->
+      <section id="admin-activity" class="hidden p-4 md:p-6 space-y-4">
+        <div>
+          <h2 class="text-lg font-bold">Activity Log</h2>
+          <p class="text-xs text-slate-400">Administrator actions recorded for compliance</p>
+        </div>
+        <div class="card overflow-x-auto">
+          <table class="data-table w-full text-left text-sm min-w-[600px]">
+            <thead>
+              <tr class="border-b border-navy-700">
+                <th class="px-3 py-3">Time</th>
+                <th class="px-3 py-3">Action</th>
+                <th class="px-3 py-3">Tracking</th>
+                <th class="px-3 py-3">Description</th>
+              </tr>
+            </thead>
+            <tbody id="activity-body"></tbody>
+          </table>
+          <div id="activity-empty" class="hidden p-8 text-center text-sm text-slate-500">No activity recorded</div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="admin-settings" class="hidden p-4 md:p-6 space-y-6 max-w-xl">
+        <div>
+          <h2 class="text-lg font-bold">Settings</h2>
+          <p class="text-xs text-slate-400">Account and notification architecture</p>
+        </div>
+        <div class="card p-5 space-y-3">
+          <h3 class="text-sm font-semibold">Signed-in Administrator</h3>
+          <p class="text-sm text-slate-400" id="settings-email"></p>
+          <button onclick="handlePasswordReset()" class="btn btn-navy px-4 py-2 text-xs">Send Password Reset Email</button>
+        </div>
+        <div class="card p-5 space-y-3">
+          <h3 class="text-sm font-semibold">Notifications (Architecture Ready)</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">Email, WhatsApp, and status-change notification channels are prepared for future integration. No messages are sent until a notification service is configured and connected.</p>
+          <div class="flex flex-wrap gap-2 text-[11px]">
+            <span class="px-2 py-1 rounded bg-navy-700 text-slate-400">Email updates — not configured</span>
+            <span class="px-2 py-1 rounded bg-navy-700 text-slate-400">WhatsApp — not configured</span>
+            <span class="px-2 py-1 rounded bg-navy-700 text-slate-400">Status change alerts — not configured</span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ADD EVENT MODAL -->
+  <div id="event-modal" class="hidden fixed inset-0 z-[80] flex items-end sm:items-center justify-center modal-backdrop p-0 sm:p-4">
+    <div class="card card-elevated w-full max-w-md max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-xl">
+      <div class="sticky top-0 bg-navy-800 border-b border-navy-700 px-5 py-4 flex items-center justify-between">
+        <h3 class="font-bold">Add Tracking Event</h3>
+        <button onclick="closeEventModal()" class="p-1.5 rounded-lg hover:bg-navy-700">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="event-form" onsubmit="saveEvent(event)" class="p-5 space-y-4">
+        <input type="hidden" id="event-shipment-id" />
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Status *</label>
+          <select id="ev-status" required class="input text-sm"></select>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Event Date / Time *</label>
+          <input id="ev-time" type="datetime-local" required class="input text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Location</label>
+          <input id="ev-location" class="input text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Facility</label>
+          <input id="ev-facility" class="input text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Event Code</label>
+          <input id="ev-code" class="input text-sm" placeholder="e.g. TRN, ARR, DLV" />
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Description *</label>
+          <textarea id="ev-description" required rows="2" class="input text-sm"></textarea>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeEventModal()" class="btn btn-navy flex-1 py-2.5 text-sm">Cancel</button>
+          <button type="submit" class="btn btn-gold flex-1 py-2.5 text-sm">Save Event</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- POD MODAL -->
+  <div id="pod-modal" class="hidden fixed inset-0 z-[80] flex items-end sm:items-center justify-center modal-backdrop p-0 sm:p-4">
+    <div class="card card-elevated w-full max-w-md max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-xl">
+      <div class="sticky top-0 bg-navy-800 border-b border-navy-700 px-5 py-4 flex items-center justify-between">
+        <h3 class="font-bold">Record Proof of Delivery</h3>
+        <button onclick="closePODModal()" class="p-1.5 rounded-lg hover:bg-navy-700">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="pod-form" onsubmit="savePOD(event)" class="p-5 space-y-4">
+        <input type="hidden" id="pod-shipment-id" />
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Delivery Date / Time *</label>
+          <input id="pod-time" type="datetime-local" required class="input text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Recipient Name *</label>
+          <input id="pod-recipient" required class="input text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Delivery Status</label>
+          <select id="pod-status" class="input text-sm">
+            <option value="Delivered">Delivered</option>
+            <option value="Delivery Attempted">Delivery Attempted</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Delivery Notes</label>
+          <textarea id="pod-notes" rows="2" class="input text-sm"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Signature / Record Reference</label>
+          <input id="pod-signature" class="input text-sm" placeholder="e.g. Signed on device / Ref ID" />
+        </div>
+        <p class="text-[11px] text-slate-500">Only record information that actually occurred. Do not fabricate signatures or proof.</p>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closePODModal()" class="btn btn-navy flex-1 py-2.5 text-sm">Cancel</button>
+          <button type="submit" class="btn btn-gold flex-1 py-2.5 text-sm">Record POD</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PRINT AREA (hidden) -->
+  <div id="print-area" class="hidden"></div>
+
+  <script>
+    // ===================== CONFIG =====================
+    const SUPABASE_URL = 'https://cpjbxllhabghsvpsdzrm.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_ZmrGlIzkRy4RKenj9s8HyQ_q-6t8GsW';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const STATUS_LIST = [
+      'Created', 'Pickup Scheduled', 'Picked Up', 'Received', 'Processing',
+      'Departed Facility', 'In Transit', 'Arrived at Destination', 'Customs Clearance',
+      'Out for Delivery', 'Delivered',
+      'Delayed', 'Held', 'Delivery Attempted', 'Address Issue', 'Returned'
+    ];
+
+    const EXCEPTION_STATUSES = ['Delayed', 'Held', 'Delivery Attempted', 'Address Issue', 'Returned'];
+
+    const PROGRESS_STEPS = [
+      'Created', 'Picked Up', 'Processing', 'In Transit',
+      'Arrived at Destination', 'Out for Delivery', 'Delivered'
+    ];
+
+    // ===================== STATE =====================
+    let currentUser = null;
+    let isAdmin = false;
+    let allShipments = [];
+    let filteredShipments = [];
+    let currentPage = 1;
+    const PAGE_SIZE = 15;
+    let statusChartInstance = null;
+    let confirmCallback = null;
+    let filterTimer = null;
+
+    // ===================== UTILS =====================
+    function toast(msg, duration = 2800) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.remove('hidden');
+      clearTimeout(t._timer);
+      t._timer = setTimeout(() => t.classList.add('hidden'), duration);
+    }
+
+    function esc(s) {
+      if (s == null) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function formatDate(d) {
+      if (!d) return '—';
+      try {
+        const dt = new Date(d);
+        if (isNaN(dt)) return '—';
+        return dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      } catch { return '—'; }
+    }
+
+    function formatDateTime(d) {
+      if (!d) return '—';
+      try {
+        const dt = new Date(d);
+        if (isNaN(dt)) return '—';
+        return dt.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      } catch { return '—'; }
+    }
+
+    function statusPill(status) {
+      const isEx = EXCEPTION_STATUSES.includes(status);
+      const isDel = status === 'Delivered';
+      let cls = 'bg-sky-500/15 text-sky-300 border border-sky-500/25';
+      if (isDel) cls = 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/25';
+      if (isEx) cls = 'bg-amber-500/15 text-amber-300 border border-amber-500/25';
+      return `<span class="status-pill ${cls}">${esc(status || '—')}</span>`;
+    }
+
+    function generateTrackingNumber() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const r = String(Math.floor(Math.random() * 900000) + 100000);
+      return `NKDON-${y}${m}${day}${r}`;
+    }
+
+    function showConfirm(title, msg, onOk) {
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-msg').textContent = msg;
+      confirmCallback = onOk;
+      document.getElementById('confirm-ok').onclick = () => closeConfirm(true);
+      document.getElementById('confirm-modal').classList.remove('hidden');
+    }
+
+    function closeConfirm(ok) {
+      document.getElementById('confirm-modal').classList.add('hidden');
+      if (ok && confirmCallback) confirmCallback();
+      confirmCallback = null;
+    }
+
+    function populateStatusSelects() {
+      const opts = STATUS_LIST.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+      const fStatus = document.getElementById('f-status');
+      const evStatus = document.getElementById('ev-status');
+      const adminFilter = document.getElementById('admin-status-filter');
+      if (fStatus) fStatus.innerHTML = opts;
+      if (evStatus) evStatus.innerHTML = opts;
+      if (adminFilter) {
+        adminFilter.innerHTML = '<option value="">All Statuses</option>' + opts;
+      }
+    }
+
+    // ===================== AUTH =====================
+    async function checkSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        currentUser = session.user;
+        const adminOk = await verifyAdmin();
+        if (adminOk) {
+          isAdmin = true;
+          showAdminApp();
+          await loadShipments();
+          adminNav('overview');
+          return;
+        }
+        await supabase.auth.signOut();
+        currentUser = null;
+        isAdmin = false;
+      }
+      showPublicPortal();
+    }
+
+    async function verifyAdmin() {
+      try {
+        const { data, error } = await supabase.rpc('is_admin');
+        if (error) {
+          // Fallback: check app_metadata or a simple claim
+          console.warn('is_admin RPC:', error.message);
+          return false;
+        }
+        return !!data;
+      } catch (e) {
+        console.warn(e);
+        return false;
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const errEl = document.getElementById('login-error');
+      errEl.classList.add('hidden');
+      document.getElementById('login-btn').disabled = true;
+      document.getElementById('login-btn-text').classList.add('hidden');
+      document.getElementById('login-spinner').classList.remove('hidden');
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        currentUser = data.user;
+        const adminOk = await verifyAdmin();
+        if (!adminOk) {
+          await supabase.auth.signOut();
+          throw new Error('This account is not authorized as an NKDON administrator.');
+        }
+        isAdmin = true;
+        await logActivity('Signed in', null, null, 'Administrator signed in');
+        showAdminApp();
+        await loadShipments();
+        adminNav('overview');
+        toast('Signed in successfully');
+      } catch (err) {
+        errEl.textContent = err.message || 'Sign-in failed';
+        errEl.classList.remove('hidden');
+      } finally {
+        document.getElementById('login-btn').disabled = false;
+        document.getElementById('login-btn-text').classList.remove('hidden');
+        document.getElementById('login-spinner').classList.add('hidden');
+      }
+    }
+
+    async function handleLogout() {
+      await logActivity('Signed out', null, null, 'Administrator signed out');
+      await supabase.auth.signOut();
+      currentUser = null;
+      isAdmin = false;
+      allShipments = [];
+      showPublicPortal();
+      toast('Signed out');
+    }
+
+    async function handlePasswordReset() {
+      const email = (document.getElementById('login-email')?.value || currentUser?.email || '').trim();
+      if (!email) {
+        toast('Enter your email address first');
+        return;
+      }
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + window.location.pathname
+      });
+      if (error) toast(error.message);
+      else toast('Password reset email sent (if account exists)');
+    }
+
+    // ===================== NAV =====================
+    function showPublicPortal() {
+      document.getElementById('public-portal').classList.remove('hidden');
+      document.getElementById('owner-login').classList.add('hidden');
+      document.getElementById('admin-app').classList.add('hidden');
+    }
+
+    function showOwnerLogin() {
+      document.getElementById('public-portal').classList.add('hidden');
+      document.getElementById('admin-app').classList.add('hidden');
+      document.getElementById('owner-login').classList.remove('hidden');
+      document.getElementById('login-error').classList.add('hidden');
+    }
+
+    function showAdminApp() {
+      document.getElementById('public-portal').classList.add('hidden');
+      document.getElementById('owner-login').classList.add('hidden');
+      document.getElementById('admin-app').classList.remove('hidden');
+      document.getElementById('admin-email-display').textContent = currentUser?.email || '';
+      document.getElementById('settings-email').textContent = currentUser?.email || '';
+    }
+
+    function toggleMobileNav() {
+      document.getElementById('mobile-nav').classList.toggle('hidden');
+    }
+
+    function toggleAdminMobileMenu() {
+      document.getElementById('admin-mobile-menu').classList.toggle('hidden');
+    }
+
+    function adminNav(section) {
+      const sections = ['overview', 'consignments', 'new', 'detail', 'analytics', 'activity', 'settings'];
+      sections.forEach(s => {
+        const el = document.getElementById('admin-' + s);
+        if (el) el.classList.toggle('hidden', s !== section);
+      });
+      document.querySelectorAll('.admin-nav').forEach(btn => {
+        const active = btn.dataset.nav === section;
+        btn.classList.toggle('text-gold-400', active);
+        btn.classList.toggle('bg-navy-800', active);
+        btn.classList.toggle('text-slate-400', !active);
+      });
+      if (section === 'overview') renderOverview();
+      if (section === 'consignments') { currentPage = 1; filterAdminTable(); }
+      if (section === 'new') prepareNewForm();
+      if (section === 'analytics') renderAnalytics();
+      if (section === 'activity') loadActivity();
+    }
+
+    // ===================== PUBLIC TRACKING =====================
+    async function handlePublicTrack(e) {
+      e.preventDefault();
+      const input = document.getElementById('track-input');
+      const num = (input.value || '').trim();
+      if (!num) {
+        toast('Enter a consignment number');
+        return;
+      }
+      const btn = document.getElementById('track-btn');
+      const btnText = document.getElementById('track-btn-text');
+      const spinner = document.getElementById('track-spinner');
+      btn.disabled = true;
+      btnText.classList.add('hidden');
+      spinner.classList.remove('hidden');
+
+      const resultSection = document.getElementById('track-result-section');
+      const resultEl = document.getElementById('track-result');
+      resultSection.classList.remove('hidden');
+      resultEl.innerHTML = `<div class="card p-8 space-y-3"><div class="skeleton h-6 w-1/3"></div><div class="skeleton h-4 w-1/2"></div><div class="skeleton h-32 w-full"></div></div>`;
+
+      try {
+        const { data, error } = await supabase.rpc('track_shipment', { p_tracking_number: num });
+        if (error) throw error;
+
+        // RPC may return a single object, array, or null
+        let shipment = null;
+        let events = [];
+        if (Array.isArray(data)) {
+          if (data.length === 0) {
+            resultEl.innerHTML = notFoundHtml(num);
+            return;
+          }
+          // Some RPCs return joined structure; handle common patterns
+          shipment = data[0].shipment || data[0];
+          events = data[0].events || data.filter(x => x.event_time || x.status).map(x => x) || [];
+        } else if (data && typeof data === 'object') {
+          shipment = data.shipment || data;
+          events = data.events || data.shipment_events || [];
+        }
+
+        if (!shipment || (!shipment.tracking_number && !shipment.id)) {
+          resultEl.innerHTML = notFoundHtml(num);
+          return;
+        }
+
+        // If events empty, try fetching public-safe events (if RLS allows) or rely on RPC payload
+        if (!events.length && shipment.id) {
+          const { data: evData } = await supabase
+            .from('shipment_events')
+            .select('status, location, description, event_time, facility, event_code')
+            .eq('shipment_id', shipment.id)
+            .order('event_time', { ascending: true });
+          events = evData || [];
+        }
+
+        resultEl.innerHTML = renderPublicResult(shipment, events);
+        resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (err) {
+        console.error(err);
+        resultEl.innerHTML = `
+          <div class="card p-8 text-center">
+            <p class="text-red-400 text-sm font-medium mb-2">Unable to retrieve tracking information</p>
+            <p class="text-xs text-slate-500">${esc(err.message || 'Please try again later.')}</p>
+          </div>`;
+      } finally {
+        btn.disabled = false;
+        btnText.classList.remove('hidden');
+        spinner.classList.add('hidden');
+      }
+    }
+
+    function notFoundHtml(num) {
+      return `
+        <div class="card p-8 text-center">
+          <div class="w-12 h-12 rounded-full bg-navy-700 mx-auto mb-4 flex items-center justify-center">
+            <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+          <p class="font-semibold mb-1">Consignment not found</p>
+          <p class="text-sm text-slate-400">No recorded shipment matches <strong class="text-slate-200">${esc(num)}</strong>.</p>
+          <p class="text-xs text-slate-500 mt-3">Verify the number and try again. Contact support if the issue persists.</p>
+        </div>`;
+    }
+
+    function renderPublicResult(s, events) {
+      const status = s.status || '—';
+      const progressHtml = buildProgressTracker(status);
+      const eventsSorted = [...(events || [])].sort((a, b) => new Date(b.event_time || 0) - new Date(a.event_time || 0));
+
+      const timelineHtml = eventsSorted.length ? eventsSorted.map((ev, i) => `
+        <div class="relative pl-8 pb-6">
+          ${i < eventsSorted.length - 1 ? '<div class="timeline-line"></div>' : ''}
+          <div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-navy-700 border-2 border-gold-500 flex items-center justify-center">
+            <div class="w-2 h-2 rounded-full bg-gold-400"></div>
+          </div>
+          <div class="text-sm font-semibold">${esc(ev.status || 'Update')}</div>
+          <div class="text-xs text-slate-400 mt-0.5">${formatDateTime(ev.event_time)}</div>
+          <div class="text-xs text-slate-500 mt-1">${esc(ev.facility || '')}${ev.facility && ev.location ? ' · ' : ''}${esc(ev.location || '')}</div>
+          ${ev.event_code ? `<div class="text-[10px] text-slate-600 mt-0.5">Code: ${esc(ev.event_code)}</div>` : ''}
+          <div class="text-sm text-slate-300 mt-1.5">${esc(ev.description || '')}</div>
+        </div>
+      `).join('') : '<p class="text-sm text-slate-500 py-4">No tracking events recorded yet.</p>';
+
+      return `
+        <div class="space-y-5">
+          <!-- Header -->
+          <div class="card p-5 md:p-6">
+            <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
+              <div>
+                <div class="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Consignment</div>
+                <div class="text-xl md:text-2xl font-bold tracking-tight">${esc(s.tracking_number)}</div>
+                ${s.reference_number ? `<div class="text-xs text-slate-400 mt-1">Ref: ${esc(s.reference_number)}</div>` : ''}
+              </div>
+              <div class="flex items-center gap-2">${statusPill(status)}</div>
+            </div>
+            <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+              <div class="text-center sm:text-left">
+                <div class="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Origin</div>
+                <div class="font-semibold">${esc(s.origin || '—')}</div>
+              </div>
+              <div class="flex justify-center">
+                <div class="flex items-center gap-2 text-gold-500">
+                  <div class="h-px w-8 bg-navy-600"></div>
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                  <div class="h-px w-8 bg-navy-600"></div>
+                </div>
+              </div>
+              <div class="text-center sm:text-right">
+                <div class="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Destination</div>
+                <div class="font-semibold">${esc(s.destination || '—')}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Info cards -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            ${infoCard('Current Location', s.current_location || '—')}
+            ${infoCard('Shipment Status', status)}
+            ${infoCard('Estimated Delivery', formatDate(s.estimated_delivery))}
+            ${infoCard('Last Updated', formatDateTime(s.updated_at))}
+            ${infoCard('Shipping Method', s.shipping_method || '—')}
+            ${infoCard('Shipment Type', s.shipment_type || '—')}
+            ${infoCard('Quantity', s.quantity != null ? s.quantity : '—')}
+            ${infoCard('Weight', s.package_weight != null ? s.package_weight + ' kg' : '—')}
+          </div>
+          ${s.package_dimensions ? `<div class="card p-4 text-sm"><span class="text-slate-500">Dimensions:</span> ${esc(s.package_dimensions)}</div>` : ''}
+
+          <!-- Progress -->
+          <div class="card p-5">
+            <h3 class="text-sm font-semibold mb-4">Shipment Progress</h3>
+            ${progressHtml}
+          </div>
+
+          <!-- Timeline -->
+          <div class="card p-5">
+            <h3 class="text-sm font-semibold mb-4">Tracking Timeline</h3>
+            <div>${timelineHtml}</div>
+          </div>
+
+          <!-- Summary (public-safe) -->
+          <div class="card p-5">
+            <h3 class="text-sm font-semibold mb-4">Consignment Summary</h3>
+            <div class="grid md:grid-cols-3 gap-6 text-sm">
+              <div>
+                <div class="text-[10px] uppercase tracking-wider text-gold-500/80 mb-2">Shipment Information</div>
+                <dl class="space-y-1.5 text-xs">
+                  <div class="flex justify-between gap-2"><dt class="text-slate-500">Consignment</dt><dd class="text-right">${esc(s.tracking_number)}</dd></div>
+                  <div class="flex justify-between gap-2"><dt class="text-slate-500">Reference</dt><dd class="text-right">${esc(s.reference_number || '—')}</dd></div>
+                  <div class="flex justify-between gap-2"><dt class="text-slate-500">Type</dt><dd class="text-right">${esc(s.shipment_type || '—')}</dd></div>
+                  <div class="flex justify-between gap-2"><dt class="text-slate-500">Method</dt><dd class="text-right">${esc(s.shipping_method || '—')}</dd></div>
+                  <div class="flex justify-between gap-2"><dt class="text-slate-500">Qty / Weight</dt><dd class="text-right">${esc(s.quantity ?? '—')} / ${esc(s.package_weight != null ? s.package_weight + ' kg' : '—')}</dd></div>
+                  <div class="flex justify-between gap-2"><dt class="text-slate-500">Description</dt><dd class="text-right max-w-[55%]">${esc(s.package_description || '—')}</dd></div>
+                </dl>
+              </div>
+              <div>
+                <div class="text-[10px] uppercase tracking-wider text-gold-500/80 mb-2">Route Information</div>
+                <dl class="space-y-1.5 text-xs">
+                  <div class="flex justify-between gap-2"><dt class="text-slate-500">Origin</dt><dd class="text-right">${esc(s.origin || '—')}</dd></div>
+                  <div class="flex justify-between gap-2"><dt class="text-slate-500">Destination</dt><dd class="text-right">${esc(s.destination || '—')}</dd></div>
+                  <div class="flex justify-between gap-2"><dt class="text-slate-500">Current</dt><dd class="text-right">${esc(s.current_location || '—')}</dd></div>
+                </dl>
+              </div>
+              <div>
+                <div class="text-[10px] uppercase tracking-wider text-gold-500/80 mb-2">Delivery Information</div>
+                <dl class="space-y-1.5 text-xs">
+                  <div class="flex justify-between gap-2"><dt class="text-slate-500">Pickup</dt><dd class="text-right">${formatDate(s.pickup_date)}</dd></div>
+                  <div class="flex justify-between gap-2"><dt class="text-slate-500">Estimated</dt><dd class="text-right">${formatDate(s.estimated_delivery)}</dd></div>
+                  <div class="flex justify-between gap-2"><dt class="text-slate-500">Actual</dt><dd class="text-right">${formatDate(s.actual_delivery_date)}</dd></div>
+                </dl>
+              </div>
+            </div>
+            <p class="text-[10px] text-slate-600 mt-5 pt-4 border-t border-navy-700">Sender and recipient contact details are not displayed on the public tracking portal.</p>
+          </div>
+        </div>`;
+    }
+
+    function infoCard(label, value) {
+      return `<div class="card p-3.5"><div class="text-[10px] uppercase tracking-wider text-slate-500 mb-1">${esc(label)}</div><div class="text-sm font-semibold truncate">${esc(value)}</div></div>`;
+    }
+
+    function buildProgressTracker(currentStatus) {
+      let reached = -1;
+      const idx = PROGRESS_STEPS.findIndex(s => s.toLowerCase() === (currentStatus || '').toLowerCase());
+      if (idx >= 0) reached = idx;
+      // Map related statuses
+      const map = {
+        'Created': 0, 'Pickup Scheduled': 0,
+        'Picked Up': 1, 'Received': 1,
+        'Processing': 2, 'Departed Facility': 2,
+        'In Transit': 3,
+        'Arrived at Destination': 4, 'Customs Clearance': 4,
+        'Out for Delivery': 5,
+        'Delivered': 6
+      };
+      if (map[currentStatus] != null) reached = map[currentStatus];
+      const isException = EXCEPTION_STATUSES.includes(currentStatus);
+
+      return `
+        <div class="flex flex-col sm:flex-row sm:items-start gap-0 sm:gap-0 overflow-x-auto no-scrollbar pb-2">
+          ${PROGRESS_STEPS.map((step, i) => {
+            let state = '';
+            if (isException && i === reached) state = 'exception';
+            else if (i < reached) state = 'done';
+            else if (i === reached) state = 'active';
+            return `
+              <div class="progress-step ${state} flex sm:flex-col items-center sm:items-center gap-3 sm:gap-2 min-w-[4.5rem] flex-1 relative">
+                ${i < PROGRESS_STEPS.length - 1 ? `<div class="hidden sm:block absolute top-3 left-[calc(50%+12px)] right-0 h-0.5 ${i < reached ? 'bg-emerald-500' : 'bg-navy-600'}"></div>` : ''}
+                <div class="step-dot w-6 h-6 rounded-full border-2 border-navy-600 bg-navy-800 shrink-0 z-10"></div>
+                <div class="text-[10px] sm:text-center text-slate-400 ${state === 'active' || state === 'exception' ? 'text-gold-400 font-semibold' : ''} ${state === 'done' ? 'text-emerald-400' : ''}">${step}</div>
+              </div>`;
+          }).join('')}
+        </div>
+        ${isException ? `<p class="text-xs text-amber-400 mt-3">Exception status: <strong>${esc(currentStatus)}</strong></p>` : ''}`;
+    }
+
+    // ===================== ADMIN DATA =====================
+    async function loadShipments() {
+      const { data, error } = await supabase
+        .from('shipments')
+        .select('*')
+        .order('updated_at', { ascending: false });
+      if (error) {
+        toast('Failed to load consignments: ' + error.message);
+        allShipments = [];
+        return;
+      }
+      allShipments = data || [];
+      // Populate destination filter
+      const dests = [...new Set(allShipments.map(s => s.destination).filter(Boolean))].sort();
+      const destSel = document.getElementById('admin-dest-filter');
+      if (destSel) {
+        destSel.innerHTML = '<option value="">All Destinations</option>' + dests.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
+      }
+    }
+
+    async function logActivity(action, shipmentId, trackingNumber, description) {
+      if (!currentUser) return;
+      try {
+        await supabase.from('admin_activity').insert({
+          admin_user_id: currentUser.id,
+          action,
+          shipment_id: shipmentId || null,
+          tracking_number: trackingNumber || null,
+          description: description || null
+        });
+      } catch (e) {
+        console.warn('Activity log failed', e);
+      }
+    }
+
+    // ===================== OVERVIEW =====================
+    function renderOverview() {
+      const total = allShipments.length;
+      const counts = {};
+      STATUS_LIST.forEach(s => counts[s] = 0);
+      allShipments.forEach(s => {
+        if (counts[s.status] != null) counts[s.status]++;
+        else counts[s.status] = (counts[s.status] || 0) + 1;
+      });
+      const active = allShipments.filter(s => s.status !== 'Delivered' && s.status !== 'Returned').length;
+      const delivered = counts['Delivered'] || 0;
+      const delayed = counts['Delayed'] || 0;
+      const held = counts['Held'] || 0;
+      const processing = counts['Processing'] || 0;
+      const inTransit = counts['In Transit'] || 0;
+      const ofd = counts['Out for Delivery'] || 0;
+
+      document.getElementById('kpi-grid').innerHTML = [
+        kpiCard('Total Consignments', total, ''),
+        kpiCard('Active Shipments', active, 'text-sky-400'),
+        kpiCard('Processing', processing, 'text-indigo-400'),
+        kpiCard('In Transit', inTransit, 'text-blue-400'),
+        kpiCard('Out for Delivery', ofd, 'text-violet-400'),
+        kpiCard('Delivered', delivered, 'text-emerald-400'),
+        kpiCard('Delayed', delayed, 'text-amber-400'),
+        kpiCard('Held', held, 'text-orange-400')
+      ].join('');
+
+      // Chart
+      const labels = Object.keys(counts).filter(k => counts[k] > 0);
+      const values = labels.map(k => counts[k]);
+      const ctx = document.getElementById('adminStatusChart')?.getContext('2d');
+      if (ctx) {
+        if (statusChartInstance) statusChartInstance.destroy();
+        statusChartInstance = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels,
+            datasets: [{
+              data: values,
+              backgroundColor: ['#38bdf8','#818cf8','#60a5fa','#a78bfa','#34d399','#fbbf24','#f97316','#f87171','#94a3b8','#2dd4bf','#c084fc','#fb923c'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'right', labels: { boxWidth: 10, color: '#94a3b8', font: { size: 10 } } } }
+          }
+        });
+      }
+
+      const recent = allShipments.slice(0, 6);
+      document.getElementById('admin-recent').innerHTML = recent.length ? recent.map(s => `
+        <div onclick="openDetail('${s.id}')" class="flex items-center justify-between p-2.5 rounded-lg bg-navy-900 hover:bg-navy-700 cursor-pointer transition">
+          <div class="min-w-0">
+            <div class="text-sm font-medium truncate">${esc(s.tracking_number)}</div>
+            <div class="text-[11px] text-slate-500 truncate">${esc(s.origin)} → ${esc(s.destination)}</div>
+          </div>
+          ${statusPill(s.status)}
+        </div>
+      `).join('') : '<p class="text-sm text-slate-500">No consignments yet</p>';
+    }
+
+    function kpiCard(label, value, colorClass) {
+      return `<div class="card p-4"><div class="text-[10px] uppercase tracking-wider text-slate-500 mb-1">${label}</div><div class="text-2xl font-bold ${colorClass}">${value}</div></div>`;
+    }
+
+    // ===================== TABLE =====================
+    function debouncedFilter() {
+      clearTimeout(filterTimer);
+      filterTimer = setTimeout(() => { currentPage = 1; filterAdminTable(); }, 280);
+    }
+
+    function filterAdminTable() {
+      const q = (document.getElementById('admin-search')?.value || '').toLowerCase();
+      const st = document.getElementById('admin-status-filter')?.value || '';
+      const dest = document.getElementById('admin-dest-filter')?.value || '';
+      filteredShipments = allShipments.filter(s => {
+        if (st && s.status !== st) return false;
+        if (dest && s.destination !== dest) return false;
+        if (q) {
+          const hay = [s.tracking_number, s.reference_number, s.sender_name, s.recipient_name, s.origin, s.destination, s.current_location].join(' ').toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+      renderAdminTable();
+    }
+
+    function renderAdminTable() {
+      const total = filteredShipments.length;
+      const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+      if (currentPage > pages) currentPage = pages;
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const pageItems = filteredShipments.slice(start, start + PAGE_SIZE);
+
+      const tbody = document.getElementById('admin-table-body');
+      const empty = document.getElementById('admin-table-empty');
+      if (!pageItems.length) {
+        tbody.innerHTML = '';
+        empty.classList.remove('hidden');
+      } else {
+        empty.classList.add('hidden');
+        tbody.innerHTML = pageItems.map(s => `
+          <tr class="border-b border-navy-800 hover:bg-navy-800/40">
+            <td class="px-3 py-2.5 font-medium text-xs whitespace-nowrap">${esc(s.tracking_number)}</td>
+            <td class="px-3 py-2.5 text-xs text-slate-400">${esc(s.reference_number || '—')}</td>
+            <td class="px-3 py-2.5 text-xs">${esc(s.sender_name || '—')}</td>
+            <td class="px-3 py-2.5 text-xs">${esc(s.recipient_name || '—')}</td>
+            <td class="px-3 py-2.5 text-xs whitespace-nowrap">${esc(s.origin || '—')} → ${esc(s.destination || '—')}</td>
+            <td class="px-3 py-2.5">${statusPill(s.status)}</td>
+            <td class="px-3 py-2.5 text-xs text-slate-400 max-w-[100px] truncate">${esc(s.current_location || '—')}</td>
+            <td class="px-3 py-2.5 text-xs">${formatDate(s.estimated_delivery)}</td>
+            <td class="px-3 py-2.5 text-xs text-slate-500">${formatDate(s.updated_at)}</td>
+            <td class="px-3 py-2.5">
+              <div class="flex gap-1">
+                <button onclick="openDetail('${s.id}')" class="btn btn-navy px-2 py-1 text-[10px]">View</button>
+                <button onclick="editShipment('${s.id}')" class="btn btn-navy px-2 py-1 text-[10px]">Edit</button>
+                <button onclick="confirmDelete('${s.id}')" class="btn btn-danger px-2 py-1 text-[10px]">Del</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+      document.getElementById('pagination-info').textContent = total ? `Showing ${start + 1}–${Math.min(start + PAGE_SIZE, total)} of ${total}` : '0 records';
+      document.getElementById('page-prev').disabled = currentPage <= 1;
+      document.getElementById('page-next').disabled = currentPage >= pages;
+    }
+
+    function changePage(delta) {
+      currentPage += delta;
+      renderAdminTable();
+    }
+
+    // ===================== FORM =====================
+    function prepareNewForm() {
+      document.getElementById('form-title').textContent = 'New Consignment';
+      document.getElementById('edit-shipment-id').value = '';
+      document.getElementById('shipment-form').reset();
+      document.getElementById('f-tracking').value = generateTrackingNumber();
+      document.getElementById('f-currency').value = 'NGN';
+      document.getElementById('f-quantity').value = '1';
+      document.getElementById('f-status').value = 'Created';
+    }
+
+    function editShipment(id) {
+      const s = allShipments.find(x => x.id === id);
+      if (!s) return;
+      document.getElementById('form-title').textContent = 'Edit Consignment';
+      document.getElementById('edit-shipment-id').value = id;
+      document.getElementById('f-tracking').value = s.tracking_number || '';
+      document.getElementById('f-reference').value = s.reference_number || '';
+      document.getElementById('f-sender-name').value = s.sender_name || '';
+      document.getElementById('f-sender-phone').value = s.sender_phone || '';
+      document.getElementById('f-sender-email').value = s.sender_email || '';
+      document.getElementById('f-recipient-name').value = s.recipient_name || '';
+      document.getElementById('f-recipient-phone').value = s.recipient_phone || '';
+      document.getElementById('f-recipient-email').value = s.recipient_email || '';
+      document.getElementById('f-origin').value = s.origin || '';
+      document.getElementById('f-destination').value = s.destination || '';
+      document.getElementById('f-current-location').value = s.current_location || '';
+      document.getElementById('f-package-description').value = s.package_description || '';
+      document.getElementById('f-quantity').value = s.quantity ?? 1;
+      document.getElementById('f-weight').value = s.package_weight ?? '';
+      document.getElementById('f-dimensions').value = s.package_dimensions || '';
+      document.getElementById('f-shipment-type').value = s.shipment_type || '';
+      document.getElementById('f-shipping-method').value = s.shipping_method || '';
+      document.getElementById('f-pickup-date').value = s.pickup_date ? s.pickup_date.slice(0, 10) : '';
+      document.getElementById('f-estimated-delivery').value = s.estimated_delivery ? s.estimated_delivery.slice(0, 10) : '';
+      document.getElementById('f-actual-delivery').value = s.actual_delivery_date ? s.actual_delivery_date.slice(0, 10) : '';
+      document.getElementById('f-delivery-instructions').value = s.delivery_instructions || '';
+      document.getElementById('f-delivery-contact').value = s.delivery_contact || '';
+      document.getElementById('f-declared-value').value = s.declared_value ?? '';
+      document.getElementById('f-currency').value = s.currency || 'NGN';
+      document.getElementById('f-insurance-status').value = s.insurance_status || '';
+      document.getElementById('f-insurance-value').value = s.insurance_value ?? '';
+      document.getElementById('f-status').value = s.status || 'Created';
+      document.getElementById('f-internal-notes').value = s.internal_notes || '';
+      adminNav('new');
+    }
+
+    function collectFormData() {
+      return {
+        tracking_number: document.getElementById('f-tracking').value.trim(),
+        reference_number: document.getElementById('f-reference').value.trim() || null,
+        sender_name: document.getElementById('f-sender-name').value.trim(),
+        sender_phone: document.getElementById('f-sender-phone').value.trim() || null,
+        sender_email: document.getElementById('f-sender-email').value.trim() || null,
+        recipient_name: document.getElementById('f-recipient-name').value.trim(),
+        recipient_phone: document.getElementById('f-recipient-phone').value.trim() || null,
+        recipient_email: document.getElementById('f-recipient-email').value.trim() || null,
+        origin: document.getElementById('f-origin').value.trim(),
+        destination: document.getElementById('f-destination').value.trim(),
+        current_location: document.getElementById('f-current-location').value.trim() || null,
+        package_description: document.getElementById('f-package-description').value.trim() || null,
+        quantity: parseInt(document.getElementById('f-quantity').value) || 1,
+        package_weight: parseFloat(document.getElementById('f-weight').value) || null,
+        package_dimensions: document.getElementById('f-dimensions').value.trim() || null,
+        shipment_type: document.getElementById('f-shipment-type').value || null,
+        shipping_method: document.getElementById('f-shipping-method').value.trim() || null,
+        pickup_date: document.getElementById('f-pickup-date').value || null,
+        estimated_delivery: document.getElementById('f-estimated-delivery').value || null,
+        actual_delivery_date: document.getElementById('f-actual-delivery').value || null,
+        delivery_instructions: document.getElementById('f-delivery-instructions').value.trim() || null,
+        delivery_contact: document.getElementById('f-delivery-contact').value.trim() || null,
+        declared_value: parseFloat(document.getElementById('f-declared-value').value) || null,
+        currency: document.getElementById('f-currency').value.trim() || null,
+        insurance_status: document.getElementById('f-insurance-status').value || null,
+        insurance_value: parseFloat(document.getElementById('f-insurance-value').value) || null,
+        status: document.getElementById('f-status').value,
+        internal_notes: document.getElementById('f-internal-notes').value.trim() || null,
+        updated_at: new Date().toISOString()
+      };
+    }
+
+    async function saveShipment(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-shipment-id').value;
+      const payload = collectFormData();
+      if (!payload.tracking_number) payload.tracking_number = generateTrackingNumber();
+
+      const btn = document.getElementById('save-btn');
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+
+      try {
+        if (id) {
+          const { error } = await supabase.from('shipments').update(payload).eq('id', id);
+          if (error) throw error;
+          await logActivity('Updated shipment', id, payload.tracking_number, 'Consignment details updated');
+          toast('Consignment updated');
+        } else {
+          payload.created_at = new Date().toISOString();
+          const { data, error } = await supabase.from('shipments').insert(payload).select().single();
+          if (error) throw error;
+          // Initial event
+          await supabase.from('shipment_events').insert({
+            shipment_id: data.id,
+            status: payload.status,
+            location: payload.origin,
+            facility: payload.origin ? payload.origin + ' Origin' : null,
+            event_code: 'CRT',
+            description: 'Consignment registered',
+            event_time: new Date().toISOString(),
+            created_by: currentUser.id
+          });
+          await logActivity('Created consignment', data.id, payload.tracking_number, 'New consignment registered');
+          toast('Consignment created: ' + payload.tracking_number);
+        }
+        await loadShipments();
+        adminNav('consignments');
+      } catch (err) {
+        toast(err.message || 'Save failed');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save Consignment';
+      }
+    }
+
+    function confirmDelete(id) {
+      const s = allShipments.find(x => x.id === id);
+      showConfirm('Delete Consignment', `Permanently delete ${s?.tracking_number || 'this consignment'}? This cannot be undone.`, async () => {
+        try {
+          await supabase.from('shipment_events').delete().eq('shipment_id', id);
+          const { error } = await supabase.from('shipments').delete().eq('id', id);
+          if (error) throw error;
+          await logActivity('Deleted consignment', id, s?.tracking_number, 'Consignment permanently deleted');
+          await loadShipments();
+          filterAdminTable();
+          toast('Deleted');
+        } catch (err) {
+          toast(err.message || 'Delete failed');
+        }
+      });
+    }
+
+    // ===================== DETAIL =====================
+    async function openDetail(id) {
+      const s = allShipments.find(x => x.id === id);
+      if (!s) {
+        toast('Shipment not found');
+        return;
+      }
+      adminNav('detail');
+      document.getElementById('detail-view').innerHTML = `<div class="skeleton h-64 w-full"></div>`;
+
+      const { data: events } = await supabase
+        .from('shipment_events')
+        .select('*')
+        .eq('shipment_id', id)
+        .order('event_time', { ascending: false });
+
+      const evs = events || [];
+      const timeline = evs.map((ev, i) => `
+        <div class="relative pl-8 pb-5">
+          ${i < evs.length - 1 ? '<div class="timeline-line"></div>' : ''}
+          <div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-navy-700 border-2 border-gold-500 flex items-center justify-center">
+            <div class="w-2 h-2 rounded-full bg-gold-400"></div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-sm font-semibold">${esc(ev.status)}</span>
+            ${ev.event_code ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-navy-700 text-slate-400">${esc(ev.event_code)}</span>` : ''}
+          </div>
+          <div class="text-xs text-slate-400 mt-0.5">${formatDateTime(ev.event_time)}</div>
+          <div class="text-xs text-slate-500">${esc(ev.facility || '')}${ev.facility && ev.location ? ' · ' : ''}${esc(ev.location || '')}</div>
+          <div class="text-sm text-slate-300 mt-1">${esc(ev.description || '')}</div>
+        </div>
+      `).join('') || '<p class="text-sm text-slate-500">No events recorded</p>';
+
+      document.getElementById('detail-view').innerHTML = `
+        <div class="flex items-center gap-3 mb-5">
+          <button onclick="adminNav('consignments')" class="text-slate-400 hover:text-white">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <div class="flex-1 min-w-0">
+            <h2 class="text-lg font-bold truncate">${esc(s.tracking_number)}</h2>
+            <p class="text-xs text-slate-400">${esc(s.origin)} → ${esc(s.destination)}</p>
+          </div>
+          ${statusPill(s.status)}
+        </div>
+
+        <div class="flex flex-wrap gap-2 mb-5">
+          <button onclick="editShipment('${s.id}')" class="btn btn-navy px-3 py-2 text-xs">Edit</button>
+          <button onclick="openEventModal('${s.id}')" class="btn btn-navy px-3 py-2 text-xs">Add Event</button>
+          <button onclick="openPODModal('${s.id}')" class="btn btn-navy px-3 py-2 text-xs">Record POD</button>
+          <button onclick="printConsignmentNote('${s.id}')" class="btn btn-navy px-3 py-2 text-xs">Print Note</button>
+          <button onclick="printShipmentSummary('${s.id}')" class="btn btn-navy px-3 py-2 text-xs">Print Summary</button>
+          <button onclick="printDeliveryConfirmation('${s.id}')" class="btn btn-navy px-3 py-2 text-xs">Delivery Confirm</button>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-4 mb-5">
+          <div class="card p-4 space-y-3 text-sm">
+            <h3 class="text-xs font-semibold text-gold-400 uppercase tracking-wider">Shipper</h3>
+            <div><span class="text-slate-500">Name:</span> ${esc(s.sender_name)}</div>
+            <div><span class="text-slate-500">Phone:</span> ${esc(s.sender_phone || '—')}</div>
+            <div><span class="text-slate-500">Email:</span> ${esc(s.sender_email || '—')}</div>
+          </div>
+          <div class="card p-4 space-y-3 text-sm">
+            <h3 class="text-xs font-semibold text-gold-400 uppercase tracking-wider">Consignee</h3>
+            <div><span class="text-slate-500">Name:</span> ${esc(s.recipient_name)}</div>
+            <div><span class="text-slate-500">Phone:</span> ${esc(s.recipient_phone || '—')}</div>
+            <div><span class="text-slate-500">Email:</span> ${esc(s.recipient_email || '—')}</div>
+          </div>
+        </div>
+
+        <div class="card p-4 mb-5">
+          <h3 class="text-xs font-semibold text-gold-400 uppercase tracking-wider mb-3">Shipment & Route</h3>
+          <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+            <div><span class="text-slate-500 text-xs">Current Location</span><div>${esc(s.current_location || '—')}</div></div>
+            <div><span class="text-slate-500 text-xs">Type / Method</span><div>${esc(s.shipment_type || '—')} / ${esc(s.shipping_method || '—')}</div></div>
+            <div><span class="text-slate-500 text-xs">Qty / Weight / Dims</span><div>${esc(s.quantity ?? '—')} / ${esc(s.package_weight != null ? s.package_weight + ' kg' : '—')} / ${esc(s.package_dimensions || '—')}</div></div>
+            <div><span class="text-slate-500 text-xs">Description</span><div>${esc(s.package_description || '—')}</div></div>
+            <div><span class="text-slate-500 text-xs">Pickup / ETA / Actual</span><div>${formatDate(s.pickup_date)} / ${formatDate(s.estimated_delivery)} / ${formatDate(s.actual_delivery_date)}</div></div>
+            <div><span class="text-slate-500 text-xs">Reference</span><div>${esc(s.reference_number || '—')}</div></div>
+          </div>
+          ${s.delivery_instructions ? `<div class="mt-3 text-xs"><span class="text-slate-500">Instructions:</span> ${esc(s.delivery_instructions)}</div>` : ''}
+          ${s.internal_notes ? `<div class="mt-3 text-xs p-2 rounded bg-navy-900 border border-navy-700"><span class="text-amber-500/80">Internal notes:</span> ${esc(s.internal_notes)}</div>` : ''}
+        </div>
+
+        <div class="card p-4 mb-5">
+          <h3 class="text-sm font-semibold mb-3">Event History</h3>
+          <div>${timeline}</div>
+        </div>
+
+        <div class="card p-4 mb-5">
+          <h3 class="text-sm font-semibold mb-3">QR Code & Barcode</h3>
+          <div class="flex flex-wrap gap-8 items-start justify-center">
+            <div class="text-center">
+              <canvas id="detail-qr" class="bg-white p-2 rounded-lg mx-auto"></canvas>
+              <p class="text-[10px] text-slate-500 mt-2">QR · Tracking URL</p>
+            </div>
+            <div class="text-center">
+              <svg id="detail-barcode" class="bg-white p-2 rounded-lg"></svg>
+              <p class="text-[10px] text-slate-500 mt-2">Barcode · ${esc(s.tracking_number)}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card p-4">
+          <h3 class="text-sm font-semibold mb-2">Proof of Delivery</h3>
+          ${s.status === 'Delivered' && s.actual_delivery_date
+            ? `<p class="text-sm text-emerald-400">Delivery recorded on ${formatDateTime(s.actual_delivery_date)}</p>
+               <p class="text-xs text-slate-400 mt-1">Contact: ${esc(s.delivery_contact || '—')}</p>`
+            : `<p class="text-sm text-slate-500">No proof of delivery recorded.</p>
+               <button onclick="openPODModal('${s.id}')" class="btn btn-gold px-4 py-2 text-xs mt-3">Record POD</button>`}
+        </div>
+      `;
+
+      setTimeout(() => {
+        const trackUrl = window.location.origin + window.location.pathname + '?track=' + encodeURIComponent(s.tracking_number);
+        const qrCanvas = document.getElementById('detail-qr');
+        if (qrCanvas && window.QRCode) {
+          QRCode.toCanvas(qrCanvas, trackUrl, { width: 140, margin: 1 }, () => {});
+        }
+        try {
+          JsBarcode('#detail-barcode', s.tracking_number, { format: 'CODE128', width: 1.5, height: 50, displayValue: true, fontSize: 12 });
+        } catch (e) {}
+      }, 80);
+    }
+
+    // ===================== EVENTS =====================
+    function openEventModal(shipmentId) {
+      document.getElementById('event-shipment-id').value = shipmentId;
+      document.getElementById('event-form').reset();
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      document.getElementById('ev-time').value = now.toISOString().slice(0, 16);
+      const s = allShipments.find(x => x.id === shipmentId);
+      if (s) {
+        document.getElementById('ev-status').value = s.status || 'In Transit';
+        document.getElementById('ev-location').value = s.current_location || s.destination || '';
+      }
+      document.getElementById('event-modal').classList.remove('hidden');
+    }
+
+    function closeEventModal() {
+      document.getElementById('event-modal').classList.add('hidden');
+    }
+
+    async function saveEvent(e) {
+      e.preventDefault();
+      const shipmentId = document.getElementById('event-shipment-id').value;
+      const status = document.getElementById('ev-status').value;
+      const event_time = new Date(document.getElementById('ev-time').value).toISOString();
+      const location = document.getElementById('ev-location').value.trim() || null;
+      const facility = document.getElementById('ev-facility').value.trim() || null;
+      const event_code = document.getElementById('ev-code').value.trim() || null;
+      const description = document.getElementById('ev-description').value.trim();
+
+      try {
+        const { error: e1 } = await supabase.from('shipment_events').insert({
+          shipment_id: shipmentId,
+          status,
+          location,
+          facility,
+          event_code,
+          description,
+          event_time,
+          created_by: currentUser.id
+        });
+        if (e1) throw e1;
+
+        const updates = {
+          status,
+          current_location: location || undefined,
+          last_event_description: description,
+          updated_at: new Date().toISOString()
+        };
+        if (status === 'Delivered') {
+          updates.actual_delivery_date = event_time.slice(0, 10);
+        }
+        const { error: e2 } = await supabase.from('shipments').update(updates).eq('id', shipmentId);
+        if (e2) throw e2;
+
+        const s = allShipments.find(x => x.id === shipmentId);
+        await logActivity('Added tracking event', shipmentId, s?.tracking_number, `${status}: ${description}`);
+        await loadShipments();
+        closeEventModal();
+        openDetail(shipmentId);
+        toast('Event recorded');
+      } catch (err) {
+        toast(err.message || 'Failed to save event');
+      }
+    }
+
+    // ===================== POD =====================
+    function openPODModal(shipmentId) {
+      document.getElementById('pod-shipment-id').value = shipmentId;
+      document.getElementById('pod-form').reset();
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      document.getElementById('pod-time').value = now.toISOString().slice(0, 16);
+      const s = allShipments.find(x => x.id === shipmentId);
+      if (s) document.getElementById('pod-recipient').value = s.recipient_name || '';
+      document.getElementById('pod-modal').classList.remove('hidden');
+    }
+
+    function closePODModal() {
+      document.getElementById('pod-modal').classList.add('hidden');
+    }
+
+    async function savePOD(e) {
+      e.preventDefault();
+      const shipmentId = document.getElementById('pod-shipment-id').value;
+      const time = new Date(document.getElementById('pod-time').value).toISOString();
+      const recipient = document.getElementById('pod-recipient').value.trim();
+      const status = document.getElementById('pod-status').value;
+      const notes = document.getElementById('pod-notes').value.trim();
+      const signature = document.getElementById('pod-signature').value.trim();
+
+      const desc = `POD: ${status} — Received by ${recipient}${notes ? '. ' + notes : ''}${signature ? ' [Ref: ' + signature + ']' : ''}`;
+
+      try {
+        await supabase.from('shipment_events').insert({
+          shipment_id: shipmentId,
+          status,
+          location: null,
+          facility: 'Delivery',
+          event_code: status === 'Delivered' ? 'DLV' : 'ATT',
+          description: desc,
+          event_time: time,
+          created_by: currentUser.id
+        });
+
+        const updates = {
+          status: status === 'Delivered' ? 'Delivered' : status,
+          actual_delivery_date: status === 'Delivered' ? time.slice(0, 10) : null,
+          delivery_contact: recipient,
+          last_event_description: desc,
+          updated_at: new Date().toISOString()
+        };
+        await supabase.from('shipments').update(updates).eq('id', shipmentId);
+
+        const s = allShipments.find(x => x.id === shipmentId);
+        await logActivity('Recorded delivery', shipmentId, s?.tracking_number, desc);
+        await loadShipments();
+        closePODModal();
+        openDetail(shipmentId);
+        toast('Proof of delivery recorded');
+      } catch (err) {
+        toast(err.message || 'Failed to record POD');
+      }
+    }
+
+    // ===================== DOCUMENTS =====================
+    function printConsignmentNote(id) {
+      const s = allShipments.find(x => x.id === id);
+      if (!s) return;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(16);
+      doc.text('NKDON Tracking Logistics', 20, 20);
+      doc.setFontSize(10);
+      doc.text('Consignment Note', 20, 28);
+      doc.setDrawColor(180, 140, 40);
+      doc.line(20, 32, 190, 32);
+      doc.setFontSize(11);
+      let y = 42;
+      const lines = [
+        `Consignment: ${s.tracking_number}`,
+        `Reference: ${s.reference_number || '—'}`,
+        `Status: ${s.status}`,
+        `Date: ${formatDate(s.created_at)}`,
+        '',
+        `Sender: ${s.sender_name || '—'}`,
+        `Phone: ${s.sender_phone || '—'}`,
+        '',
+        `Recipient: ${s.recipient_name || '—'}`,
+        `Phone: ${s.recipient_phone || '—'}`,
+        '',
+        `Origin: ${s.origin || '—'}`,
+        `Destination: ${s.destination || '—'}`,
+        '',
+        `Type: ${s.shipment_type || '—'}  |  Method: ${s.shipping_method || '—'}`,
+        `Qty: ${s.quantity ?? '—'}  |  Weight: ${s.package_weight != null ? s.package_weight + ' kg' : '—'}`,
+        `Dimensions: ${s.package_dimensions || '—'}`,
+        `Description: ${s.package_description || '—'}`,
+        '',
+        `Declared Value: ${s.declared_value != null ? s.declared_value + ' ' + (s.currency || '') : '—'}`,
+        `Insurance: ${s.insurance_status || '—'}`
+      ];
+      lines.forEach(l => { doc.text(l, 20, y); y += 7; });
+      doc.setFontSize(8);
+      doc.text('Confidential — for authorized parties. NKDON internal reference.', 20, 280);
+      doc.save(`${s.tracking_number}-consignment-note.pdf`);
+      logActivity('Printed consignment note', id, s.tracking_number, 'Generated PDF consignment note');
+      toast('PDF generated');
+    }
+
+    function printShipmentSummary(id) {
+      const s = allShipments.find(x => x.id === id);
+      if (!s) return;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(16);
+      doc.text('NKDON Shipment Summary', 20, 20);
+      doc.setFontSize(10);
+      doc.text(s.tracking_number, 20, 28);
+      doc.line(20, 32, 190, 32);
+      let y = 42;
+      [
+        `Route: ${s.origin || '—'} → ${s.destination || '—'}`,
+        `Current Location: ${s.current_location || '—'}`,
+        `Status: ${s.status}`,
+        `Last Event: ${s.last_event_description || '—'}`,
+        `Pickup: ${formatDate(s.pickup_date)}  ETA: ${formatDate(s.estimated_delivery)}  Actual: ${formatDate(s.actual_delivery_date)}`,
+        `Package: ${s.package_description || '—'} (${s.quantity ?? 1} pcs, ${s.package_weight ?? '—'} kg)`,
+        `Method: ${s.shipping_method || '—'}  Type: ${s.shipment_type || '—'}`
+      ].forEach(l => { doc.text(l, 20, y); y += 8; });
+      doc.save(`${s.tracking_number}-summary.pdf`);
+      toast('PDF generated');
+    }
+
+    function printDeliveryConfirmation(id) {
+      const s = allShipments.find(x => x.id === id);
+      if (!s) return;
+      if (s.status !== 'Delivered' && !s.actual_delivery_date) {
+        toast('No delivery record exists for this consignment');
+        return;
+      }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(16);
+      doc.text('NKDON Delivery Confirmation', 20, 20);
+      doc.setFontSize(10);
+      doc.text('Based on administrator-recorded data only', 20, 28);
+      doc.line(20, 32, 190, 32);
+      let y = 45;
+      [
+        `Consignment: ${s.tracking_number}`,
+        `Recipient: ${s.recipient_name || '—'}`,
+        `Delivery Contact: ${s.delivery_contact || '—'}`,
+        `Delivery Date: ${formatDate(s.actual_delivery_date)}`,
+        `Destination: ${s.destination || '—'}`,
+        `Status: ${s.status}`,
+        `Notes: ${s.last_event_description || '—'}`
+      ].forEach(l => { doc.text(l, 20, y); y += 8; });
+      doc.setFontSize(8);
+      doc.text('This confirmation reflects data entered by authorized NKDON administrators. No automated signature is generated.', 20, 270);
+      doc.save(`${s.tracking_number}-delivery-confirmation.pdf`);
+      toast('PDF generated');
+    }
+
+    // ===================== CSV =====================
+    function exportCSV() {
+      const rows = allShipments.map(s => ({
+        tracking_number: s.tracking_number,
+        reference_number: s.reference_number,
+        sender_name: s.sender_name,
+        recipient_name: s.recipient_name,
+        origin: s.origin,
+        destination: s.destination,
+        status: s.status,
+        current_location: s.current_location,
+        estimated_delivery: s.estimated_delivery,
+        package_weight: s.package_weight,
+        quantity: s.quantity,
+        shipment_type: s.shipment_type,
+        shipping_method: s.shipping_method,
+        created_at: s.created_at,
+        updated_at: s.updated_at
+      }));
+      const csv = Papa.unparse(rows);
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `nkdon-consignments-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      logActivity('Exported CSV', null, null, `Exported ${rows.length} records`);
+      toast('CSV exported');
+    }
+
+    function importCSV(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: async (res) => {
+          let ok = 0, fail = 0;
+          const errors = [];
+          for (const row of res.data) {
+            if (!row.tracking_number && !row.origin) continue;
+            const tracking = (row.tracking_number || generateTrackingNumber()).trim();
+            if (!row.sender_name || !row.recipient_name || !row.origin || !row.destination) {
+              fail++;
+              errors.push(`${tracking}: missing required fields`);
+              continue;
+            }
+            try {
+              const { data, error } = await supabase.from('shipments').insert({
+                tracking_number: tracking,
+                reference_number: row.reference_number || null,
+                sender_name: row.sender_name,
+                recipient_name: row.recipient_name,
+                sender_phone: row.sender_phone || null,
+                recipient_phone: row.recipient_phone || null,
+                origin: row.origin,
+                destination: row.destination,
+                status: row.status || 'Created',
+                current_location: row.current_location || row.origin,
+                package_weight: parseFloat(row.package_weight) || null,
+                quantity: parseInt(row.quantity) || 1,
+                shipment_type: row.shipment_type || null,
+                shipping_method: row.shipping_method || null,
+                package_description: row.package_description || null,
+                estimated_delivery: row.estimated_delivery || null,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              }).select().single();
+              if (error) throw error;
+              await supabase.from('shipment_events').insert({
+                shipment_id: data.id,
+                status: data.status,
+                description: 'Imported via CSV',
+                event_code: 'IMP',
+                event_time: new Date().toISOString(),
+                created_by: currentUser.id
+              });
+              ok++;
+            } catch (err) {
+              fail++;
+              errors.push(`${tracking}: ${err.message}`);
+            }
+          }
+          await loadShipments();
+          filterAdminTable();
+          await logActivity('Imported CSV', null, null, `Success: ${ok}, Failed: ${fail}`);
+          if (fail) toast(`Imported ${ok}. Failed ${fail}. Check console for details.`);
+          else toast(`Successfully imported ${ok} consignments`);
+          if (errors.length) console.warn('Import errors:', errors);
+          e.target.value = '';
+        }
+      });
+    }
+
+    // ===================== ANALYTICS =====================
+    function renderAnalytics() {
+      const el = document.getElementById('analytics-content');
+      if (!allShipments.length) {
+        el.innerHTML = `<div class="card p-10 text-center text-slate-500 col-span-2">No consignment data available for analytics.</div>`;
+        return;
+      }
+      const byStatus = {};
+      const byDest = {};
+      const byType = {};
+      allShipments.forEach(s => {
+        byStatus[s.status] = (byStatus[s.status] || 0) + 1;
+        if (s.destination) byDest[s.destination] = (byDest[s.destination] || 0) + 1;
+        if (s.shipment_type) byType[s.shipment_type] = (byType[s.shipment_type] || 0) + 1;
+      });
+      const delivered = byStatus['Delivered'] || 0;
+      const delayed = byStatus['Delayed'] || 0;
+      const active = allShipments.filter(s => s.status !== 'Delivered' && s.status !== 'Returned').length;
+
+      el.innerHTML = `
+        <div class="card p-4">
+          <h3 class="text-sm font-semibold mb-3">Status Distribution</h3>
+          <div class="space-y-2">
+            ${Object.entries(byStatus).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `
+              <div class="flex items-center gap-2 text-xs">
+                <span class="w-28 truncate text-slate-400">${esc(k)}</span>
+                <div class="flex-1 h-2 bg-navy-900 rounded-full overflow-hidden"><div class="h-full bg-gold-500 rounded-full" style="width:${Math.round(v/allShipments.length*100)}%"></div></div>
+                <span class="w-8 text-right">${v}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="card p-4">
+          <h3 class="text-sm font-semibold mb-3">Top Destinations</h3>
+          <div class="space-y-2">
+            ${Object.entries(byDest).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v]) => `
+              <div class="flex justify-between text-xs"><span class="text-slate-400">${esc(k)}</span><span>${v}</span></div>
+            `).join('') || '<p class="text-xs text-slate-500">No data</p>'}
+          </div>
+        </div>
+        <div class="card p-4">
+          <h3 class="text-sm font-semibold mb-3">Shipment Types</h3>
+          <div class="space-y-2">
+            ${Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `
+              <div class="flex justify-between text-xs"><span class="text-slate-400">${esc(k)}</span><span>${v}</span></div>
+            `).join('') || '<p class="text-xs text-slate-500">No data</p>'}
+          </div>
+        </div>
+        <div class="card p-4">
+          <h3 class="text-sm font-semibold mb-3">Performance Snapshot</h3>
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="p-3 rounded-lg bg-navy-900"><div class="text-[10px] text-slate-500">Active</div><div class="text-xl font-bold text-sky-400">${active}</div></div>
+            <div class="p-3 rounded-lg bg-navy-900"><div class="text-[10px] text-slate-500">Delivered</div><div class="text-xl font-bold text-emerald-400">${delivered}</div></div>
+            <div class="p-3 rounded-lg bg-navy-900"><div class="text-[10px] text-slate-500">Delayed</div><div class="text-xl font-bold text-amber-400">${delayed}</div></div>
+            <div class="p-3 rounded-lg bg-navy-900"><div class="text-[10px] text-slate-500">Total</div><div class="text-xl font-bold">${allShipments.length}</div></div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ===================== ACTIVITY =====================
+    async function loadActivity() {
+      const { data, error } = await supabase
+        .from('admin_activity')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+      const tbody = document.getElementById('activity-body');
+      const empty = document.getElementById('activity-empty');
+      if (error || !data?.length) {
+        tbody.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      tbody.innerHTML = data.map(a => `
+        <tr class="border-b border-navy-800">
+          <td class="px-3 py-2.5 text-xs text-slate-400 whitespace-nowrap">${formatDateTime(a.created_at)}</td>
+          <td class="px-3 py-2.5 text-xs font-medium">${esc(a.action)}</td>
+          <td class="px-3 py-2.5 text-xs">${esc(a.tracking_number || '—')}</td>
+          <td class="px-3 py-2.5 text-xs text-slate-400 max-w-xs truncate">${esc(a.description || '')}</td>
+        </tr>
+      `).join('');
+    }
+
+    // ===================== INIT =====================
+    document.getElementById('year').textContent = new Date().getFullYear();
+    populateStatusSelects();
+
+    // Deep link ?track=
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('track')) {
+      document.getElementById('track-input').value = params.get('track');
+      setTimeout(() => handlePublicTrack({ preventDefault: () => {} }), 400);
+    }
+
+    // Enter key already handled by form submit
+
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        currentUser = null;
+        isAdmin = false;
+      }
+    });
+
+    checkSession();
+  </script>
+</body>
+</html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
