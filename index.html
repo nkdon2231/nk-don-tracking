@@ -2,32 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <title>
-    N.K DON Logistics | Premium Delivery & Shipment Tracking
-  </title>
+  <title>NKDON Tracking Logistics | Shipment Tracking</title>
 
   <meta
     name="description"
-    content="N.K DON Logistics provides professional shipment coordination, delivery support and shipment tracking."
+    content="NKDON Tracking Logistics — shipment coordination, delivery support and shipment tracking."
   >
 
-  <meta
-    name="theme-color"
-    content="#07111f"
-  >
+  <meta name="theme-color" content="#07111f">
+
+  <!--
+    IMPORTANT:
+    If you previously added a Google Search Console verification
+    meta tag here, keep that exact tag inside this <head>.
+  -->
 
   <style>
-
-    /* =========================
-       GLOBAL
-    ========================= */
-
     * {
       box-sizing: border-box;
       margin: 0;
@@ -39,14 +31,7 @@
     }
 
     body {
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Arial,
-        sans-serif;
-
+      font-family: Arial, Helvetica, sans-serif;
       background: #f4f7fb;
       color: #172033;
       line-height: 1.6;
@@ -54,1223 +39,652 @@
 
     a {
       color: inherit;
-      text-decoration: none;
     }
-
-    button,
-    input,
-    select {
-      font: inherit;
-    }
-
-
-    /* =========================
-       TOP BAR
-    ========================= */
 
     .topbar {
-      background: #050a12;
+      background: #050b14;
       color: #cbd5e1;
       text-align: center;
       padding: 8px 15px;
-      font-size: 12px;
-      letter-spacing: .2px;
+      font-size: 13px;
     }
 
-
-    /* =========================
-       HEADER
-    ========================= */
-
     header {
+      background: #07111f;
+      color: white;
       position: sticky;
       top: 0;
       z-index: 1000;
-
-      background: rgba(7,17,31,.97);
-      color: white;
-
-      box-shadow:
-        0 5px 25px rgba(0,0,0,.18);
+      border-bottom: 1px solid rgba(255,255,255,.08);
     }
 
-    .header-inner {
-      max-width: 1200px;
+    .nav {
+      max-width: 1150px;
       margin: auto;
-
-      padding: 15px 20px;
-
+      padding: 18px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-
       gap: 20px;
     }
 
     .brand {
-      color: white;
-      min-width: 210px;
-    }
-
-    .logo {
-      font-size: 24px;
-      font-weight: 900;
+      font-size: 21px;
+      font-weight: 800;
       letter-spacing: .3px;
     }
 
-    .tagline {
-      color: #aebbd0;
-      font-size: 11px;
-      margin-top: 1px;
+    .brand span {
+      display: block;
+      font-size: 10px;
+      color: #9ca9b9;
+      font-weight: 500;
+      margin-top: 2px;
     }
 
     nav {
       display: flex;
+      gap: 18px;
       flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 4px;
     }
 
     nav a {
-      color: #e8eef6;
-      font-size: 13px;
-      padding: 8px 10px;
-      border-radius: 7px;
-      transition: .2s;
+      text-decoration: none;
+      color: #dce5ef;
+      font-size: 14px;
     }
 
     nav a:hover {
-      background: rgba(255,255,255,.1);
+      color: white;
     }
-
-
-    /* =========================
-       MAIN
-    ========================= */
-
-    .container {
-      max-width: 1200px;
-      margin: auto;
-      padding: 25px 18px 65px;
-    }
-
-
-    /* =========================
-       HERO
-    ========================= */
 
     .hero {
-      position: relative;
-      overflow: hidden;
-
       background:
-        radial-gradient(
-          circle at 80% 20%,
-          rgba(73,112,158,.35),
-          transparent 35%
-        ),
-        linear-gradient(
-          135deg,
-          #07111f,
-          #102944 60%,
-          #173958
-        );
-
+        linear-gradient(rgba(4,12,23,.92), rgba(4,12,23,.96)),
+        radial-gradient(circle at top right, #1e3a5f, transparent 50%);
       color: white;
-
-      border-radius: 24px;
-
-      padding:
-        75px
-        30px
-        65px;
-
-      text-align: center;
-
-      box-shadow:
-        0 18px 50px rgba(7,17,31,.22);
-
-      margin-bottom: 25px;
+      padding: 90px 20px;
     }
 
-    .hero::before {
-      content: "";
-      position: absolute;
-
-      width: 230px;
-      height: 230px;
-
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 50%;
-
-      right: -80px;
-      top: -80px;
-    }
-
-    .hero::after {
-      content: "";
-      position: absolute;
-
-      width: 180px;
-      height: 180px;
-
-      border: 1px solid rgba(255,255,255,.06);
-      border-radius: 50%;
-
-      left: -70px;
-      bottom: -70px;
-    }
-
-    .hero-content {
-      position: relative;
-      z-index: 2;
-    }
-
-    .hero-badge {
-      display: inline-block;
-
-      padding: 7px 15px;
-
-      border:
-        1px solid
-        rgba(255,255,255,.18);
-
-      background:
-        rgba(255,255,255,.07);
-
-      border-radius: 999px;
-
-      color: #dce7f4;
-      font-size: 12px;
-
-      margin-bottom: 20px;
+    .hero-inner {
+      max-width: 1150px;
+      margin: auto;
+      display: grid;
+      grid-template-columns: 1.3fr .7fr;
+      gap: 50px;
+      align-items: center;
     }
 
     .hero h1 {
-      font-size:
-        clamp(
-          38px,
-          8vw,
-          66px
-        );
-
-      line-height: 1.03;
-
+      font-size: clamp(42px, 7vw, 72px);
+      line-height: 1;
       margin-bottom: 20px;
-
-      letter-spacing: -.8px;
     }
 
     .hero p {
-      max-width: 720px;
-      margin: auto;
-
-      color: #d3dfed;
-      font-size: 17px;
+      max-width: 650px;
+      color: #c8d2df;
+      font-size: 18px;
+      margin-bottom: 28px;
     }
 
-    .hero-actions {
+    .buttons {
       display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-
       gap: 12px;
-
-      margin-top: 30px;
+      flex-wrap: wrap;
     }
 
-
-    /* =========================
-       BUTTONS
-    ========================= */
-
-    .btn {
+    .primary,
+    .secondary {
       display: inline-block;
-
       padding: 13px 20px;
-
-      border-radius: 10px;
-
-      border: 0;
-
+      border-radius: 9px;
+      text-decoration: none;
+      font-weight: 700;
+      border: 1px solid transparent;
       cursor: pointer;
-
-      font-size: 14px;
-      font-weight: 750;
-
-      transition:
-        transform .2s,
-        opacity .2s;
     }
 
-    .btn:hover {
-      transform: translateY(-1px);
-      opacity: .95;
-    }
-
-    .btn-light {
-      background: #fff;
+    .primary {
+      background: white;
       color: #07111f;
     }
 
-    .btn-dark {
-      background: #0b1728;
+    .secondary {
+      border-color: #536276;
       color: white;
-
-      border:
-        1px solid
-        #243b56;
+      background: transparent;
     }
 
-    .btn-green {
-      background: #16884b;
-      color: white;
-    }
-
-    .btn-soft {
-      background: #e9eef5;
-      color: #172033;
-    }
-
-    .btn-danger {
-      background: #b42318;
-      color: white;
-    }
-
-
-    /* =========================
-       CARDS
-    ========================= */
-
-    .card {
-      background: white;
-
-      border:
-        1px solid
-        #e3e8ef;
-
+    .hero-card {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      padding: 25px;
       border-radius: 18px;
-
-      padding: 28px;
-
-      margin-bottom: 23px;
-
-      box-shadow:
-        0 7px 28px
-        rgba(20,35,60,.055);
+      backdrop-filter: blur(8px);
     }
 
-    .section-heading {
-      margin-bottom: 22px;
+    .hero-card small {
+      color: #aab7c8;
     }
 
-    .eyebrow {
-      color: #60738b;
+    .hero-card strong {
+      display: block;
+      font-size: 24px;
+      margin-top: 8px;
+    }
 
-      font-size: 11px;
-
-      text-transform: uppercase;
-
-      letter-spacing: 1.3px;
-
-      font-weight: 800;
-
-      margin-bottom: 5px;
+    section {
+      max-width: 1150px;
+      margin: auto;
+      padding: 70px 20px;
     }
 
     .section-title {
-      font-size: 29px;
-
-      line-height: 1.2;
-
-      margin-bottom: 7px;
+      margin-bottom: 30px;
     }
 
-    .section-subtitle {
-      color: #69778a;
-      font-size: 14px;
+    .section-title h2 {
+      font-size: 34px;
+      margin-bottom: 8px;
     }
 
+    .section-title p {
+      color: #667085;
+    }
 
-    /* =========================
-       SERVICES
-    ========================= */
-
-    .services {
+    .grid {
       display: grid;
-
-      grid-template-columns:
-        repeat(4, 1fr);
-
-      gap: 15px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
     }
 
-    .service {
-      background: #fafbfd;
-
-      border:
-        1px solid
-        #e4e9ef;
-
-      border-radius: 14px;
-
-      padding: 21px;
-
-      transition:
-        transform .2s,
-        box-shadow .2s;
-    }
-
-    .service:hover {
-      transform: translateY(-2px);
-
-      box-shadow:
-        0 10px 25px
-        rgba(20,35,60,.08);
-    }
-
-    .service-icon {
-      font-size: 31px;
-      margin-bottom: 10px;
-    }
-
-    .service h3 {
-      font-size: 17px;
-      margin-bottom: 7px;
-    }
-
-    .service p {
-      color: #69778a;
-      font-size: 13px;
-    }
-
-
-    /* =========================
-       PROCESS
-    ========================= */
-
-    .steps {
+    .grid-4 {
       display: grid;
-
-      grid-template-columns:
-        repeat(3, 1fr);
-
-      gap: 15px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
     }
 
-    .step {
-      text-align: center;
-      padding: 20px;
+    .card {
+      background: white;
+      border: 1px solid #e4e9f0;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 25px rgba(15,23,42,.05);
     }
 
-    .step-number {
-      width: 45px;
-      height: 45px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      margin:
-        0 auto
-        13px;
-
-      border-radius: 50%;
-
-      background: #07111f;
-      color: white;
-
-      font-weight: 900;
+    .card h3 {
+      margin-bottom: 8px;
     }
 
-    .step h3 {
-      margin-bottom: 6px;
+    .card p {
+      color: #667085;
     }
 
-    .step p {
-      color: #69778a;
-      font-size: 13px;
+    .icon {
+      font-size: 30px;
+      margin-bottom: 12px;
     }
 
+    .track-section {
+      background: #eef3f8;
+      max-width: none;
+    }
 
-    /* =========================
-       TRACKING
-    ========================= */
+    .track-inner {
+      max-width: 1150px;
+      margin: auto;
+    }
 
     .tracking-box {
-      background: #f8fafc;
-
-      border:
-        1px solid
-        #e0e7ef;
-
-      border-radius: 15px;
-
-      padding: 20px;
+      background: white;
+      padding: 28px;
+      border-radius: 18px;
+      border: 1px solid #dce4ed;
+      box-shadow: 0 12px 35px rgba(15,23,42,.07);
     }
 
-    .tracking-form {
+    .track-form {
       display: flex;
       gap: 10px;
+      margin-top: 18px;
     }
 
     input,
-    select {
+    select,
+    textarea {
       width: 100%;
-
-      padding: 13px;
-
-      background: white;
-
-      border:
-        1px solid
-        #ccd5df;
-
+      padding: 13px 14px;
+      border: 1px solid #cfd8e3;
       border-radius: 9px;
-
-      color: #172033;
+      font-size: 15px;
+      background: white;
     }
 
-    input:focus,
-    select:focus {
-      outline: none;
-
-      border-color: #526b88;
-
-      box-shadow:
-        0 0 0 3px
-        rgba(82,107,136,.1);
+    button {
+      font-family: inherit;
     }
 
-    .track-button {
-      padding:
-        0 23px;
-
+    .track-btn {
       background: #07111f;
       color: white;
-
-      border: none;
-
+      border: 0;
+      padding: 13px 22px;
       border-radius: 9px;
-
-      font-weight: 800;
-
+      font-weight: 700;
       cursor: pointer;
-
       white-space: nowrap;
     }
 
-    .track-result {
+    .result {
       display: none;
-      margin-top: 22px;
-    }
-
-    .result-header {
-      display: flex;
-
-      align-items: center;
-      justify-content: space-between;
-
-      gap: 15px;
-
-      flex-wrap: wrap;
-    }
-
-    .reference-label {
-      color: #78869a;
-      font-size: 11px;
-
-      text-transform: uppercase;
-      letter-spacing: .6px;
+      margin-top: 25px;
+      border-top: 1px solid #e4e9f0;
+      padding-top: 25px;
     }
 
     .status {
       display: inline-block;
-
-      background: #e8f7ee;
-      color: #18733b;
-
-      padding: 7px 11px;
-
+      padding: 6px 11px;
       border-radius: 999px;
-
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .details {
-      display: grid;
-
-      grid-template-columns:
-        repeat(3, 1fr);
-
-      gap: 12px;
-
-      margin-top: 20px;
+      background: #e9f7ef;
+      color: #19733a;
+      font-size: 13px;
+      font-weight: 700;
     }
 
     .detail {
       background: #f8fafc;
-
-      border:
-        1px solid
-        #e5eaf0;
-
-      border-radius: 10px;
-
       padding: 14px;
+      border-radius: 10px;
     }
 
     .detail small {
       display: block;
-
-      color: #78869a;
-
-      text-transform: uppercase;
-
-      font-size: 10px;
-
-      letter-spacing: .5px;
-
-      margin-bottom: 4px;
+      color: #667085;
+      margin-bottom: 3px;
     }
 
     .detail strong {
-      word-break: break-word;
+      display: block;
     }
 
     .timeline {
-      border-left:
-        2px solid
-        #dce4ed;
-
+      margin-top: 22px;
+      border-left: 2px solid #cbd5e1;
       padding-left: 20px;
-
-      margin-top: 18px;
     }
 
-    .timeline-item {
+    .event {
+      margin-bottom: 20px;
       position: relative;
-      margin-bottom: 19px;
     }
 
-    .timeline-item::before {
+    .event::before {
       content: "";
-
-      position: absolute;
-
-      left: -26px;
-      top: 6px;
-
       width: 10px;
       height: 10px;
-
-      border-radius: 50%;
-
       background: #07111f;
+      border-radius: 50%;
+      position: absolute;
+      left: -26px;
+      top: 6px;
     }
 
-    .timeline-item small {
+    .event strong {
       display: block;
-
-      color: #78869a;
-
-      font-size: 12px;
     }
 
-
-    /* =========================
-       NOTICE
-    ========================= */
+    .event small {
+      color: #667085;
+    }
 
     .notice {
-      background: #f7f9fc;
-
-      border-left:
-        4px solid
-        #657991;
-
-      padding: 13px;
-
-      border-radius: 6px;
-
-      margin-top: 18px;
-
-      color: #59687b;
-
-      font-size: 13px;
-    }
-
-
-    /* =========================
-       ABOUT
-    ========================= */
-
-    .about-grid {
-      display: grid;
-
-      grid-template-columns:
-        1.4fr 1fr;
-
-      gap: 16px;
-    }
-
-    .about-box {
-      background: #f8fafc;
-
-      border:
-        1px solid
-        #e3e9ef;
-
-      border-radius: 14px;
-
-      padding: 21px;
-    }
-
-    .about-box h3 {
-      margin-bottom: 8px;
-    }
-
-    .about-box p {
-      color: #69778a;
+      background: #fff8e6;
+      border: 1px solid #f2dfab;
+      color: #735b17;
+      padding: 14px;
+      border-radius: 10px;
+      margin-top: 20px;
       font-size: 14px;
     }
 
-    .about-box p + p {
+    .steps {
+      counter-reset: step;
+    }
+
+    .step {
+      position: relative;
+      padding-left: 55px;
+    }
+
+    .step::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #07111f;
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+    }
+
+    .faq details {
+      background: white;
+      border: 1px solid #e4e9f0;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      padding: 16px 18px;
+    }
+
+    .faq summary {
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .faq p {
+      color: #667085;
       margin-top: 10px;
     }
 
-
-    /* =========================
-       FAQ
-    ========================= */
-
-    .faq-item {
-      padding: 16px 0;
-
-      border-bottom:
-        1px solid
-        #e5eaf0;
-    }
-
-    .faq-item:last-child {
-      border-bottom: none;
-    }
-
-    .faq-item strong {
-      display: block;
-      margin-bottom: 5px;
-    }
-
-    .faq-item p {
-      color: #69778a;
-      font-size: 13px;
-    }
-
-
-    /* =========================
-       CONTACT
-    ========================= */
-
     .contact-box {
-      background:
-        linear-gradient(
-          135deg,
-          #07111f,
-          #173958
-        );
-
+      background: #07111f;
       color: white;
-
-      border-radius: 15px;
-
-      padding: 30px;
-    }
-
-    .contact-box h2 {
-      font-size: 28px;
+      border-radius: 20px;
+      padding: 35px;
     }
 
     .contact-box p {
-      color: #d3deeb;
-
-      margin-top: 7px;
-
-      max-width: 650px;
+      color: #c5d0dd;
+      margin: 10px 0 22px;
     }
 
-    .contact-actions {
-      display: flex;
-
-      flex-wrap: wrap;
-
-      gap: 10px;
-
-      margin-top: 21px;
+    .admin {
+      background: #101827;
+      color: white;
+      max-width: none;
     }
 
-
-    /* =========================
-       OWNER AREA
-    ========================= */
-
-    .admin-section {
-      display: none;
+    .admin-inner {
+      max-width: 1150px;
+      margin: auto;
     }
 
-    .admin-grid {
-      display: grid;
-
-      grid-template-columns:
-        repeat(2, 1fr);
-
-      gap: 12px;
-
-      margin-top: 18px;
+    .admin .card {
+      background: #172234;
+      border-color: #26354a;
+      color: white;
     }
 
-    .admin-actions {
-      display: flex;
+    .admin .card p,
+    .admin small {
+      color: #aebacc;
+    }
 
-      flex-wrap: wrap;
+    .admin input,
+    .admin select {
+      background: #0e1725;
+      color: white;
+      border-color: #334155;
+    }
 
-      gap: 10px;
-
-      margin-top: 15px;
+    .admin-result {
+      margin-top: 20px;
     }
 
     .shipment-list {
-      margin-top: 23px;
+      margin-top: 20px;
+      display: grid;
+      gap: 12px;
     }
 
-    .shipment-row {
-      background: #fafbfd;
+    .shipment-item {
+      background: #0e1725;
+      border: 1px solid #2c3b50;
+      padding: 16px;
+      border-radius: 10px;
+    }
 
-      border:
-        1px solid
-        #e1e7ee;
+    .shipment-item strong {
+      display: block;
+    }
 
-      border-radius: 11px;
-
-      padding: 15px;
-
+    .delete-btn {
       margin-top: 10px;
+      background: #7f1d1d;
+      color: white;
+      border: 0;
+      padding: 8px 12px;
+      border-radius: 7px;
+      cursor: pointer;
     }
-
-    .hidden {
-      display: none !important;
-    }
-
-
-    /* =========================
-       FOOTER
-    ========================= */
 
     footer {
-      background: #050a12;
-
-      color: #c7d1de;
-
-      padding: 42px 18px;
-
+      background: #050b14;
+      color: #9eabba;
       text-align: center;
+      padding: 28px 20px;
+      font-size: 13px;
     }
 
-    footer strong {
-      color: white;
-
-      font-size: 20px;
-    }
-
-    footer p {
-      margin-top: 7px;
-
-      font-size: 12px;
-    }
-
-    .footer-links {
-      display: flex;
-
-      justify-content: center;
-
-      flex-wrap: wrap;
-
-      gap: 15px;
-
-      margin: 18px 0;
-    }
-
-    .footer-links a {
-      color: #d7e0eb;
-
-      font-size: 12px;
-    }
-
-
-    /* =========================
-       MOBILE
-    ========================= */
-
-    @media (max-width: 950px) {
-
-      .services {
-        grid-template-columns:
-          repeat(2, 1fr);
-      }
-
-      .details {
-        grid-template-columns:
-          repeat(2, 1fr);
-      }
-
-    }
-
-
-    @media (max-width: 700px) {
-
-      .header-inner {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      nav {
-        justify-content: flex-start;
-      }
-
-      .hero {
-        padding:
-          48px
-          20px
-          45px;
-      }
-
-      .hero h1 {
-        font-size: 40px;
-      }
-
-      .services,
-      .details,
-      .steps,
-      .about-grid,
-      .admin-grid {
+    @media (max-width: 850px) {
+      .hero-inner {
         grid-template-columns: 1fr;
       }
 
-      .tracking-form {
+      .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      nav {
+        display: none;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .grid,
+      .grid-4 {
+        grid-template-columns: 1fr;
+      }
+
+      .track-form {
         flex-direction: column;
       }
 
-      .track-button {
-        padding: 13px;
+      .hero {
+        padding: 65px 20px;
       }
 
-      .card {
-        padding: 21px;
+      section {
+        padding: 55px 20px;
       }
 
+      .hero h1 {
+        font-size: 48px;
+      }
     }
-
   </style>
 </head>
 
-
 <body>
 
-
-  <!-- TOP BAR -->
-
   <div class="topbar">
-    N.K DON Logistics • Professional Shipment & Delivery Services
+    NKDON Tracking Logistics • Professional Shipment & Delivery Services
   </div>
 
-
-  <!-- HEADER -->
-
   <header>
+    <div class="nav">
 
-    <div class="header-inner">
-
-      <a
-        href="#home"
-        class="brand"
-      >
-
-        <div class="logo">
-          N.K DON Logistics
-        </div>
-
-        <div class="tagline">
-          Delivery • Shipping • Tracking
-        </div>
-
-      </a>
-
+      <div class="brand">
+        NKDON Tracking Logistics
+        <span>Delivery • Shipping • Tracking</span>
+      </div>
 
       <nav>
-
-        <a href="#home">
-          Home
-        </a>
-
-        <a href="#services">
-          Services
-        </a>
-
-        <a href="#tracking">
-          Tracking
-        </a>
-
-        <a href="#about">
-          About
-        </a>
-
-        <a href="#faq">
-          FAQ
-        </a>
-
-        <a href="#contact">
-          Contact
-        </a>
-
+        <a href="#home">Home</a>
+        <a href="#services">Services</a>
+        <a href="#tracking">Tracking</a>
+        <a href="#about">About</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Contact</a>
       </nav>
 
     </div>
-
   </header>
 
-
-  <!-- MAIN -->
-
-  <main class="container">
-
+  <main>
 
     <!-- HERO -->
+    <div class="hero" id="home">
 
-    <section
-      id="home"
-      class="hero"
-    >
+      <div class="hero-inner">
 
-      <div class="hero-content">
+        <div>
 
-        <div class="hero-badge">
-          N.K DON Logistics
+          <h1>Moving What Matters.</h1>
+
+          <p>
+            Reliable shipment coordination, delivery services and
+            convenient shipment tracking through NKDON Tracking Logistics.
+          </p>
+
+          <div class="buttons">
+
+            <a class="primary" href="#tracking">
+              Track Shipment
+            </a>
+
+            <a class="secondary" href="#contact">
+              Contact Us
+            </a>
+
+          </div>
+
         </div>
 
-        <h1>
-          Moving What Matters.
-        </h1>
+        <div class="hero-card">
 
-        <p>
-          Professional shipment coordination, delivery support and
-          convenient tracking for domestic and international shipments.
-        </p>
+          <small>NKDON Tracking Logistics</small>
 
+          <strong>Shipment Tracking</strong>
 
-        <div class="hero-actions">
-
-          <a
-            href="#tracking"
-            class="btn btn-light"
-          >
-            🔎 Track Your Shipment
-          </a>
-
-          <a
-            href="#contact"
-            class="btn btn-dark"
-          >
-            Contact N.K DON
-          </a>
+          <p style="margin-top:10px;color:#b8c4d3;">
+            Enter your NKDON tracking reference to view the
+            shipment information available in the system.
+          </p>
 
         </div>
 
       </div>
 
-    </section>
+    </div>
 
 
     <!-- SERVICES -->
+    <section id="services">
 
-    <section
-      id="services"
-      class="card"
-    >
+      <div class="section-title">
 
-      <div class="section-heading">
+        <h2>Our Services</h2>
 
-        <div class="eyebrow">
-          What We Do
-        </div>
-
-        <h2 class="section-title">
-          Our Services
-        </h2>
-
-        <p class="section-subtitle">
-          Practical shipment and delivery solutions for individuals
+        <p>
+          Professional logistics and shipment support for individuals
           and businesses.
         </p>
 
       </div>
 
+      <div class="grid-4">
 
-      <div class="services">
-
-
-        <div class="service">
-
-          <div class="service-icon">
-            📦
-          </div>
-
-          <h3>
-            Domestic Delivery
-          </h3>
-
+        <div class="card">
+          <div class="icon">🚚</div>
+          <h3>Domestic Delivery</h3>
           <p>
-            Shipment coordination and local delivery support
-            within Nigeria.
+            Shipment coordination and delivery support within Nigeria.
           </p>
-
         </div>
 
-
-        <div class="service">
-
-          <div class="service-icon">
-            ✈️
-          </div>
-
-          <h3>
-            International Shipping
-          </h3>
-
+        <div class="card">
+          <div class="icon">🌍</div>
+          <h3>International Shipping</h3>
           <p>
-            International shipment coordination and tracking
-            support.
+            Support for international shipment coordination and delivery.
           </p>
-
         </div>
 
-
-        <div class="service">
-
-          <div class="service-icon">
-            🚚
-          </div>
-
-          <h3>
-            Courier Services
-          </h3>
-
+        <div class="card">
+          <div class="icon">📦</div>
+          <h3>Courier Services</h3>
           <p>
             Convenient shipment handling and delivery coordination.
           </p>
-
         </div>
 
-
-        <div class="service">
-
-          <div class="service-icon">
-            🔎
-          </div>
-
-          <h3>
-            Shipment Tracking
-          </h3>
-
+        <div class="card">
+          <div class="icon">🔎</div>
+          <h3>Shipment Tracking</h3>
           <p>
-            Follow your shipment using your unique N.K DON reference.
+            Track NKDON shipment references and view available updates.
           </p>
-
         </div>
-
 
       </div>
 
     </section>
 
 
-    <!-- PROCESS -->
+    <!-- HOW IT WORKS -->
+    <section>
 
-    <section class="card">
+      <div class="section-title">
 
-      <div class="section-heading">
+        <h2>How It Works</h2>
 
-        <div class="eyebrow">
-          Simple Process
-        </div>
-
-        <h2 class="section-title">
-          How It Works
-        </h2>
-
-        <p class="section-subtitle">
-          A straightforward process from shipment registration
-          to tracking.
+        <p>
+          A simple process for registering and following your shipment.
         </p>
 
       </div>
 
+      <div class="grid steps">
 
-      <div class="steps">
+        <div class="card step">
 
-
-        <div class="step">
-
-          <div class="step-number">
-            1
-          </div>
-
-          <h3>
-            Contact
-          </h3>
+          <h3>Contact Us</h3>
 
           <p>
-            Contact N.K DON Logistics about your shipment
-            or delivery request.
+            Contact NKDON Tracking Logistics to discuss your shipment
+            requirements.
           </p>
 
         </div>
 
+        <div class="card step">
 
-        <div class="step">
-
-          <div class="step-number">
-            2
-          </div>
-
-          <h3>
-            Register
-          </h3>
+          <h3>Register Shipment</h3>
 
           <p>
-            Your shipment is registered and assigned
-            an N.K DON reference.
+            Your shipment can be registered and assigned an NKDON
+            tracking reference.
           </p>
 
         </div>
 
+        <div class="card step">
 
-        <div class="step">
-
-          <div class="step-number">
-            3
-          </div>
-
-          <h3>
-            Track
-          </h3>
+          <h3>Track Shipment</h3>
 
           <p>
-            Use your reference to view available
-            shipment updates.
+            Use your NKDON tracking reference to view available
+            shipment information.
           </p>
 
         </div>
-
 
       </div>
 
@@ -1278,324 +692,224 @@
 
 
     <!-- TRACKING -->
+    <div class="track-section" id="tracking">
 
-    <section
-      id="tracking"
-      class="card"
-    >
+      <div class="track-inner">
 
-      <div class="section-heading">
+        <section>
 
-        <div class="eyebrow">
-          Shipment Tracking
-        </div>
+          <div class="section-title">
 
-        <h2 class="section-title">
-          Track Your Shipment
-        </h2>
+            <h2>NKDON Shipment Tracking</h2>
 
-        <p class="section-subtitle">
-          Enter your N.K DON tracking reference to view shipment
-          information.
-        </p>
+            <p>
+              Enter your NKDON shipment reference below.
+            </p>
 
-      </div>
+          </div>
 
+          <div class="tracking-box">
 
-      <div class="tracking-box">
+            <label for="trackingInput">
+              <strong>Tracking Reference</strong>
+            </label>
 
-        <div class="tracking-form">
+            <div class="track-form">
 
-          <input
-            id="trackingInput"
-            type="text"
-            placeholder="Example: NKD-7A29-X4P8"
-            autocomplete="off"
-          >
+              <input
+                id="trackingInput"
+                type="text"
+                placeholder="Example: NKDON-7A29-X4P8"
+                autocomplete="off"
+              >
 
-          <button
-            class="track-button"
-            onclick="trackShipment()"
-          >
-            Track Shipment
-          </button>
+              <button
+                class="track-btn"
+                onclick="trackShipment()"
+              >
+                Track Shipment
+              </button>
 
-        </div>
+            </div>
 
-
-        <div
-          id="trackMessage"
-          class="notice hidden"
-        ></div>
+            <div
+              id="trackingMessage"
+              style="margin-top:15px;"
+            ></div>
 
 
-        <div
-          id="trackResult"
-          class="track-result"
-        >
+            <div
+              class="result"
+              id="trackingResult"
+            >
 
+              <div
+                style="
+                  display:flex;
+                  justify-content:space-between;
+                  gap:15px;
+                  flex-wrap:wrap;
+                "
+              >
 
-          <div class="result-header">
+                <div>
 
-            <div>
+                  <small>Tracking Reference</small>
 
-              <div class="reference-label">
-                N.K DON Tracking Reference
+                  <h2 id="resultId"></h2>
+
+                </div>
+
+                <div>
+
+                  <span
+                    class="status"
+                    id="resultStatus"
+                  ></span>
+
+                </div>
+
               </div>
 
-              <h3 id="resultId"></h3>
+
+              <div
+                class="grid"
+                style="margin-top:20px;"
+              >
+
+                <div class="detail">
+                  <small>Sender</small>
+                  <strong id="resultSender"></strong>
+                </div>
+
+                <div class="detail">
+                  <small>Recipient</small>
+                  <strong id="resultRecipient"></strong>
+                </div>
+
+                <div class="detail">
+                  <small>Origin</small>
+                  <strong id="resultOrigin"></strong>
+                </div>
+
+                <div class="detail">
+                  <small>Destination</small>
+                  <strong id="resultDestination"></strong>
+                </div>
+
+                <div class="detail">
+                  <small>Shipment Type</small>
+                  <strong id="resultType"></strong>
+                </div>
+
+                <div class="detail">
+                  <small>Last Updated</small>
+                  <strong id="resultUpdated"></strong>
+                </div>
+
+              </div>
+
+
+              <div
+                class="timeline"
+                id="resultTimeline"
+              ></div>
 
             </div>
 
 
-            <span
-              id="resultStatus"
-              class="status"
-            ></span>
+            <div class="notice">
+
+              <strong>Tracking reference notice:</strong><br>
+
+              NKDON tracking references are independent internal
+              shipment references created by NKDON Tracking Logistics.
+              They are not DHL, FedEx, UPS, or other carrier-issued
+              tracking numbers.
+
+            </div>
 
           </div>
 
-
-          <div class="details">
-
-
-            <div class="detail">
-
-              <small>
-                Sender
-              </small>
-
-              <strong id="resultSender">
-              </strong>
-
-            </div>
-
-
-            <div class="detail">
-
-              <small>
-                Recipient
-              </small>
-
-              <strong id="resultRecipient">
-              </strong>
-
-            </div>
-
-
-            <div class="detail">
-
-              <small>
-                Origin
-              </small>
-
-              <strong id="resultOrigin">
-              </strong>
-
-            </div>
-
-
-            <div class="detail">
-
-              <small>
-                Destination
-              </small>
-
-              <strong id="resultDestination">
-              </strong>
-
-            </div>
-
-
-            <div class="detail">
-
-              <small>
-                Shipment Type
-              </small>
-
-              <strong id="resultType">
-              </strong>
-
-            </div>
-
-
-            <div class="detail">
-
-              <small>
-                Last Updated
-              </small>
-
-              <strong id="resultUpdated">
-              </strong>
-
-            </div>
-
-
-          </div>
-
-
-          <h3 style="margin-top:24px">
-            Shipment Timeline
-          </h3>
-
-
-          <div
-            id="resultTimeline"
-            class="timeline"
-          ></div>
-
-
-        </div>
+        </section>
 
       </div>
 
-
-      <div class="notice">
-
-        N.K DON tracking references are independent internal shipment
-        references issued by N.K DON Logistics. They are not DHL,
-        FedEx, UPS or other third-party carrier-issued tracking numbers.
-
-      </div>
-
-    </section>
+    </div>
 
 
     <!-- CONSIGNMENT RECORD -->
+    <section>
 
-    <section class="card">
+      <div class="section-title">
 
-      <div class="section-heading">
+        <h2>NKDON Consignment Record</h2>
 
-        <div class="eyebrow">
-          Shipment Record
-        </div>
-
-        <h2 class="section-title">
-          📋 N.K DON Consignment Record
-        </h2>
-
-        <p class="section-subtitle">
-          Example of an N.K DON Logistics internal shipment record.
+        <p>
+          Internal NKDON Tracking Logistics shipment record.
         </p>
 
       </div>
 
+      <div class="card">
 
-      <div class="details">
+        <p
+          class="notice"
+          style="margin-top:0;"
+        >
 
+          This is an independent NKDON Tracking Logistics internal
+          shipment record. It is not a carrier-issued document.
 
-        <div class="detail">
-
-          <small>
-            Consignment Reference
-          </small>
-
-          <strong>
-            NKD-7A29-X4P8
-          </strong>
-
-        </div>
+        </p>
 
 
-        <div class="detail">
+        <div
+          class="grid"
+          style="margin-top:20px;"
+        >
 
-          <small>
-            Status
-          </small>
+          <div class="detail">
+            <small>Consignment Reference</small>
+            <strong>NKDON-7A29-X4P8</strong>
+          </div>
 
-          <strong>
-            In Transit
-          </strong>
+          <div class="detail">
+            <small>Status</small>
+            <strong>In Transit</strong>
+          </div>
 
-        </div>
+          <div class="detail">
+            <small>Sender</small>
+            <span>NKDON Tracking Logistics</span>
+          </div>
 
+          <div class="detail">
+            <small>Recipient</small>
+            <span>Customer</span>
+          </div>
 
-        <div class="detail">
+          <div class="detail">
+            <small>Origin</small>
+            <span>Port Harcourt, Nigeria</span>
+          </div>
 
-          <small>
-            Sender
-          </small>
+          <div class="detail">
+            <small>Destination</small>
+            <span>Lagos, Nigeria</span>
+          </div>
 
-          <strong>
-            N.K DON Logistics
-          </strong>
+          <div class="detail">
+            <small>Shipment Type</small>
+            <span>Domestic Courier</span>
+          </div>
 
-        </div>
-
-
-        <div class="detail">
-
-          <small>
-            Recipient
-          </small>
-
-          <strong>
-            Customer
-          </strong>
-
-        </div>
-
-
-        <div class="detail">
-
-          <small>
-            Origin
-          </small>
-
-          <strong>
-            Port Harcourt, Nigeria
-          </strong>
+          <div class="detail">
+            <small>Record Date</small>
+            <span>September 20, 2026</span>
+          </div>
 
         </div>
-
-
-        <div class="detail">
-
-          <small>
-            Destination
-          </small>
-
-          <strong>
-            Lagos, Nigeria
-          </strong>
-
-        </div>
-
-
-        <div class="detail">
-
-          <small>
-            Shipment Type
-          </small>
-
-          <strong>
-            Domestic Courier
-          </strong>
-
-        </div>
-
-
-        <div class="detail">
-
-          <small>
-            Record Date
-          </small>
-
-          <strong>
-            September 20, 2026
-          </strong>
-
-        </div>
-
-
-      </div>
-
-
-      <div class="notice">
-
-        This is an N.K DON Logistics internal shipment record and
-        is not a carrier-issued document.
 
       </div>
 
@@ -1603,74 +917,33 @@
 
 
     <!-- ABOUT -->
+    <section id="about">
 
-    <section
-      id="about"
-      class="card"
-    >
+      <div class="section-title">
 
-      <div class="section-heading">
+        <h2>About NKDON Tracking Logistics</h2>
 
-        <div class="eyebrow">
-          About Us
-        </div>
-
-        <h2 class="section-title">
-          About N.K DON Logistics
-        </h2>
+        <p>
+          Professional shipment and delivery coordination.
+        </p>
 
       </div>
 
 
-      <div class="about-grid">
+      <div class="card">
 
+        <p>
+          NKDON Tracking Logistics provides shipment coordination,
+          delivery support and tracking services designed to make
+          the movement of goods simple and convenient.
+        </p>
 
-        <div class="about-box">
+        <p style="margin-top:12px;">
 
-          <h3>
-            Who We Are
-          </h3>
+          Customers can receive an NKDON shipment reference and use
+          the tracking page to view available shipment information.
 
-          <p>
-            N.K DON Logistics provides shipment coordination,
-            delivery support and shipment tracking services for
-            customers who need an organized way to manage their
-            delivery information.
-          </p>
-
-          <p>
-            Our approach focuses on clear communication,
-            organized shipment records and convenient customer
-            support.
-          </p>
-
-        </div>
-
-
-        <div class="about-box">
-
-          <h3>
-            Our Focus
-          </h3>
-
-          <p>
-            ✓ Clear shipment information
-          </p>
-
-          <p>
-            ✓ Convenient tracking
-          </p>
-
-          <p>
-            ✓ Customer communication
-          </p>
-
-          <p>
-            ✓ Delivery coordination
-          </p>
-
-        </div>
-
+        </p>
 
       </div>
 
@@ -1678,124 +951,99 @@
 
 
     <!-- FAQ -->
-
     <section
       id="faq"
-      class="card"
+      class="faq"
     >
 
-      <div class="section-heading">
+      <div class="section-title">
 
-        <div class="eyebrow">
-          Support
-        </div>
-
-        <h2 class="section-title">
-          Frequently Asked Questions
-        </h2>
+        <h2>Frequently Asked Questions</h2>
 
       </div>
 
 
-      <div class="faq-item">
+      <details>
 
-        <strong>
-          How do I track my shipment?
-        </strong>
+        <summary>
+          What is an NKDON tracking reference?
+        </summary>
 
         <p>
-          Enter your N.K DON tracking reference in the tracking
-          section and select Track Shipment.
+          It is an internal shipment reference assigned by
+          NKDON Tracking Logistics for identifying and tracking
+          a shipment within the NKDON system.
         </p>
 
-      </div>
+      </details>
 
 
-      <div class="faq-item">
+      <details>
 
-        <strong>
-          Where do I get my tracking reference?
-        </strong>
+        <summary>
+          Can I track my shipment online?
+        </summary>
 
         <p>
-          Your tracking reference is provided when your shipment
-          is registered with N.K DON Logistics.
+          Yes. Enter your NKDON tracking reference in the
+          tracking section of this website.
         </p>
 
-      </div>
+      </details>
 
 
-      <div class="faq-item">
+      <details>
 
-        <strong>
-          Can I contact N.K DON about my shipment?
-        </strong>
+        <summary>
+          Are NKDON tracking numbers issued by DHL or FedEx?
+        </summary>
 
         <p>
-          Yes. Contact N.K DON Logistics through WhatsApp for
-          shipment enquiries and customer support.
+          No. NKDON references are independent internal references
+          and should not be represented as DHL, FedEx, UPS or another
+          carrier's tracking numbers.
         </p>
 
-      </div>
+      </details>
 
 
-      <div class="faq-item">
+      <details>
 
-        <strong>
-          Are N.K DON references carrier tracking numbers?
-        </strong>
+        <summary>
+          How can I contact NKDON Tracking Logistics?
+        </summary>
 
         <p>
-          No. N.K DON references are independent internal shipment
-          references issued by N.K DON Logistics.
+          You can contact NKDON Tracking Logistics directly through
+          WhatsApp using the official contact button below.
         </p>
 
-      </div>
-
+      </details>
 
     </section>
 
 
     <!-- CONTACT -->
-
-    <section
-      id="contact"
-      class="card"
-    >
+    <section id="contact">
 
       <div class="contact-box">
 
-        <div class="eyebrow">
-          Customer Support
-        </div>
-
-        <h2>
-          Contact N.K DON Logistics
-        </h2>
+        <h2>Contact NKDON Tracking Logistics</h2>
 
         <p>
-          Have a question about a shipment, delivery or service?
-          Contact our team directly through WhatsApp.
+          Need help with a shipment, delivery or tracking reference?
+          Contact our team directly.
         </p>
 
-
-        <div class="contact-actions">
-
-          <a
-            href="https://wa.me/2349168419464"
-            class="btn btn-green"
-          >
-            💬 WhatsApp N.K DON
-          </a>
-
-          <a
-            href="#tracking"
-            class="btn btn-light"
-          >
-            🔎 Track Shipment
-          </a>
-
-        </div>
+        <a
+          href="https://wa.me/2349168419464"
+          class="primary"
+          style="text-decoration:none;display:inline-block;"
+          target="_blank"
+          rel="noopener"
+        >
+          💬 Contact Us on WhatsApp
+        </a>
 
       </div>
 
@@ -1803,288 +1051,214 @@
 
 
     <!-- OWNER ACCESS -->
+    <div class="admin">
 
-    <section class="card">
+      <div class="admin-inner">
 
-      <div class="section-heading">
+        <section>
 
-        <div class="eyebrow">
-          Private Area
-        </div>
+          <div class="section-title">
 
-        <h2 class="section-title">
-          Owner Access
-        </h2>
+            <h2 style="color:white;">
+              Owner Access
+            </h2>
 
-        <p class="section-subtitle">
-          Private shipment management area for N.K DON Logistics.
-        </p>
+            <p>
+              Private shipment management area for NKDON Tracking Logistics.
+            </p>
+
+          </div>
+
+
+          <div class="card">
+
+            <label>
+              <strong>Owner Passcode</strong>
+            </label>
+
+            <div
+              style="
+                display:flex;
+                gap:10px;
+                margin-top:10px;
+              "
+            >
+
+              <input
+                id="adminPass"
+                type="password"
+                placeholder="Enter owner passcode"
+              >
+
+              <button
+                class="track-btn"
+                onclick="loginAdmin()"
+              >
+                Access
+              </button>
+
+            </div>
+
+            <div
+              id="adminMessage"
+              style="margin-top:15px;"
+            ></div>
+
+          </div>
+
+
+          <div
+            id="adminPanel"
+            style="display:none;margin-top:20px;"
+          >
+
+            <div class="card">
+
+              <h3>Create Shipment</h3>
+
+              <div
+                class="grid"
+                style="margin-top:15px;"
+              >
+
+                <input
+                  id="newId"
+                  placeholder="Tracking ID e.g. NKDON-1234-ABCD"
+                >
+
+                <input
+                  id="newSender"
+                  placeholder="Sender"
+                >
+
+                <input
+                  id="newRecipient"
+                  placeholder="Recipient"
+                >
+
+                <input
+                  id="newOrigin"
+                  placeholder="Origin"
+                >
+
+                <input
+                  id="newDestination"
+                  placeholder="Destination"
+                >
+
+                <input
+                  id="newType"
+                  placeholder="Shipment Type"
+                >
+
+                <select id="newStatus">
+
+                  <option>Processing</option>
+                  <option>In Transit</option>
+                  <option>Out for Delivery</option>
+                  <option>Delivered</option>
+                  <option>On Hold</option>
+
+                </select>
+
+              </div>
+
+
+              <button
+                class="track-btn"
+                style="margin-top:15px;"
+                onclick="createShipment()"
+              >
+                Create Shipment
+              </button>
+
+            </div>
+
+
+            <div
+              class="card"
+              style="margin-top:20px;"
+            >
+
+              <h3>Saved Shipments</h3>
+
+              <div
+                id="shipmentList"
+                class="shipment-list"
+              ></div>
+
+            </div>
+
+          </div>
+
+        </section>
 
       </div>
 
-
-      <div id="loginArea">
-
-        <input
-          id="adminPassword"
-          type="password"
-          placeholder="Enter owner passcode"
-        >
-
-
-        <div class="admin-actions">
-
-          <button
-            class="btn btn-dark"
-            onclick="adminLogin()"
-          >
-            Owner Login
-          </button>
-
-        </div>
-
-
-        <div
-          id="loginMessage"
-          class="notice hidden"
-        ></div>
-
-      </div>
-
-
-      <div
-        id="adminArea"
-        class="admin-section"
-      >
-
-        <h3>
-          Create Shipment
-        </h3>
-
-
-        <div class="admin-grid">
-
-          <input
-            id="newId"
-            placeholder="Tracking ID (optional)"
-          >
-
-          <select id="newStatus">
-
-            <option>
-              Shipment Created
-            </option>
-
-            <option>
-              Processing
-            </option>
-
-            <option>
-              In Transit
-            </option>
-
-            <option>
-              Out for Delivery
-            </option>
-
-            <option>
-              Delivered
-            </option>
-
-            <option>
-              On Hold
-            </option>
-
-          </select>
-
-
-          <input
-            id="newSender"
-            placeholder="Sender"
-          >
-
-
-          <input
-            id="newRecipient"
-            placeholder="Recipient"
-          >
-
-
-          <input
-            id="newOrigin"
-            placeholder="Origin"
-          >
-
-
-          <input
-            id="newDestination"
-            placeholder="Destination"
-          >
-
-
-          <input
-            id="newType"
-            placeholder="Shipment type"
-          >
-
-        </div>
-
-
-        <div class="admin-actions">
-
-          <button
-            class="btn btn-dark"
-            onclick="createShipment()"
-          >
-            Create Shipment
-          </button>
-
-
-          <button
-            class="btn btn-soft"
-            onclick="logoutAdmin()"
-          >
-            Logout
-          </button>
-
-        </div>
-
-
-        <div
-          id="adminMessage"
-          class="notice hidden"
-        ></div>
-
-
-        <div class="shipment-list">
-
-          <h3>
-            Saved Shipments
-          </h3>
-
-          <div id="shipmentList"></div>
-
-        </div>
-
-      </div>
-
-    </section>
-
+    </div>
 
   </main>
 
 
-  <!-- FOOTER -->
-
   <footer>
 
-    <strong>
-      N.K DON Logistics
-    </strong>
+    © 2026 NKDON Tracking Logistics.
+    All rights reserved.
 
-    <p>
-      Professional Shipment • Delivery • Tracking
-    </p>
+    <br>
 
-
-    <div class="footer-links">
-
-      <a href="#home">
-        Home
-      </a>
-
-      <a href="#services">
-        Services
-      </a>
-
-      <a href="#tracking">
-        Tracking
-      </a>
-
-      <a href="#about">
-        About
-      </a>
-
-      <a href="#contact">
-        Contact
-      </a>
-
-    </div>
-
-
-    <p>
-      WhatsApp: +234 916 841 9464
-    </p>
-
-    <p>
-      © 2026 N.K DON Logistics. All rights reserved.
-    </p>
-
-    <p>
-      N.K DON tracking references are independent internal
-      shipment references.
-    </p>
+    Independent shipment reference and tracking system.
 
   </footer>
 
 
-  <!-- JAVASCRIPT -->
-
   <script>
 
-    const DATABASE_KEY =
-      "nkdon_tracking_database_premium_v1";
+    /* ============================
+       OWNER SETTINGS
+    ============================ */
 
-    const SESSION_KEY =
-      "nkdon_admin_session";
+    const ADMIN_PASSCODE = "NKDON2026";
 
-    const ADMIN_PASSCODE =
-      "NKDON2026";
 
+    /* ============================
+       STARTER SHIPMENTS
+    ============================ */
 
     const starterShipments = [
 
       {
-        id:
-          "NKD-7A29-X4P8",
+        id: "NKDON-7A29-X4P8",
 
-        status:
-          "In Transit",
+        sender: "NKDON Tracking Logistics",
 
-        sender:
-          "N.K DON Logistics",
+        recipient: "Customer",
 
-        recipient:
-          "Customer",
+        origin: "Port Harcourt, Nigeria",
 
-        origin:
-          "Port Harcourt, Nigeria",
+        destination: "Lagos, Nigeria",
 
-        destination:
-          "Lagos, Nigeria",
+        type: "Domestic Courier",
 
-        type:
-          "Domestic Courier",
+        status: "In Transit",
 
-        updated:
-          "September 20, 2026",
+        updated: "September 20, 2026",
 
-        events: [
+        timeline: [
 
           {
-            status:
-              "Shipment Created",
-
-            date:
-              "September 18, 2026"
+            title: "Shipment registered",
+            date: "September 20, 2026"
           },
 
           {
-            status:
-              "In Transit",
+            title: "Shipment processed",
+            date: "September 20, 2026"
+          },
 
-            date:
-              "September 20, 2026"
+          {
+            title: "Shipment in transit",
+            date: "September 21, 2026"
           }
 
         ]
@@ -2093,46 +1267,32 @@
 
 
       {
-        id:
-          "NKD-B7Q4-M8Z2",
+        id: "NKDON-B7Q4-M8Z2",
 
-        status:
-          "Processing",
+        sender: "NKDON Tracking Logistics",
 
-        sender:
-          "N.K DON Logistics",
+        recipient: "Customer",
 
-        recipient:
-          "Customer",
+        origin: "Lagos, Nigeria",
 
-        origin:
-          "Lagos, Nigeria",
+        destination: "Dubai, UAE",
 
-        destination:
-          "Dubai, UAE",
+        type: "International Air Freight",
 
-        type:
-          "International Air Freight",
+        status: "Processing",
 
-        updated:
-          "September 20, 2026",
+        updated: "September 20, 2026",
 
-        events: [
+        timeline: [
 
           {
-            status:
-              "Shipment Created",
-
-            date:
-              "September 19, 2026"
+            title: "Shipment registered",
+            date: "September 20, 2026"
           },
 
           {
-            status:
-              "Processing",
-
-            date:
-              "September 20, 2026"
+            title: "Shipment processing",
+            date: "September 20, 2026"
           }
 
         ]
@@ -2142,727 +1302,383 @@
     ];
 
 
-    function loadDatabase() {
+    /* ============================
+       DATABASE
+    ============================ */
+
+    function getShipments() {
 
       const saved =
-        localStorage.getItem(
-          DATABASE_KEY
-        );
-
+        localStorage.getItem("nkdon_shipments");
 
       if (!saved) {
 
         localStorage.setItem(
-          DATABASE_KEY,
-          JSON.stringify(
-            starterShipments
-          )
+          "nkdon_shipments",
+          JSON.stringify(starterShipments)
         );
 
         return starterShipments;
-
       }
 
-
-      try {
-
-        return JSON.parse(saved);
-
-      } catch {
-
-        localStorage.setItem(
-          DATABASE_KEY,
-          JSON.stringify(
-            starterShipments
-          )
-        );
-
-        return starterShipments;
-
-      }
-
+      return JSON.parse(saved);
     }
 
 
-    function saveDatabase(data) {
+    function saveShipments(shipments) {
 
       localStorage.setItem(
-        DATABASE_KEY,
-        JSON.stringify(data)
+        "nkdon_shipments",
+        JSON.stringify(shipments)
       );
 
     }
 
 
-    function escapeHtml(value) {
-
-      return String(value)
-
-        .replace(
-          /&/g,
-          "&amp;"
-        )
-
-        .replace(
-          /</g,
-          "&lt;"
-        )
-
-        .replace(
-          />/g,
-          "&gt;"
-        )
-
-        .replace(
-          /"/g,
-          "&quot;"
-        )
-
-        .replace(
-          /'/g,
-          "&#039;"
-        );
-
-    }
-
+    /* ============================
+       TRACK SHIPMENT
+    ============================ */
 
     function trackShipment() {
 
       const input =
         document
-          .getElementById(
-            "trackingInput"
-          )
+          .getElementById("trackingInput")
           .value
           .trim()
           .toUpperCase();
 
+      const message =
+        document.getElementById("trackingMessage");
 
       const result =
-        document.getElementById(
-          "trackResult"
-        );
+        document.getElementById("trackingResult");
 
 
-      const message =
-        document.getElementById(
-          "trackMessage"
-        );
+      result.style.display = "none";
 
-
-      result.style.display =
-        "none";
-
-      message.classList.add(
-        "hidden"
-      );
+      message.innerHTML = "";
 
 
       if (!input) {
 
-        message.textContent =
-          "Please enter your N.K DON tracking reference.";
-
-        message.classList.remove(
-          "hidden"
-        );
+        message.innerHTML =
+          '<div class="notice">Please enter your NKDON tracking reference.</div>';
 
         return;
-
       }
 
 
       const shipments =
-        loadDatabase();
+        getShipments();
 
 
       const shipment =
         shipments.find(
           item =>
-            item.id.toUpperCase() ===
-            input
+            item.id.toUpperCase() === input
         );
 
 
       if (!shipment) {
 
-        message.textContent =
-          "No N.K DON shipment was found with that tracking reference.";
-
-        message.classList.remove(
-          "hidden"
-        );
+        message.innerHTML =
+          '<div class="notice">Tracking reference not found. Please check the reference and try again.</div>';
 
         return;
+      }
+
+
+      document.getElementById("resultId").textContent =
+        shipment.id;
+
+      document.getElementById("resultStatus").textContent =
+        shipment.status;
+
+      document.getElementById("resultSender").textContent =
+        shipment.sender;
+
+      document.getElementById("resultRecipient").textContent =
+        shipment.recipient;
+
+      document.getElementById("resultOrigin").textContent =
+        shipment.origin;
+
+      document.getElementById("resultDestination").textContent =
+        shipment.destination;
+
+      document.getElementById("resultType").textContent =
+        shipment.type;
+
+      document.getElementById("resultUpdated").textContent =
+        shipment.updated || "Not specified";
+
+
+      const timeline =
+        document.getElementById("resultTimeline");
+
+      timeline.innerHTML = "";
+
+
+      if (
+        shipment.timeline &&
+        shipment.timeline.length
+      ) {
+
+        shipment.timeline.forEach(event => {
+
+          const div =
+            document.createElement("div");
+
+          div.className = "event";
+
+          div.innerHTML = `
+            <strong>${escapeHtml(event.title)}</strong>
+            <small>${escapeHtml(event.date)}</small>
+          `;
+
+          timeline.appendChild(div);
+
+        });
 
       }
 
 
-      document.getElementById(
-        "resultId"
-      ).textContent =
-        shipment.id;
-
-
-      document.getElementById(
-        "resultStatus"
-      ).textContent =
-        shipment.status;
-
-
-      document.getElementById(
-        "resultSender"
-      ).textContent =
-        shipment.sender ||
-        "—";
-
-
-      document.getElementById(
-        "resultRecipient"
-      ).textContent =
-        shipment.recipient ||
-        "—";
-
-
-      document.getElementById(
-        "resultOrigin"
-      ).textContent =
-        shipment.origin ||
-        "—";
-
-
-      document.getElementById(
-        "resultDestination"
-      ).textContent =
-        shipment.destination ||
-        "—";
-
-
-      document.getElementById(
-        "resultType"
-      ).textContent =
-        shipment.type ||
-        "—";
-
-
-      document.getElementById(
-        "resultUpdated"
-      ).textContent =
-        shipment.updated ||
-        "—";
-
-
-      const timeline =
-        document.getElementById(
-          "resultTimeline"
-        );
-
-
-      timeline.innerHTML =
-        "";
-
-
-      (shipment.events || [])
-        .slice()
-        .reverse()
-        .forEach(
-          event => {
-
-            const div =
-              document.createElement(
-                "div"
-              );
-
-
-            div.className =
-              "timeline-item";
-
-
-            div.innerHTML =
-
-              "<strong>" +
-
-              escapeHtml(
-                event.status
-              ) +
-
-              "</strong>" +
-
-              "<small>" +
-
-              escapeHtml(
-                event.date
-              ) +
-
-              "</small>";
-
-
-            timeline.appendChild(
-              div
-            );
-
-          }
-        );
-
-
-      result.style.display =
-        "block";
+      result.style.display = "block";
 
 
       result.scrollIntoView({
-        behavior:
-          "smooth",
-        block:
-          "nearest"
+        behavior: "smooth",
+        block: "nearest"
       });
 
     }
 
 
-    function adminLogin() {
+    /* ============================
+       OWNER LOGIN
+    ============================ */
 
-      const password =
-        document.getElementById(
-          "adminPassword"
-        ).value;
+    function loginAdmin() {
 
+      const pass =
+        document.getElementById("adminPass").value;
 
       const message =
-        document.getElementById(
-          "loginMessage"
-        );
+        document.getElementById("adminMessage");
 
 
-      if (
-        password ===
-        ADMIN_PASSCODE
-      ) {
+      if (pass === ADMIN_PASSCODE) {
 
-        sessionStorage.setItem(
-          SESSION_KEY,
-          "true"
-        );
+        message.innerHTML =
+          '<span style="color:#7ee2a8;font-weight:700;">Access granted.</span>';
 
-
-        document.getElementById(
-          "loginArea"
-        ).style.display =
-          "none";
-
-
-        document.getElementById(
-          "adminArea"
-        ).style.display =
+        document.getElementById("adminPanel").style.display =
           "block";
-
 
         renderShipments();
 
       } else {
 
-        message.textContent =
-          "Incorrect owner passcode.";
-
-        message.classList.remove(
-          "hidden"
-        );
+        message.innerHTML =
+          '<span style="color:#ff9b9b;font-weight:700;">Incorrect passcode.</span>';
 
       }
 
     }
 
 
-    function logoutAdmin() {
-
-      sessionStorage.removeItem(
-        SESSION_KEY
-      );
-
-
-      document.getElementById(
-        "loginArea"
-      ).style.display =
-        "block";
-
-
-      document.getElementById(
-        "adminArea"
-      ).style.display =
-        "none";
-
-    }
-
-
-    function generateId() {
-
-      const chars =
-        "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
-
-      let first =
-        "";
-
-      let second =
-        "";
-
-
-      for (
-        let i = 0;
-        i < 4;
-        i++
-      ) {
-
-        first +=
-          chars[
-            Math.floor(
-              Math.random() *
-              chars.length
-            )
-          ];
-
-
-        second +=
-          chars[
-            Math.floor(
-              Math.random() *
-              chars.length
-            )
-          ];
-
-      }
-
-
-      return (
-        "NKD-" +
-        first +
-        "-" +
-        second
-      );
-
-    }
-
+    /* ============================
+       CREATE SHIPMENT
+    ============================ */
 
     function createShipment() {
 
-      const typedId =
-        document
-          .getElementById(
-            "newId"
-          )
-          .value
+      const id =
+        document.getElementById("newId").value
           .trim()
           .toUpperCase();
 
+      const sender =
+        document.getElementById("newSender").value.trim();
 
-      const now =
-        new Date().toLocaleDateString(
-          "en-US",
-          {
-            year:
-              "numeric",
+      const recipient =
+        document.getElementById("newRecipient").value.trim();
 
-            month:
-              "long",
+      const origin =
+        document.getElementById("newOrigin").value.trim();
 
-            day:
-              "numeric"
-          }
-        );
+      const destination =
+        document.getElementById("newDestination").value.trim();
 
+      const type =
+        document.getElementById("newType").value.trim();
 
       const status =
-        document.getElementById(
-          "newStatus"
-        ).value;
+        document.getElementById("newStatus").value;
 
 
-      const shipment = {
+      if (
+        !id ||
+        !sender ||
+        !recipient ||
+        !origin ||
+        !destination ||
+        !type
+      ) {
 
-        id:
-          typedId ||
-          generateId(),
+        alert(
+          "Please complete all shipment fields."
+        );
 
-        status:
-          status,
-
-        sender:
-          document
-            .getElementById(
-              "newSender"
-            )
-            .value
-            .trim() ||
-          "N.K DON Logistics",
-
-        recipient:
-          document
-            .getElementById(
-              "newRecipient"
-            )
-            .value
-            .trim() ||
-          "Customer",
-
-        origin:
-          document
-            .getElementById(
-              "newOrigin"
-            )
-            .value
-            .trim() ||
-          "Not specified",
-
-        destination:
-          document
-            .getElementById(
-              "newDestination"
-            )
-            .value
-            .trim() ||
-          "Not specified",
-
-        type:
-          document
-            .getElementById(
-              "newType"
-            )
-            .value
-            .trim() ||
-          "Shipment",
-
-        updated:
-          now,
-
-        events: [
-
-          {
-            status:
-              status,
-
-            date:
-              now
-          }
-
-        ]
-
-      };
+        return;
+      }
 
 
       const shipments =
-        loadDatabase();
+        getShipments();
 
 
       if (
         shipments.some(
-          item =>
-            item.id.toUpperCase() ===
-            shipment.id.toUpperCase()
+          shipment =>
+            shipment.id.toUpperCase() === id
         )
       ) {
 
-        showAdminMessage(
+        alert(
           "That tracking reference already exists."
         );
 
         return;
-
       }
 
 
-      shipments.push(
-        shipment
-      );
-
-
-      saveDatabase(
-        shipments
-      );
-
-
-      clearForm();
-
-      renderShipments();
-
-
-      showAdminMessage(
-        "Shipment created successfully: " +
-        shipment.id
-      );
-
-    }
-
-
-    function clearForm() {
-
-      document.getElementById(
-        "newId"
-      ).value =
-        "";
-
-
-      document.getElementById(
-        "newSender"
-      ).value =
-        "";
-
-
-      document.getElementById(
-        "newRecipient"
-      ).value =
-        "";
-
-
-      document.getElementById(
-        "newOrigin"
-      ).value =
-        "";
-
-
-      document.getElementById(
-        "newDestination"
-      ).value =
-        "";
-
-
-      document.getElementById(
-        "newType"
-      ).value =
-        "";
-
-    }
-
-
-    function showAdminMessage(
-      text
-    ) {
-
-      const message =
-        document.getElementById(
-          "adminMessage"
+      const today =
+        new Date().toLocaleDateString(
+          "en-US",
+          {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+          }
         );
 
 
-      message.textContent =
-        text;
+      shipments.push({
+
+        id,
+
+        sender,
+
+        recipient,
+
+        origin,
+
+        destination,
+
+        type,
+
+        status,
+
+        updated: today,
+
+        timeline: [
+
+          {
+            title: "Shipment registered",
+            date: today
+          }
+
+        ]
+
+      });
 
 
-      message.classList.remove(
-        "hidden"
+      saveShipments(shipments);
+
+
+      alert(
+        "Shipment created successfully."
       );
+
+
+      document.getElementById("newId").value = "";
+      document.getElementById("newSender").value = "";
+      document.getElementById("newRecipient").value = "";
+      document.getElementById("newOrigin").value = "";
+      document.getElementById("newDestination").value = "";
+      document.getElementById("newType").value = "";
+
+
+      renderShipments();
 
     }
 
+
+    /* ============================
+       SHOW SAVED SHIPMENTS
+    ============================ */
 
     function renderShipments() {
 
       const list =
-        document.getElementById(
-          "shipmentList"
-        );
-
+        document.getElementById("shipmentList");
 
       const shipments =
-        loadDatabase();
+        getShipments();
 
 
-      list.innerHTML =
-        "";
+      list.innerHTML = "";
 
 
-      if (
-        !shipments.length
-      ) {
+      if (!shipments.length) {
 
         list.innerHTML =
           "<p>No shipments saved.</p>";
 
         return;
-
       }
 
 
       shipments.forEach(
-        shipment => {
+        (shipment, index) => {
 
-          const row =
-            document.createElement(
-              "div"
-            );
+          const item =
+            document.createElement("div");
 
-
-          row.className =
-            "shipment-row";
+          item.className =
+            "shipment-item";
 
 
-          row.innerHTML =
+          item.innerHTML = `
 
-            "<strong>" +
+            <strong>
+              ${escapeHtml(shipment.id)}
+            </strong>
 
-            escapeHtml(
-              shipment.id
-            ) +
+            <div style="margin-top:5px;">
+              ${escapeHtml(shipment.origin)}
+              →
+              ${escapeHtml(shipment.destination)}
+            </div>
 
-            "</strong>" +
+            <div style="margin-top:5px;">
+              Status:
+              ${escapeHtml(shipment.status)}
+            </div>
 
-            "<br>" +
+            <button
+              class="delete-btn"
+              onclick="deleteShipment(${index})"
+            >
+              Delete
+            </button>
 
-            "<span>" +
-
-            escapeHtml(
-              shipment.status
-            ) +
-
-            " • " +
-
-            escapeHtml(
-              shipment.origin
-            ) +
-
-            " → " +
-
-            escapeHtml(
-              shipment.destination
-            ) +
-
-            "</span>" +
-
-            "<div class='admin-actions'>" +
-
-            "<button class='btn btn-dark' " +
-
-            "onclick=\"viewShipment('" +
-
-            escapeHtml(
-              shipment.id
-            ) +
-
-            "')\">" +
-
-            "View" +
-
-            "</button>" +
+          `;
 
 
-            "<button class='btn btn-danger' " +
-
-            "onclick=\"deleteShipment('" +
-
-            escapeHtml(
-              shipment.id
-            ) +
-
-            "')\">" +
-
-            "Delete" +
-
-            "</button>" +
-
-            "</div>";
-
-
-          list.appendChild(
-            row
-          );
+          list.appendChild(item);
 
         }
       );
@@ -2870,83 +1686,69 @@
     }
 
 
-    function viewShipment(
-      id
-    ) {
+    /* ============================
+       DELETE SHIPMENT
+    ============================ */
 
-      document.getElementById(
-        "trackingInput"
-      ).value =
-        id;
+    function deleteShipment(index) {
 
+      if (
+        !confirm(
+          "Delete this shipment from the local NKDON tracking database?"
+        )
+      ) {
 
-      document.getElementById(
-        "tracking"
-      ).scrollIntoView({
-        behavior:
-          "smooth"
-      });
-
-
-      setTimeout(
-        trackShipment,
-        300
-      );
-
-    }
-
-
-    function deleteShipment(
-      id
-    ) {
-
-      const confirmed =
-        confirm(
-          "Delete shipment " +
-          id +
-          "?"
-        );
-
-
-      if (!confirmed)
         return;
+      }
 
 
       const shipments =
-        loadDatabase()
-          .filter(
-            item =>
-              item.id !== id
-          );
+        getShipments();
 
 
-      saveDatabase(
-        shipments
-      );
+      shipments.splice(index, 1);
+
+
+      saveShipments(shipments);
 
 
       renderShipments();
 
+    }
 
-      showAdminMessage(
-        "Shipment deleted."
-      );
+
+    /* ============================
+       SECURITY HELPER
+    ============================ */
+
+    function escapeHtml(value) {
+
+      return String(value)
+
+        .replaceAll("&", "&amp;")
+
+        .replaceAll("<", "&lt;")
+
+        .replaceAll(">", "&gt;")
+
+        .replaceAll('"', "&quot;")
+
+        .replaceAll("'", "&#039;");
 
     }
 
 
+    /* ============================
+       ENTER KEY TRACKING
+    ============================ */
+
     document
-      .getElementById(
-        "trackingInput"
-      )
+      .getElementById("trackingInput")
       .addEventListener(
         "keydown",
         function(event) {
 
-          if (
-            event.key ===
-            "Enter"
-          ) {
+          if (event.key === "Enter") {
 
             trackShipment();
 
@@ -2954,29 +1756,6 @@
 
         }
       );
-
-
-    if (
-      sessionStorage.getItem(
-        SESSION_KEY
-      ) === "true"
-    ) {
-
-      document.getElementById(
-        "loginArea"
-      ).style.display =
-        "none";
-
-
-      document.getElementById(
-        "adminArea"
-      ).style.display =
-        "block";
-
-
-      renderShipments();
-
-    }
 
   </script>
 
