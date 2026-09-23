@@ -3,36 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NKDON Tracking Logistics | Consignment Management</title>
-<meta name="description" content="NKDON Tracking Logistics — professional consignment management and shipment tracking.">
+<meta name="theme-color" content="#07111f">
+<meta name="description" content="N.K DON Tracking Logistics — secure consignment tracking and shipment management.">
+<title>N.K DON Tracking Logistics</title>
 
 <style>
 :root{
-  --navy:#06111f;
-  --navy2:#0a1929;
-  --panel:#0d2033;
-  --panel2:#10283f;
-  --border:#203c56;
-  --gold:#d8b36a;
-  --gold2:#f1d596;
-  --white:#f5f8fc;
-  --muted:#91a5b9;
-  --green:#36d98b;
-  --orange:#ffbd58;
-  --red:#ff6878;
-  --blue:#62b9ff;
+  --navy:#07111f;
+  --navy2:#0b1728;
+  --panel:#101f33;
+  --panel2:#13263d;
+  --line:#233852;
+  --text:#f5f8fc;
+  --muted:#9fb0c5;
+  --blue:#3b82f6;
+  --blue2:#60a5fa;
+  --green:#22c55e;
+  --orange:#f59e0b;
+  --red:#ef4444;
+  --shadow:0 20px 60px rgba(0,0,0,.30);
+  --radius:18px;
 }
 
 *{box-sizing:border-box}
 
-html{scroll-behavior:smooth}
+html{
+  scroll-behavior:smooth;
+}
 
 body{
   margin:0;
   background:
-    radial-gradient(circle at 50% -10%,#173652 0,#071321 38%,#040c15 100%);
-  color:var(--white);
-  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    radial-gradient(circle at 15% 0%,rgba(59,130,246,.12),transparent 30%),
+    radial-gradient(circle at 90% 10%,rgba(14,165,233,.08),transparent 25%),
+    var(--navy);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+}
+
+button,input,select,textarea{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
 }
 
 a{
@@ -40,96 +54,82 @@ a{
   text-decoration:none;
 }
 
-button,input,select,textarea{
-  font:inherit;
-}
-
 .container{
-  width:min(1180px,92%);
+  width:min(1180px,calc(100% - 32px));
   margin:auto;
 }
 
-/* TOP BAR */
+/* HEADER */
 
-.topbar{
-  padding:9px 0;
-  background:#040b13;
-  border-bottom:1px solid rgba(216,179,106,.18);
-  color:#b9c7d5;
-  font-size:11px;
-  letter-spacing:.7px;
-  text-align:center;
-}
-
-/* NAVIGATION */
-
-nav{
+header{
   position:sticky;
   top:0;
-  z-index:100;
-  background:rgba(5,15,26,.94);
+  z-index:1000;
   backdrop-filter:blur(18px);
+  background:rgba(7,17,31,.88);
   border-bottom:1px solid rgba(255,255,255,.07);
 }
 
 .nav{
-  min-height:76px;
+  height:72px;
   display:flex;
   align-items:center;
   justify-content:space-between;
+  gap:20px;
 }
 
 .brand{
   display:flex;
   align-items:center;
   gap:12px;
+  font-weight:800;
+  letter-spacing:.3px;
 }
 
 .logo{
   width:42px;
   height:42px;
-  border:1px solid rgba(216,179,106,.65);
   border-radius:12px;
   display:grid;
   place-items:center;
-  color:var(--gold2);
-  font-weight:900;
-  letter-spacing:-1px;
-  background:linear-gradient(145deg,#132a40,#071421);
+  background:linear-gradient(135deg,#2563eb,#0ea5e9);
+  box-shadow:0 8px 25px rgba(37,99,235,.35);
+  font-size:16px;
 }
 
-.brand-name{
-  font-weight:800;
-  font-size:15px;
-  letter-spacing:.2px;
-}
-
-.brand-sub{
+.brand small{
   display:block;
-  margin-top:3px;
   color:var(--muted);
   font-size:10px;
-  letter-spacing:1.1px;
-  text-transform:uppercase;
+  letter-spacing:1.5px;
+  margin-top:2px;
 }
 
 .navlinks{
   display:flex;
   gap:25px;
-  color:#bdcada;
-  font-size:13px;
+  color:#c8d4e4;
+  font-size:14px;
 }
 
 .navlinks a:hover{
   color:white;
 }
 
+.navbtn{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  color:white;
+  padding:10px 16px;
+  border-radius:10px;
+}
+
 /* HERO */
 
 .hero{
-  min-height:680px;
-  display:flex;
-  align-items:center;
+  min-height:650px;
+  display:grid;
+  place-items:center;
   text-align:center;
   position:relative;
   overflow:hidden;
@@ -138,255 +138,426 @@ nav{
 .hero:before{
   content:"";
   position:absolute;
-  width:520px;
-  height:520px;
+  width:600px;
+  height:600px;
   border-radius:50%;
-  background:rgba(70,145,200,.10);
+  background:rgba(37,99,235,.10);
   filter:blur(80px);
-  left:50%;
-  top:10%;
-  transform:translateX(-50%);
 }
 
 .hero-content{
   position:relative;
-  width:100%;
+  max-width:900px;
+  padding:80px 0;
 }
 
 .eyebrow{
   display:inline-flex;
-  align-items:center;
-  gap:8px;
-  border:1px solid rgba(216,179,106,.35);
-  background:rgba(216,179,106,.07);
-  color:var(--gold2);
+  padding:8px 13px;
+  border:1px solid rgba(96,165,250,.25);
+  background:rgba(59,130,246,.08);
   border-radius:999px;
-  padding:9px 15px;
-  font-size:11px;
+  color:#9dc8ff;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:1px;
   text-transform:uppercase;
-  letter-spacing:1.2px;
-}
-
-.dot{
-  width:6px;
-  height:6px;
-  background:var(--green);
-  border-radius:50%;
-  box-shadow:0 0 12px var(--green);
 }
 
 .hero h1{
-  max-width:900px;
-  margin:25px auto 20px;
-  font-size:clamp(45px,7vw,82px);
-  line-height:.98;
-  letter-spacing:-4px;
+  font-size:clamp(42px,7vw,76px);
+  line-height:1;
+  margin:25px 0 20px;
+  letter-spacing:-3px;
 }
 
 .hero h1 span{
-  color:var(--gold2);
+  color:#60a5fa;
 }
 
 .hero p{
   max-width:680px;
   margin:auto;
   color:var(--muted);
-  line-height:1.8;
-  font-size:16px;
+  font-size:18px;
+  line-height:1.7;
 }
 
 .hero-buttons{
   display:flex;
   justify-content:center;
-  flex-wrap:wrap;
   gap:12px;
-  margin-top:32px;
+  margin-top:34px;
+  flex-wrap:wrap;
 }
+
+/* BUTTONS */
 
 .btn{
   border:0;
-  cursor:pointer;
-  border-radius:11px;
-  padding:14px 20px;
-  font-weight:800;
-  font-size:13px;
+  border-radius:12px;
+  padding:13px 19px;
+  font-weight:700;
   transition:.2s;
 }
 
-.btn:hover{
+.btn-primary{
+  color:white;
+  background:linear-gradient(135deg,#2563eb,#0284c7);
+  box-shadow:0 10px 30px rgba(37,99,235,.25);
+}
+
+.btn-primary:hover{
   transform:translateY(-1px);
 }
 
-.btn-primary{
-  background:linear-gradient(135deg,var(--gold2),var(--gold));
-  color:#101923;
-}
-
-.btn-dark{
-  background:transparent;
-  border:1px solid var(--border);
+.btn-secondary{
   color:white;
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--line);
 }
 
-.btn-danger{
-  background:#421c25;
-  color:#ffb1ba;
+/* TRACKING */
+
+.track-section{
+  padding:25px 0 90px;
 }
 
-/* STATS */
-
-.stats{
-  margin-top:-35px;
-  position:relative;
-  z-index:5;
+.track-card{
+  background:linear-gradient(145deg,rgba(19,38,61,.96),rgba(10,25,42,.96));
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:30px;
+  box-shadow:var(--shadow);
 }
 
-.stat-grid{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  background:rgba(11,29,46,.9);
-  border:1px solid var(--border);
-  border-radius:20px;
-  overflow:hidden;
-}
-
-.stat{
-  padding:24px;
+.section-title{
   text-align:center;
-  border-right:1px solid var(--border);
+  margin-bottom:30px;
 }
 
-.stat:last-child{
-  border-right:0;
+.section-title h2{
+  font-size:34px;
+  margin:0 0 10px;
 }
 
-.stat strong{
-  display:block;
-  font-size:25px;
+.section-title p{
+  color:var(--muted);
+  margin:0;
+}
+
+.track-form{
+  display:flex;
+  gap:10px;
+  max-width:800px;
+  margin:auto;
+}
+
+.track-form input{
+  flex:1;
+  min-width:0;
+  padding:16px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#071321;
   color:white;
+  outline:none;
 }
 
-.stat span{
+.track-form input:focus{
+  border-color:#3b82f6;
+}
+
+/* RESULTS */
+
+#trackingResult{
+  margin-top:28px;
+}
+
+.result-card{
+  border:1px solid var(--line);
+  background:#0a1829;
+  border-radius:18px;
+  padding:25px;
+}
+
+.result-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:15px;
+  flex-wrap:wrap;
+}
+
+.tracking-number{
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:.5px;
+}
+
+.status{
+  display:inline-flex;
+  padding:8px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  background:rgba(59,130,246,.12);
+  color:#93c5fd;
+  border:1px solid rgba(59,130,246,.2);
+}
+
+.status.delivered{
+  background:rgba(34,197,94,.12);
+  color:#86efac;
+}
+
+.status.delayed,
+.status.held,
+.status.returned{
+  background:rgba(239,68,68,.12);
+  color:#fca5a5;
+}
+
+.route{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:18px;
+  margin:30px 0;
+}
+
+.route-point small{
+  display:block;
   color:var(--muted);
   font-size:11px;
   text-transform:uppercase;
-  letter-spacing:1px;
+  margin-bottom:7px;
+}
+
+.route-point strong{
+  font-size:18px;
+}
+
+.route-line{
+  height:2px;
+  width:80px;
+  background:linear-gradient(90deg,#3b82f6,#22c55e);
+}
+
+.details-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+
+.detail{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:15px;
+  background:rgba(255,255,255,.025);
+}
+
+.detail label{
+  display:block;
+  color:var(--muted);
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  margin-bottom:7px;
+}
+
+.detail strong{
+  font-size:14px;
+}
+
+/* TIMELINE */
+
+.timeline{
+  margin-top:30px;
+}
+
+.timeline h3{
+  margin-bottom:20px;
+}
+
+.event{
+  display:grid;
+  grid-template-columns:20px 1fr;
+  gap:14px;
+  position:relative;
+  padding-bottom:24px;
+}
+
+.event:last-child{
+  padding-bottom:0;
+}
+
+.event-dot{
+  width:12px;
+  height:12px;
+  margin-top:5px;
+  border-radius:50%;
+  background:#3b82f6;
+  box-shadow:0 0 0 5px rgba(59,130,246,.12);
+}
+
+.event:not(:last-child):before{
+  content:"";
+  position:absolute;
+  left:5px;
+  top:18px;
+  bottom:0;
+  width:2px;
+  background:var(--line);
+}
+
+.event-title{
+  font-weight:800;
+}
+
+.event-meta{
+  color:#7f93aa;
+  font-size:12px;
+  margin-top:4px;
+}
+
+.event-description{
+  color:#bac8d8;
+  margin-top:7px;
+  line-height:1.5;
 }
 
 /* SECTIONS */
 
-section{
-  padding:90px 0;
+section.content-section{
+  padding:80px 0;
 }
 
-.section-heading{
-  text-align:center;
-  max-width:700px;
-  margin:0 auto 42px;
-}
-
-.section-heading .label{
-  color:var(--gold2);
-  font-size:11px;
-  letter-spacing:1.5px;
-  text-transform:uppercase;
-}
-
-.section-heading h2{
-  font-size:36px;
-  margin:10px 0;
-  letter-spacing:-1.5px;
-}
-
-.section-heading p{
-  color:var(--muted);
-  line-height:1.7;
-}
-
-/* SERVICES */
-
-.service-grid{
+.cards{
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:16px;
 }
 
 .card{
-  background:linear-gradient(145deg,rgba(14,34,53,.95),rgba(7,20,33,.95));
-  border:1px solid var(--border);
-  border-radius:18px;
   padding:25px;
-}
-
-.card:hover{
-  border-color:rgba(216,179,106,.35);
+  border:1px solid var(--line);
+  background:rgba(16,31,51,.75);
+  border-radius:18px;
 }
 
 .card-icon{
-  width:43px;
-  height:43px;
+  width:45px;
+  height:45px;
+  border-radius:12px;
   display:grid;
   place-items:center;
-  border-radius:12px;
-  border:1px solid rgba(216,179,106,.22);
-  background:rgba(216,179,106,.07);
-  color:var(--gold2);
-  font-weight:900;
+  background:rgba(59,130,246,.12);
+  margin-bottom:20px;
+  font-size:20px;
 }
 
 .card h3{
-  margin:18px 0 8px;
-  font-size:16px;
+  margin:0 0 10px;
 }
 
 .card p{
   color:var(--muted);
-  font-size:13px;
-  line-height:1.7;
+  line-height:1.6;
+  font-size:14px;
+}
+
+/* ADMIN */
+
+.admin-section{
+  padding:80px 0;
+}
+
+.admin-shell{
+  background:#091727;
+  border:1px solid var(--line);
+  border-radius:24px;
+  overflow:hidden;
+}
+
+.admin-top{
+  padding:24px;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  flex-wrap:wrap;
+}
+
+.admin-top h2{
   margin:0;
 }
 
-/* TRACKING */
-
-.tracking-section{
-  background:rgba(3,12,21,.45);
+.admin-top p{
+  color:var(--muted);
+  margin:5px 0 0;
+  font-size:13px;
 }
 
-.track-panel{
-  max-width:850px;
+.admin-body{
+  padding:25px;
+}
+
+.login-box{
+  max-width:460px;
   margin:auto;
-  background:linear-gradient(145deg,#0e253a,#091725);
-  border:1px solid var(--border);
-  border-radius:24px;
-  padding:28px;
-  box-shadow:0 25px 70px rgba(0,0,0,.25);
+  padding:20px 0;
 }
 
-.track-form{
-  display:flex;
-  gap:10px;
+.field{
+  margin-bottom:15px;
 }
 
-.input{
+.field label{
+  display:block;
+  font-size:12px;
+  font-weight:700;
+  color:#b9c8da;
+  margin-bottom:7px;
+}
+
+.field input,
+.field select,
+.field textarea{
   width:100%;
-  border:1px solid #29445e;
-  background:#06121e;
+  padding:13px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:#071321;
   color:white;
-  padding:15px;
-  border-radius:11px;
   outline:none;
 }
 
-.input:focus{
-  border-color:var(--gold);
+.field textarea{
+  min-height:90px;
+  resize:vertical;
+}
+
+.admin-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.mini{
+  border:0;
+  background:none;
+  color:#75b7ff;
+  padding:8px;
 }
 
 .message{
-  display:none;
-  margin-top:14px;
+  margin-top:12px;
   padding:12px;
   border-radius:10px;
-  font-size:12px;
+  display:none;
+  font-size:13px;
 }
 
 .message.show{
@@ -394,426 +565,179 @@ section{
 }
 
 .message.error{
-  background:#3b1820;
-  color:#ffb1bb;
+  color:#fecaca;
+  background:rgba(239,68,68,.1);
+  border:1px solid rgba(239,68,68,.2);
 }
 
 .message.success{
-  background:#103a27;
-  color:#9af0bc;
+  color:#bbf7d0;
+  background:rgba(34,197,94,.1);
+  border:1px solid rgba(34,197,94,.2);
 }
 
-/* RESULT */
+/* DASHBOARD */
 
-.result{
-  margin-top:22px;
+.dashboard{
+  display:none;
 }
 
-.result-header{
-  display:flex;
-  justify-content:space-between;
-  gap:20px;
-  align-items:flex-start;
-  border-bottom:1px solid var(--border);
-  padding-bottom:20px;
-}
-
-.reference-label{
-  color:var(--muted);
-  font-size:10px;
-  letter-spacing:1.2px;
-}
-
-.reference{
-  font-size:22px;
-  font-weight:900;
-  margin-top:5px;
-}
-
-.status{
-  display:inline-block;
-  padding:8px 12px;
-  border-radius:999px;
-  font-size:10px;
-  font-weight:900;
-  text-transform:uppercase;
-  letter-spacing:.7px;
-  background:#17344b;
-  color:#bfe4ff;
-}
-
-.status.delivered{
-  background:#123b28;
-  color:#83edb1;
-}
-
-.status.processing,.status.pending{
-  background:#3e3117;
-  color:#ffd879;
-}
-
-.status.cancelled{
-  background:#411b24;
-  color:#ff9fab;
-}
-
-.info-grid{
+.stats{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:repeat(5,1fr);
   gap:12px;
-  margin-top:20px;
+  margin-bottom:25px;
 }
 
-.info{
-  padding:15px;
-  border:1px solid #19334b;
-  background:#071522;
-  border-radius:12px;
-}
-
-.info span{
-  display:block;
-  color:var(--muted);
-  font-size:10px;
-  text-transform:uppercase;
-  letter-spacing:.7px;
-  margin-bottom:6px;
-}
-
-.info strong{
-  font-size:13px;
-}
-
-.route{
-  margin-top:22px;
-  display:grid;
-  grid-template-columns:1fr 80px 1fr;
-  align-items:center;
-  gap:10px;
-}
-
-.location{
+.stat{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.025);
   padding:18px;
-  border:1px solid var(--border);
-  border-radius:13px;
-  background:#071522;
+  border-radius:14px;
 }
 
-.location small{
-  display:block;
+.stat small{
   color:var(--muted);
-  font-size:10px;
-  text-transform:uppercase;
-}
-
-.location strong{
   display:block;
-  margin-top:5px;
-  font-size:14px;
+  margin-bottom:8px;
 }
 
-.route-line{
-  height:1px;
-  background:linear-gradient(90deg,var(--gold),#4d718e,var(--gold));
-  position:relative;
-}
-
-.route-line:after{
-  content:"›";
-  position:absolute;
-  right:50%;
-  top:-13px;
-  transform:translateX(50%);
-  font-size:22px;
-  color:var(--gold2);
-}
-
-.timeline{
-  margin-top:28px;
-}
-
-.timeline-title{
-  font-size:15px;
-  margin-bottom:18px;
-}
-
-.event{
-  display:flex;
-  gap:15px;
-  position:relative;
-  padding-bottom:22px;
-}
-
-.event:last-child{
-  padding-bottom:0;
-}
-
-.event-marker{
-  width:11px;
-  height:11px;
-  min-width:11px;
-  margin-top:4px;
-  background:var(--gold);
-  border-radius:50%;
-  box-shadow:0 0 0 5px rgba(216,179,106,.08);
-  z-index:2;
-}
-
-.event:not(:last-child):before{
-  content:"";
-  position:absolute;
-  left:5px;
-  top:15px;
-  bottom:0;
-  width:1px;
-  background:#29415a;
-}
-
-.event h4{
-  margin:0 0 4px;
-  font-size:13px;
-}
-
-.event p{
-  margin:0;
-  color:var(--muted);
-  font-size:11px;
-  line-height:1.5;
-}
-
-.event time{
-  display:block;
-  color:#6f8498;
-  font-size:10px;
-  margin-top:4px;
-}
-
-/* ABOUT */
-
-.about-grid{
-  display:grid;
-  grid-template-columns:1.1fr .9fr;
-  gap:18px;
-}
-
-.about-box{
-  padding:32px;
-  border:1px solid var(--border);
-  border-radius:20px;
-  background:linear-gradient(145deg,#0d2135,#071522);
-}
-
-.about-box h3{
-  font-size:23px;
-  margin-top:0;
-}
-
-.about-box p{
-  color:var(--muted);
-  line-height:1.8;
-  font-size:14px;
-}
-
-.check{
-  margin:14px 0;
-  color:#cbd8e5;
-  font-size:13px;
-}
-
-.check span{
-  color:var(--gold2);
-  margin-right:8px;
-}
-
-/* ADMIN */
-
-.admin-section{
-  background:#040c15;
-  border-top:1px solid var(--border);
+.stat strong{
+  font-size:28px;
 }
 
 .admin-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:18px;
+  margin-bottom:20px;
 }
 
-.admin-panel{
-  border:1px solid var(--border);
-  background:#091a2a;
-  border-radius:20px;
-  padding:24px;
+.panel{
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:20px;
+  background:rgba(255,255,255,.025);
 }
 
-.admin-panel h3{
+.panel h3{
   margin-top:0;
 }
 
-.fields{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:11px;
+.shipment-table-wrap{
+  overflow-x:auto;
 }
 
-.field.full{
-  grid-column:1/-1;
-}
-
-.field label{
-  display:block;
-  color:var(--muted);
-  font-size:10px;
-  text-transform:uppercase;
-  letter-spacing:.7px;
-  margin-bottom:6px;
-}
-
-.field input,
-.field select,
-.field textarea{
+.shipment-table{
   width:100%;
-  background:#06121e;
-  border:1px solid #29445e;
-  color:white;
-  border-radius:10px;
-  padding:12px;
-  outline:none;
+  border-collapse:collapse;
+  min-width:800px;
 }
 
-.field textarea{
-  min-height:85px;
-  resize:vertical;
-}
-
-.admin-actions{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-top:13px;
-}
-
-.shipments{
-  max-height:500px;
-  overflow:auto;
-}
-
-.shipment{
-  padding:15px 0;
-  border-bottom:1px solid var(--border);
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-}
-
-.shipment:last-child{
-  border-bottom:0;
-}
-
-.shipment strong{
+.shipment-table th,
+.shipment-table td{
+  text-align:left;
+  padding:13px;
+  border-bottom:1px solid var(--line);
   font-size:13px;
 }
 
-.shipment small{
-  display:block;
-  color:var(--muted);
-  margin-top:4px;
-  font-size:10px;
+.shipment-table th{
+  color:#9fb0c5;
+  font-size:11px;
+  text-transform:uppercase;
 }
 
-.mini{
-  border:1px solid var(--border);
-  background:#10283e;
-  color:#d9e7f4;
+.table-actions{
+  display:flex;
+  gap:6px;
+}
+
+.small-btn{
+  border:1px solid var(--line);
+  background:#0d1c2e;
+  color:white;
   border-radius:8px;
-  padding:7px 9px;
-  cursor:pointer;
-  font-size:10px;
+  padding:7px 10px;
+  font-size:12px;
 }
 
-.mini.danger{
-  background:#351821;
-  color:#ff9fac;
-}
-
-/* FAQ */
-
-.faq-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px;
+.small-btn.danger{
+  color:#fca5a5;
 }
 
 /* FOOTER */
 
 footer{
-  border-top:1px solid var(--border);
-  padding:30px 0;
-  color:#71869a;
-  font-size:11px;
+  border-top:1px solid var(--line);
+  padding:35px 0;
+  color:var(--muted);
+  font-size:13px;
 }
 
-.footer{
+.footer-inner{
   display:flex;
   justify-content:space-between;
-  gap:15px;
+  gap:20px;
+  flex-wrap:wrap;
+}
+
+.whatsapp{
+  color:#86efac;
+}
+
+/* LOADING */
+
+.loader{
+  display:none;
+  text-align:center;
+  color:var(--muted);
+  padding:20px;
+}
+
+.loader.show{
+  display:block;
 }
 
 /* RESPONSIVE */
 
 @media(max-width:900px){
-  .service-grid{
-    grid-template-columns:1fr 1fr;
+  .cards{
+    grid-template-columns:repeat(2,1fr);
   }
 
-  .stat-grid{
-    grid-template-columns:1fr 1fr;
+  .details-grid{
+    grid-template-columns:repeat(2,1fr);
   }
 
-  .stat:nth-child(2){
-    border-right:0;
-  }
-
-  .stat:nth-child(-n+2){
-    border-bottom:1px solid var(--border);
-  }
-
-  .about-grid,
-  .admin-grid{
-    grid-template-columns:1fr;
-  }
-
-  .navlinks{
-    display:none;
+  .stats{
+    grid-template-columns:repeat(3,1fr);
   }
 }
 
-@media(max-width:600px){
-  section{
-    padding:65px 0;
+@media(max-width:700px){
+  .navlinks{
+    display:none;
+  }
+
+  .container{
+    width:min(100% - 22px,1180px);
   }
 
   .hero{
-    min-height:600px;
+    min-height:570px;
   }
 
   .hero h1{
-    font-size:48px;
-    letter-spacing:-2.5px;
+    letter-spacing:-2px;
   }
 
   .hero p{
-    font-size:14px;
+    font-size:15px;
   }
 
-  .service-grid,
-  .info-grid,
-  .faq-grid,
-  .fields{
-    grid-template-columns:1fr;
-  }
-
-  .field.full{
-    grid-column:auto;
+  .track-card{
+    padding:18px;
   }
 
   .track-form{
@@ -822,24 +746,45 @@ footer{
 
   .route{
     grid-template-columns:1fr;
+    gap:10px;
   }
 
   .route-line{
     width:100%;
   }
 
-  .route-line:after{
-    right:10px;
-    top:-14px;
-    transform:none;
+  .details-grid{
+    grid-template-columns:1fr 1fr;
   }
 
-  .result-header{
-    flex-direction:column;
+  .cards{
+    grid-template-columns:1fr;
   }
 
-  .footer{
-    flex-direction:column;
+  .admin-grid{
+    grid-template-columns:1fr;
+  }
+
+  .stats{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .stat strong{
+    font-size:23px;
+  }
+}
+
+@media(max-width:420px){
+  .details-grid{
+    grid-template-columns:1fr;
+  }
+
+  .stats{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .brand span{
+    display:none;
   }
 }
 </style>
@@ -847,226 +792,151 @@ footer{
 
 <body>
 
-<div class="topbar">
-  NKDON TRACKING LOGISTICS • PROFESSIONAL CONSIGNMENT MANAGEMENT & SHIPMENT TRACKING
-</div>
-
-<nav>
+<header>
   <div class="container nav">
+
     <a href="#home" class="brand">
       <div class="logo">NK</div>
       <div>
-        <div class="brand-name">NKDON Tracking Logistics</div>
-        <span class="brand-sub">Consignment • Delivery • Tracking</span>
+        N.K DON
+        <small>TRACKING LOGISTICS</small>
       </div>
     </a>
 
-    <div class="navlinks">
+    <nav class="navlinks">
       <a href="#home">Home</a>
-      <a href="#services">Services</a>
       <a href="#tracking">Tracking</a>
+      <a href="#services">Services</a>
       <a href="#about">About</a>
-      <a href="#faq">FAQ</a>
-      <a href="#contact">Contact</a>
-    </div>
+      <a href="#admin">Admin</a>
+    </nav>
+
+    <a class="navbtn" href="#tracking">Track</a>
+
   </div>
-</nav>
+</header>
 
 <main>
 
-<section class="hero" id="home">
+<section id="home" class="hero">
   <div class="container hero-content">
 
     <div class="eyebrow">
-      <span class="dot"></span>
-      Consignment Management System
+      N.K DON • GLOBAL CONSIGNMENT SERVICES
     </div>
 
     <h1>
-      Moving What <span>Matters.</span>
+      Moving What<br>
+      <span>Matters.</span>
     </h1>
 
     <p>
-      A professional consignment and shipment tracking portal designed
-      to keep shipment information organized, accessible and transparent.
+      Professional consignment handling, shipment visibility and
+      reliable delivery coordination — all in one secure tracking platform.
     </p>
 
     <div class="hero-buttons">
-      <a href="#tracking" class="btn btn-primary">Track Consignment</a>
-      <a href="#contact" class="btn btn-dark">Contact Logistics</a>
+      <a href="#tracking" class="btn btn-primary">
+        Track a Consignment
+      </a>
+
+      <a href="https://wa.me/2349168419464"
+         target="_blank"
+         class="btn btn-secondary">
+        Contact Support
+      </a>
     </div>
 
   </div>
 </section>
 
-<div class="stats">
-  <div class="container">
-    <div class="stat-grid">
-      <div class="stat">
-        <strong>24/7</strong>
-        <span>Tracking Access</span>
-      </div>
 
-      <div class="stat">
-        <strong>LIVE</strong>
-        <span>Shipment Records</span>
-      </div>
-
-      <div class="stat">
-        <strong>SECURE</strong>
-        <span>Owner Management</span>
-      </div>
-
-      <div class="stat">
-        <strong>GLOBAL</strong>
-        <span>Consignment Support</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<section id="services">
-  <div class="container">
-
-    <div class="section-heading">
-      <div class="label">Our Services</div>
-      <h2>Professional Shipment Solutions</h2>
-      <p>
-        Structured logistics support for domestic and international consignments.
-      </p>
-    </div>
-
-    <div class="service-grid">
-
-      <div class="card">
-        <div class="card-icon">01</div>
-        <h3>Domestic Delivery</h3>
-        <p>
-          Organized consignment coordination for shipments moving within Nigeria.
-        </p>
-      </div>
-
-      <div class="card">
-        <div class="card-icon">02</div>
-        <h3>International Shipping</h3>
-        <p>
-          Shipment coordination for selected international destinations.
-        </p>
-      </div>
-
-      <div class="card">
-        <div class="card-icon">03</div>
-        <h3>Courier Services</h3>
-        <p>
-          Structured handling of parcels, documents and other consignments.
-        </p>
-      </div>
-
-      <div class="card">
-        <div class="card-icon">04</div>
-        <h3>Consignment Tracking</h3>
-        <p>
-          Monitor registered shipment status and recorded logistics events.
-        </p>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<section class="tracking-section" id="tracking">
+<section id="tracking" class="track-section">
 
   <div class="container">
 
-    <div class="section-heading">
-      <div class="label">Shipment Tracking</div>
+    <div class="section-title">
       <h2>Track Your Consignment</h2>
-      <p>
-        Enter your NKDON consignment reference to view the latest recorded shipment information.
-      </p>
+      <p>Enter your N.K DON tracking number to view shipment information.</p>
     </div>
 
-    <div class="track-panel">
+    <div class="track-card">
 
-      <div class="track-form">
+      <form id="trackingForm" class="track-form">
+
         <input
-          id="trackingInput"
-          class="input"
-          placeholder="Enter consignment reference"
+          id="trackingNumber"
+          type="text"
           autocomplete="off"
+          placeholder="Enter tracking number e.g. NKDON-7A29-X4P8"
+          required
         >
 
-        <button id="trackBtn" class="btn btn-primary">
+        <button class="btn btn-primary" type="submit">
           Track Shipment
         </button>
+
+      </form>
+
+      <div id="trackingLoader" class="loader">
+        Searching shipment records...
       </div>
 
-      <div id="trackMessage" class="message"></div>
+      <div id="trackingMessage" class="message"></div>
 
-      <div id="trackingResult" class="result"></div>
-
-      <div style="margin-top:18px;color:#71869a;font-size:10px;line-height:1.6">
-        NKDON tracking references are independent internal references and are not
-        DHL, FedEx, UPS or other third-party carrier tracking numbers.
-      </div>
+      <div id="trackingResult"></div>
 
     </div>
+
   </div>
 
 </section>
 
-<section id="about">
+
+<section id="services" class="content-section">
 
   <div class="container">
 
-    <div class="section-heading">
-      <div class="label">About NKDON</div>
-      <h2>Built Around Clear Shipment Records</h2>
-      <p>
-        NKDON Tracking Logistics uses structured consignment records and tracking
-        events to provide customers with shipment visibility.
-      </p>
+    <div class="section-title">
+      <h2>Our Logistics Services</h2>
+      <p>Designed around reliable shipment handling and visibility.</p>
     </div>
 
-    <div class="about-grid">
+    <div class="cards">
 
-      <div class="about-box">
-        <h3>Professional Consignment Management</h3>
-
+      <div class="card">
+        <div class="card-icon">📦</div>
+        <h3>Domestic Delivery</h3>
         <p>
-          Each registered shipment can have its own reference, route,
-          shipping method, package information, delivery estimate and
-          chronological tracking events.
+          Consignment movement between locations with
+          shipment status visibility.
         </p>
-
-        <div class="check">
-          <span>✓</span> Unique consignment references
-        </div>
-
-        <div class="check">
-          <span>✓</span> Structured shipment information
-        </div>
-
-        <div class="check">
-          <span>✓</span> Recorded tracking events
-        </div>
-
-        <div class="check">
-          <span>✓</span> Secure administrator management
-        </div>
       </div>
 
-      <div class="about-box">
-        <h3>Shipment Visibility</h3>
-
+      <div class="card">
+        <div class="card-icon">🌍</div>
+        <h3>International Shipping</h3>
         <p>
-          Customers can check the latest information associated with their
-          consignment reference without accessing private administrator data.
+          Manage international consignments with routing,
+          destination and tracking information.
         </p>
+      </div>
 
+      <div class="card">
+        <div class="card-icon">🚚</div>
+        <h3>Courier Services</h3>
         <p>
-          For shipment questions, customers can contact NKDON support and
-          provide their consignment reference.
+          Professional shipment coordination for parcels,
+          documents and other consignments.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">📍</div>
+        <h3>Shipment Tracking</h3>
+        <p>
+          Follow recorded shipment events and current
+          consignment status from one place.
         </p>
       </div>
 
@@ -1076,44 +946,30 @@ footer{
 
 </section>
 
-<section id="faq">
+
+<section id="about" class="content-section">
 
   <div class="container">
 
-    <div class="section-heading">
-      <div class="label">Support</div>
-      <h2>Frequently Asked Questions</h2>
+    <div class="section-title">
+      <h2>About N.K DON</h2>
+      <p>Professional shipment visibility built for modern logistics.</p>
     </div>
 
-    <div class="faq-grid">
+    <div class="card" style="max-width:850px;margin:auto">
 
-      <div class="card">
-        <h3>What is a consignment reference?</h3>
-        <p>
-          It is the unique NKDON reference assigned to a registered shipment.
-        </p>
-      </div>
+      <p style="font-size:16px;line-height:1.8;color:#b8c7d8">
+        N.K DON Tracking Logistics provides a digital platform for
+        managing and tracking consignments. Customers can check
+        recorded shipment information using their tracking number,
+        while authorized administrators can manage shipment records
+        and tracking events securely.
+      </p>
 
-      <div class="card">
-        <h3>What if my reference is not found?</h3>
-        <p>
-          Check the reference carefully. If it remains unavailable, contact NKDON support.
-        </p>
-      </div>
-
-      <div class="card">
-        <h3>Can shipment status change?</h3>
-        <p>
-          Yes. Authorized administrators can update shipment status as the consignment progresses.
-        </p>
-      </div>
-
-      <div class="card">
-        <h3>Can I contact NKDON?</h3>
-        <p>
-          Yes. Contact support through WhatsApp and include your consignment reference.
-        </p>
-      </div>
+      <p style="font-size:16px;line-height:1.8;color:#b8c7d8">
+        Shipment events shown on this platform are based on records
+        entered into the N.K DON system.
+      </p>
 
     </div>
 
@@ -1121,261 +977,464 @@ footer{
 
 </section>
 
-<section id="contact">
+
+<section id="admin" class="admin-section">
 
   <div class="container">
 
-    <div class="section-heading">
-      <div class="label">Contact</div>
-      <h2>Need Shipment Assistance?</h2>
-      <p>
-        Contact NKDON and include your consignment reference when requesting support.
-      </p>
-    </div>
+    <div class="admin-shell">
 
-    <div class="card" style="max-width:650px;margin:auto;text-align:center">
-
-      <div class="card-icon" style="margin:auto">WA</div>
-
-      <h3>NKDON WhatsApp Support</h3>
-
-      <p>
-        Send your shipment reference and your enquiry.
-      </p>
-
-      <div class="hero-buttons">
-        <a
-          href="https://wa.me/2349168419464"
-          target="_blank"
-          rel="noopener"
-          class="btn btn-primary"
-        >
-          Chat on WhatsApp
-        </a>
-      </div>
-
-    </div>
-
-  </div>
-
-</section>
-
-<!-- ADMIN AREA -->
-
-<section class="admin-section" id="admin">
-
-  <div class="container">
-
-    <div class="section-heading">
-      <div class="label">Owner Portal</div>
-      <h2>Consignment Management</h2>
-      <p>
-        Authorized NKDON administrators can manage live shipment records.
-      </p>
-    </div>
-
-    <!-- LOGIN -->
-
-    <div id="loginPanel" class="admin-panel" style="max-width:500px;margin:auto">
-
-      <h3>Administrator Sign In</h3>
-
-      <div class="fields">
-
-        <div class="field full">
-          <label>Email Address</label>
-          <input
-            id="adminEmail"
-            type="email"
-            autocomplete="username"
-            placeholder="Administrator email"
-          >
+      <div class="admin-top">
+        <div>
+          <h2>N.K DON Operations</h2>
+          <p>Authorized administrator portal</p>
         </div>
 
-        <div class="field full">
-          <label>Password</label>
-          <input
-            id="adminPassword"
-            type="password"
-            autocomplete="current-password"
-            placeholder="Administrator password"
-          >
-        </div>
-
-      </div>
-
-      <div class="admin-actions">
-        <button id="loginBtn" class="btn btn-primary">
-          Sign In
+        <button
+          id="signOutBtn"
+          class="btn btn-secondary"
+          style="display:none">
+          Sign Out
         </button>
       </div>
 
-      <div id="loginMessage" class="message"></div>
 
-    </div>
+      <div class="admin-body">
 
-    <!-- DASHBOARD -->
+        <!-- LOGIN -->
 
-    <div id="dashboard" style="display:none">
+        <div id="loginPanel">
 
-      <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:15px">
-        <button id="refreshBtn" class="mini">Refresh Records</button>
-        <button id="logoutBtn" class="mini">Sign Out</button>
-      </div>
+          <div class="login-box">
 
-      <div class="admin-grid">
+            <h3>Administrator Sign In</h3>
 
-        <!-- CREATE -->
-
-        <div class="admin-panel">
-
-          <h3>Create New Consignment</h3>
-
-          <div class="fields">
-
-            <div class="field">
-              <label>Tracking Reference *</label>
-              <input id="sTracking" placeholder="NKDON-XXXX-XXXX">
-            </div>
-
-            <div class="field">
-              <label>Status</label>
-              <select id="sStatus">
-                <option>Pending</option>
-                <option>Processing</option>
-                <option>In Transit</option>
-                <option>Out for Delivery</option>
-                <option>Delivered</option>
-                <option>Cancelled</option>
-              </select>
-            </div>
-
-            <div class="field">
-              <label>Origin</label>
-              <input id="sOrigin" placeholder="Port Harcourt, Nigeria">
-            </div>
-
-            <div class="field">
-              <label>Destination</label>
-              <input id="sDestination" placeholder="Lagos, Nigeria">
-            </div>
-
-            <div class="field">
-              <label>Shipping Method</label>
-              <input id="sMethod" placeholder="Domestic Courier">
-            </div>
-
-            <div class="field">
-              <label>Estimated Delivery</label>
-              <input id="sEta" type="date">
-            </div>
-
-            <div class="field">
-              <label>Sender Name</label>
-              <input id="sSender">
-            </div>
-
-            <div class="field">
-              <label>Recipient Name</label>
-              <input id="sRecipient">
-            </div>
-
-            <div class="field">
-              <label>Sender Phone</label>
-              <input id="sSenderPhone">
-            </div>
-
-            <div class="field">
-              <label>Recipient Phone</label>
-              <input id="sRecipientPhone">
-            </div>
-
-            <div class="field">
-              <label>Package Weight</label>
-              <input id="sWeight" placeholder="e.g. 5 kg">
-            </div>
-
-            <div class="field">
-              <label>Package Description</label>
-              <input id="sDescription" placeholder="Package description">
-            </div>
-
-          </div>
-
-          <div class="admin-actions">
-            <button id="createBtn" class="btn btn-primary">
-              Create Consignment
-            </button>
-          </div>
-
-          <div id="createMessage" class="message"></div>
-
-        </div>
-
-        <!-- SHIPMENT LIST -->
-
-        <div class="admin-panel">
-
-          <h3>Live Consignment Records</h3>
-
-          <div id="shipmentList" class="shipments">
-            <p style="color:var(--muted);font-size:12px">
-              Loading records...
+            <p style="color:var(--muted)">
+              Sign in using your Supabase administrator account.
             </p>
+
+            <div class="field">
+              <label>Administrator Email</label>
+              <input
+                id="adminEmail"
+                type="email"
+                autocomplete="email"
+                placeholder="Enter administrator email"
+              >
+            </div>
+
+            <div class="field">
+              <label>Password</label>
+              <input
+                id="adminPassword"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Enter password"
+              >
+            </div>
+
+            <div class="admin-actions">
+
+              <button id="loginBtn"
+                      class="btn btn-primary">
+                Sign In
+              </button>
+
+              <button id="forgotPasswordBtn"
+                      type="button"
+                      class="mini">
+                Forgot Password?
+              </button>
+
+            </div>
+
+            <div id="loginMessage" class="message"></div>
+            <div id="resetMessage" class="message"></div>
+
+            <div id="resetPanel"
+                 style="display:none;margin-top:20px">
+
+              <div class="field">
+                <label>New Administrator Password</label>
+                <input
+                  id="newAdminPassword"
+                  type="password"
+                  placeholder="Enter new password"
+                >
+              </div>
+
+              <div class="field">
+                <label>Confirm New Password</label>
+                <input
+                  id="confirmAdminPassword"
+                  type="password"
+                  placeholder="Confirm new password"
+                >
+              </div>
+
+              <button
+                id="updatePasswordBtn"
+                type="button"
+                class="btn btn-primary">
+                Update Password
+              </button>
+
+            </div>
+
           </div>
 
         </div>
 
-      </div>
 
-      <!-- EVENT UPDATE -->
+        <!-- DASHBOARD -->
 
-      <div class="admin-panel" style="margin-top:18px">
+        <div id="dashboard" class="dashboard">
 
-        <h3>Update Tracking Event</h3>
+          <div class="stats">
 
-        <div class="fields">
+            <div class="stat">
+              <small>Total Shipments</small>
+              <strong id="statTotal">0</strong>
+            </div>
 
-          <div class="field">
-            <label>Consignment</label>
-            <select id="eventShipment"></select>
+            <div class="stat">
+              <small>Pending</small>
+              <strong id="statPending">0</strong>
+            </div>
+
+            <div class="stat">
+              <small>In Transit</small>
+              <strong id="statTransit">0</strong>
+            </div>
+
+            <div class="stat">
+              <small>Out for Delivery</small>
+              <strong id="statOut">0</strong>
+            </div>
+
+            <div class="stat">
+              <small>Delivered</small>
+              <strong id="statDelivered">0</strong>
+            </div>
+
           </div>
 
-          <div class="field">
-            <label>Event Status</label>
-            <select id="eventStatus">
-              <option>Registered</option>
-              <option>Processing</option>
-              <option>In Transit</option>
-              <option>Arrived at Facility</option>
-              <option>Out for Delivery</option>
-              <option>Delivered</option>
-              <option>Delayed</option>
-            </select>
+
+          <div class="admin-grid">
+
+            <!-- CREATE SHIPMENT -->
+
+            <div class="panel">
+
+              <h3>Create Consignment</h3>
+
+              <form id="shipmentForm">
+
+                <div class="field">
+                  <label>Tracking Number *</label>
+                  <input id="sTracking"
+                         required
+                         placeholder="NKDON-XXXX-XXXX">
+                </div>
+
+                <div class="field">
+                  <label>Reference Number</label>
+                  <input id="sReference"
+                         placeholder="Optional internal reference">
+                </div>
+
+                <div class="field">
+                  <label>Sender Name</label>
+                  <input id="sSender">
+                </div>
+
+                <div class="field">
+                  <label>Sender Phone</label>
+                  <input id="sSenderPhone">
+                </div>
+
+                <div class="field">
+                  <label>Recipient Name</label>
+                  <input id="sRecipient">
+                </div>
+
+                <div class="field">
+                  <label>Recipient Phone</label>
+                  <input id="sRecipientPhone">
+                </div>
+
+                <div class="field">
+                  <label>Origin *</label>
+                  <input id="sOrigin" required>
+                </div>
+
+                <div class="field">
+                  <label>Destination *</label>
+                  <input id="sDestination" required>
+                </div>
+
+                <div class="field">
+                  <label>Package Description</label>
+                  <textarea id="sDescription"></textarea>
+                </div>
+
+                <div class="field">
+                  <label>Quantity</label>
+                  <input id="sQuantity"
+                         type="number"
+                         min="1"
+                         value="1">
+                </div>
+
+                <div class="field">
+                  <label>Weight</label>
+                  <input id="sWeight"
+                         placeholder="e.g. 5 kg">
+                </div>
+
+                <div class="field">
+                  <label>Dimensions</label>
+                  <input id="sDimensions"
+                         placeholder="e.g. 40 × 30 × 20 cm">
+                </div>
+
+                <div class="field">
+                  <label>Shipping Method</label>
+                  <select id="sMethod">
+                    <option value="">Select method</option>
+                    <option>Standard Delivery</option>
+                    <option>Express Delivery</option>
+                    <option>Domestic Courier</option>
+                    <option>International Air Freight</option>
+                    <option>International Courier</option>
+                    <option>Road Freight</option>
+                  </select>
+                </div>
+
+                <div class="field">
+                  <label>Shipment Type</label>
+                  <select id="sType">
+                    <option value="">Select type</option>
+                    <option>Parcel</option>
+                    <option>Document</option>
+                    <option>Commercial Goods</option>
+                    <option>Personal Effects</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+
+                <div class="field">
+                  <label>Pickup Date</label>
+                  <input id="sPickup" type="datetime-local">
+                </div>
+
+                <div class="field">
+                  <label>Estimated Delivery</label>
+                  <input id="sDelivery" type="date">
+                </div>
+
+                <div class="field">
+                  <label>Declared Value</label>
+                  <input id="sValue"
+                         type="number"
+                         min="0"
+                         step="0.01">
+                </div>
+
+                <div class="field">
+                  <label>Currency</label>
+                  <select id="sCurrency">
+                    <option>NGN</option>
+                    <option>USD</option>
+                    <option>EUR</option>
+                    <option>GBP</option>
+                  </select>
+                </div>
+
+                <div class="field">
+                  <label>Insurance</label>
+                  <select id="sInsurance">
+                    <option value="">Not specified</option>
+                    <option>Insured</option>
+                    <option>Not Insured</option>
+                  </select>
+                </div>
+
+                <div class="field">
+                  <label>Delivery Instructions</label>
+                  <textarea id="sInstructions"></textarea>
+                </div>
+
+                <div class="field">
+                  <label>Internal Notes</label>
+                  <textarea id="sNotes"></textarea>
+                </div>
+
+                <div class="field">
+                  <label>Initial Status</label>
+                  <select id="sStatus">
+                    <option>Created</option>
+                    <option>Pickup Scheduled</option>
+                    <option>Picked Up</option>
+                    <option>Received</option>
+                    <option>Processing</option>
+                    <option>Departed Facility</option>
+                    <option>In Transit</option>
+                    <option>Arrived at Destination</option>
+                    <option>Customs Clearance</option>
+                    <option>Out for Delivery</option>
+                    <option>Delivered</option>
+                    <option>Delayed</option>
+                    <option>Held</option>
+                    <option>Delivery Attempted</option>
+                    <option>Address Issue</option>
+                    <option>Returned</option>
+                  </select>
+                </div>
+
+                <button class="btn btn-primary"
+                        type="submit">
+                  Create Consignment
+                </button>
+
+                <div id="shipmentMessage"
+                     class="message"></div>
+
+              </form>
+
+            </div>
+
+
+            <!-- EVENT -->
+
+            <div class="panel">
+
+              <h3>Add Tracking Event</h3>
+
+              <form id="eventForm">
+
+                <div class="field">
+                  <label>Tracking Number *</label>
+                  <input id="eTracking"
+                         required
+                         placeholder="NKDON-XXXX-XXXX">
+                </div>
+
+                <div class="field">
+                  <label>Status *</label>
+                  <select id="eStatus" required>
+                    <option>Created</option>
+                    <option>Pickup Scheduled</option>
+                    <option>Picked Up</option>
+                    <option>Received</option>
+                    <option>Processing</option>
+                    <option>Departed Facility</option>
+                    <option>In Transit</option>
+                    <option>Arrived at Destination</option>
+                    <option>Customs Clearance</option>
+                    <option>Out for Delivery</option>
+                    <option>Delivered</option>
+                    <option>Delayed</option>
+                    <option>Held</option>
+                    <option>Delivery Attempted</option>
+                    <option>Address Issue</option>
+                    <option>Returned</option>
+                  </select>
+                </div>
+
+                <div class="field">
+                  <label>Location</label>
+                  <input id="eLocation"
+                         placeholder="e.g. Lagos Facility">
+                </div>
+
+                <div class="field">
+                  <label>Facility</label>
+                  <input id="eFacility"
+                         placeholder="e.g. N.K DON Lagos Hub">
+                </div>
+
+                <div class="field">
+                  <label>Event Code</label>
+                  <input id="eCode"
+                         placeholder="Optional code">
+                </div>
+
+                <div class="field">
+                  <label>Description</label>
+                  <textarea id="eDescription"
+                            placeholder="Describe what actually happened to the shipment."></textarea>
+                </div>
+
+                <button class="btn btn-primary"
+                        type="submit">
+                  Add Tracking Event
+                </button>
+
+                <div id="eventMessage"
+                     class="message"></div>
+
+              </form>
+
+            </div>
+
           </div>
 
-          <div class="field">
-            <label>Location</label>
-            <input id="eventLocation" placeholder="Current shipment location">
-          </div>
 
-          <div class="field full">
-            <label>Event Description</label>
-            <textarea
-              id="eventDescription"
-              placeholder="Describe the latest shipment event"
-            ></textarea>
+          <!-- SHIPMENT LIST -->
+
+          <div class="panel">
+
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+
+              <div>
+                <h3 style="margin-bottom:4px">
+                  Shipment Operations
+                </h3>
+
+                <span style="color:var(--muted);font-size:13px">
+                  Manage recorded consignments.
+                </span>
+              </div>
+
+              <button id="refreshBtn"
+                      class="small-btn">
+                Refresh
+              </button>
+
+            </div>
+
+            <div class="field" style="margin-top:18px">
+              <input
+                id="shipmentSearch"
+                placeholder="Search tracking number, origin or destination..."
+              >
+            </div>
+
+            <div class="shipment-table-wrap">
+
+              <table class="shipment-table">
+
+                <thead>
+                  <tr>
+                    <th>Tracking</th>
+                    <th>Route</th>
+                    <th>Status</th>
+                    <th>Delivery</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+
+                <tbody id="shipmentTableBody"></tbody>
+
+              </table>
+
+            </div>
+
           </div>
 
         </div>
-
-        <div class="admin-actions">
-          <button id="eventBtn" class="btn btn-primary">
-            Add Tracking Event
-          </button>
-        </div>
-
-        <div id="eventMessage" class="message"></div>
 
       </div>
 
@@ -1387,28 +1446,42 @@ footer{
 
 </main>
 
+
 <footer>
-  <div class="container footer">
-    <span>© 2026 NKDON Tracking Logistics. All rights reserved.</span>
-    <span>Consignment • Delivery • Tracking</span>
+
+  <div class="container footer-inner">
+
+    <div>
+      © <span id="year"></span> N.K DON Tracking Logistics
+    </div>
+
+    <a class="whatsapp"
+       href="https://wa.me/2349168419464"
+       target="_blank">
+      WhatsApp Support
+    </a>
+
   </div>
+
 </footer>
+
 
 <script type="module">
 
+import {
+  createClient
+} from "https://esm.sh/@supabase/supabase-js@2";
+
+
 /* =========================================================
-   SUPABASE CONNECTION
-========================================================= */
+   SUPABASE
+   ========================================================= */
 
 const SUPABASE_URL =
   "https://cpjbxllhabghsvpsdzrm.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_ZmrGlIzkRy4RKenj9s8HyQ_q-6t8GsW";
-
-import {
-  createClient
-} from "https://esm.sh/@supabase/supabase-js@2";
 
 const supabase =
   createClient(
@@ -1419,302 +1492,313 @@ const supabase =
 
 /* =========================================================
    HELPERS
-========================================================= */
+   ========================================================= */
 
 const $ = id => document.getElementById(id);
 
-function escapeHTML(value){
-
-  return String(value ?? "")
-    .replace(/[&<>"']/g, char => ({
-      "&":"&amp;",
-      "<":"&lt;",
-      ">":"&gt;",
-      '"':"&quot;",
-      "'":"&#039;"
-    }[char]));
-
-}
-
 function showMessage(id,text,type="error"){
+  const el = $(id);
 
-  const element = $(id);
+  if(!el) return;
 
-  element.textContent = text;
-
-  element.className =
-    "message show " + type;
-
+  el.textContent = text;
+  el.className =
+    "message show " +
+    (type === "success" ? "success" : "error");
 }
 
 function hideMessage(id){
+  const el = $(id);
+  if(el){
+    el.className = "message";
+    el.textContent = "";
+  }
+}
 
-  $(id).className = "message";
+function escapeHTML(value){
+  if(value === null || value === undefined){
+    return "";
+  }
 
+  return String(value)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 }
 
 function formatDate(value){
 
   if(!value) return "—";
 
-  return new Date(value).toLocaleString(
-    [],
+  const d = new Date(value);
+
+  if(Number.isNaN(d.getTime())){
+    return escapeHTML(value);
+  }
+
+  return d.toLocaleString(
+    undefined,
     {
       dateStyle:"medium",
       timeStyle:"short"
     }
   );
-
 }
 
-function formatShortDate(value){
+function formatDateOnly(value){
 
   if(!value) return "—";
 
-  return new Date(value).toLocaleDateString(
-    [],
+  const d = new Date(value);
+
+  if(Number.isNaN(d.getTime())){
+    return escapeHTML(value);
+  }
+
+  return d.toLocaleDateString(
+    undefined,
     {
-      year:"numeric",
-      month:"short",
-      day:"numeric"
+      dateStyle:"medium"
     }
   );
-
 }
 
 function statusClass(status){
 
-  return String(status || "")
-    .toLowerCase()
-    .replace(/\s+/g,"-");
+  const s =
+    String(status || "").toLowerCase();
 
+  if(s === "delivered"){
+    return "delivered";
+  }
+
+  if(
+    s.includes("delay") ||
+    s.includes("held") ||
+    s.includes("return")
+  ){
+    return "delayed";
+  }
+
+  return "";
 }
 
 
 /* =========================================================
    PUBLIC TRACKING
-========================================================= */
+   ========================================================= */
 
-async function trackShipment(){
+$("trackingForm").addEventListener(
+  "submit",
+  async event => {
 
-  const reference =
-    $("trackingInput").value.trim();
+    event.preventDefault();
 
-  if(!reference){
+    const ref =
+      $("trackingNumber").value.trim();
 
-    showMessage(
-      "trackMessage",
-      "Please enter your consignment reference."
-    );
-
-    $("trackingResult").innerHTML = "";
-
-    return;
-  }
-
-  hideMessage("trackMessage");
-
-  $("trackBtn").disabled = true;
-  $("trackBtn").textContent = "Searching...";
-
-  try{
-
-    const {
-      data,
-      error
-    } = await supabase.rpc(
-      "track_shipment",
-      {
-        p_tracking_number:reference
-      }
-    );
-
-    if(error) throw error;
-
-    if(
-      !data ||
-      !data.shipment
-    ){
-
+    if(!ref){
       showMessage(
-        "trackMessage",
-        "No consignment was found for that reference."
+        "trackingMessage",
+        "Please enter a tracking number."
       );
-
-      $("trackingResult").innerHTML = "";
-
       return;
     }
 
-    const shipment = data.shipment;
-    const events = data.events || [];
+    hideMessage("trackingMessage");
 
-    let timeline = "";
+    $("trackingLoader")
+      .classList.add("show");
 
-    if(events.length){
+    $("trackingResult").innerHTML = "";
 
-      timeline = events.map(event => `
+    try{
 
-        <div class="event">
+      const {
+        data,
+        error
+      } =
+      await supabase.rpc(
+        "track_shipment",
+        {
+          p_tracking_number:ref
+        }
+      );
 
-          <div class="event-marker"></div>
+      if(error){
+        throw error;
+      }
 
-          <div>
+      const payload = data || {};
 
-            <h4>
-              ${escapeHTML(event.status)}
-            </h4>
+      const shipment =
+        payload.shipment;
 
-            <p>
-              ${escapeHTML(event.location || "Location not specified")}
-            </p>
+      const events =
+        Array.isArray(payload.events)
+          ? payload.events
+          : [];
 
-            ${
-              event.description
-              ?
-              `<p>${escapeHTML(event.description)}</p>`
-              :
-              ""
-            }
+      if(!shipment){
 
-            <time>
-              ${escapeHTML(formatDate(event.event_time))}
-            </time>
+        showMessage(
+          "trackingMessage",
+          "No shipment was found for that tracking number."
+        );
 
-          </div>
+        return;
+      }
 
-        </div>
+      renderTracking(
+        shipment,
+        events
+      );
 
-      `).join("");
+    }catch(error){
 
-    }else{
+      console.error(error);
 
-      timeline = `
+      showMessage(
+        "trackingMessage",
+        "Unable to retrieve the shipment right now. Please try again."
+      );
 
-        <div class="event">
+    }finally{
 
-          <div class="event-marker"></div>
-
-          <div>
-
-            <h4>
-              ${escapeHTML(shipment.status)}
-            </h4>
-
-            <p>
-              Shipment status recorded.
-            </p>
-
-            <time>
-              ${escapeHTML(formatDate(shipment.updated_at))}
-            </time>
-
-          </div>
-
-        </div>
-
-      `;
+      $("trackingLoader")
+        .classList.remove("show");
 
     }
 
+  }
+);
 
-    $("trackingResult").innerHTML = `
 
-      <div class="result-header">
+/* =========================================================
+   TRACKING DISPLAY
+   ========================================================= */
+
+function renderTracking(s,events){
+
+  const result =
+    $("trackingResult");
+
+  const status =
+    escapeHTML(s.status || "Pending");
+
+  result.innerHTML = `
+
+    <div class="result-card">
+
+      <div class="result-head">
 
         <div>
 
-          <div class="reference-label">
-            CONSIGNMENT REFERENCE
+          <div style="color:var(--muted);font-size:12px">
+            CONSIGNMENT NUMBER
           </div>
 
-          <div class="reference">
-            ${escapeHTML(shipment.tracking_number)}
+          <div class="tracking-number">
+            ${escapeHTML(s.tracking_number)}
           </div>
 
         </div>
 
-        <span class="status ${statusClass(shipment.status)}">
-          ${escapeHTML(shipment.status)}
-        </span>
+        <div class="status ${statusClass(s.status)}">
+          ${status}
+        </div>
 
       </div>
 
 
       <div class="route">
 
-        <div class="location">
-
+        <div class="route-point">
           <small>Origin</small>
-
-          <strong>
-            ${escapeHTML(shipment.origin)}
-          </strong>
-
+          <strong>${escapeHTML(s.origin || "—")}</strong>
         </div>
 
         <div class="route-line"></div>
 
-        <div class="location">
-
+        <div class="route-point">
           <small>Destination</small>
-
-          <strong>
-            ${escapeHTML(shipment.destination)}
-          </strong>
-
+          <strong>${escapeHTML(s.destination || "—")}</strong>
         </div>
 
       </div>
 
 
-      <div class="info-grid">
+      <div class="details-grid">
 
-        <div class="info">
-          <span>Shipping Method</span>
+        <div class="detail">
+          <label>Current Location</label>
           <strong>
-            ${escapeHTML(shipment.shipping_method)}
+            ${escapeHTML(s.current_location || "—")}
           </strong>
         </div>
 
-        <div class="info">
-          <span>Package</span>
+        <div class="detail">
+          <label>Estimated Delivery</label>
           <strong>
-            ${escapeHTML(shipment.package_description)}
+            ${formatDateOnly(s.estimated_delivery)}
           </strong>
         </div>
 
-        <div class="info">
-          <span>Weight</span>
+        <div class="detail">
+          <label>Shipping Method</label>
           <strong>
-            ${escapeHTML(shipment.package_weight)}
+            ${escapeHTML(s.shipping_method || "—")}
           </strong>
         </div>
 
-        <div class="info">
-          <span>Estimated Delivery</span>
+        <div class="detail">
+          <label>Shipment Type</label>
           <strong>
-            ${escapeHTML(formatShortDate(
-              shipment.estimated_delivery
-            ))}
+            ${escapeHTML(s.shipment_type || "—")}
           </strong>
         </div>
 
-        <div class="info">
-          <span>Registered</span>
+        <div class="detail">
+          <label>Package</label>
           <strong>
-            ${escapeHTML(formatShortDate(
-              shipment.created_at
-            ))}
+            ${escapeHTML(s.package_description || "—")}
           </strong>
         </div>
 
-        <div class="info">
-          <span>Last Updated</span>
+        <div class="detail">
+          <label>Quantity</label>
           <strong>
-            ${escapeHTML(formatDate(
-              shipment.updated_at
-            ))}
+            ${escapeHTML(s.quantity || "—")}
+          </strong>
+        </div>
+
+        <div class="detail">
+          <label>Weight</label>
+          <strong>
+            ${escapeHTML(s.package_weight || "—")}
+          </strong>
+        </div>
+
+        <div class="detail">
+          <label>Dimensions</label>
+          <strong>
+            ${escapeHTML(s.package_dimensions || "—")}
+          </strong>
+        </div>
+
+        <div class="detail">
+          <label>Pickup Date</label>
+          <strong>
+            ${formatDate(s.pickup_date)}
+          </strong>
+        </div>
+
+        <div class="detail">
+          <label>Last Updated</label>
+          <strong>
+            ${formatDate(s.updated_at)}
           </strong>
         </div>
 
@@ -1723,130 +1807,68 @@ async function trackShipment(){
 
       <div class="timeline">
 
-        <div class="timeline-title">
-          Shipment Timeline
-        </div>
+        <h3>Shipment History</h3>
 
-        ${timeline}
+        ${
+          events.length
+          ? events.map(event => `
+
+              <div class="event">
+
+                <div class="event-dot"></div>
+
+                <div>
+
+                  <div class="event-title">
+                    ${escapeHTML(event.status)}
+                  </div>
+
+                  <div class="event-meta">
+                    ${escapeHTML(event.location || "")}
+                    ${event.facility
+                      ? " • " + escapeHTML(event.facility)
+                      : ""}
+                    ${event.event_time
+                      ? " • " + formatDate(event.event_time)
+                      : ""}
+                  </div>
+
+                  ${
+                    event.description
+                    ? `
+                      <div class="event-description">
+                        ${escapeHTML(event.description)}
+                      </div>
+                    `
+                    : ""
+                  }
+
+                </div>
+
+              </div>
+
+          `).join("")
+          : `
+            <div style="color:var(--muted)">
+              No tracking events have been recorded yet.
+            </div>
+          `
+        }
 
       </div>
-    `;
 
-  }catch(error){
+    </div>
 
-    console.error(error);
-
-    showMessage(
-      "trackMessage",
-      "Tracking could not be completed. Please try again."
-    );
-
-  }finally{
-
-    $("trackBtn").disabled = false;
-    $("trackBtn").textContent = "Track Shipment";
-
-  }
+  `;
 
 }
-
-$("trackBtn").addEventListener(
-  "click",
-  trackShipment
-);
-
-$("trackingInput").addEventListener(
-  "keydown",
-  event => {
-
-    if(event.key === "Enter"){
-      trackShipment();
-    }
-
-  }
-);
 
 
 /* =========================================================
-   ADMIN LOGIN
-========================================================= */
+   ADMIN
+   ========================================================= */
 
-async function login(){
-
-  hideMessage("loginMessage");
-
-  const email =
-    $("adminEmail").value.trim();
-
-  const password =
-    $("adminPassword").value;
-
-  if(!email || !password){
-
-    showMessage(
-      "loginMessage",
-      "Enter your administrator email and password."
-    );
-
-    return;
-  }
-
-  const {
-    error
-  } = await supabase.auth.signInWithPassword({
-    email,
-    password
-  });
-
-  if(error){
-
-    showMessage(
-      "loginMessage",
-      error.message
-    );
-
-    return;
-  }
-
-  $("adminPassword").value = "";
-
-  await loadDashboard();
-
-}
-
-$("loginBtn").addEventListener(
-  "click",
-  login
-);
-
-$("adminPassword").addEventListener(
-  "keydown",
-  event => {
-
-    if(event.key === "Enter"){
-      login();
-    }
-
-  }
-);
-
-
-/* =========================================================
-   DASHBOARD
-========================================================= */
-
-function showDashboard(show){
-
-  $("loginPanel").style.display =
-    show ? "none" : "block";
-
-  $("dashboard").style.display =
-    show ? "block" : "none";
-
-}
-
-
-async function loadDashboard(){
+async function checkAdmin(){
 
   const {
     data:{
@@ -1857,46 +1879,573 @@ async function loadDashboard(){
 
   if(!user){
 
-    showDashboard(false);
+    $("loginPanel").style.display =
+      "block";
 
-    return;
+    $("dashboard").style.display =
+      "none";
+
+    $("signOutBtn").style.display =
+      "none";
+
+    return false;
   }
 
-  /*
-    Verify that the signed-in account is
-    actually registered as an NKDON admin.
-  */
 
   const {
     data:admin,
-    error:adminError
+    error
   } =
-  await supabase
-    .from("admin_users")
-    .select("user_id")
-    .eq("user_id",user.id)
-    .maybeSingle();
+  await supabase.rpc("is_admin");
 
-  if(adminError || !admin){
+  if(error || !admin){
 
     await supabase.auth.signOut();
 
-    showDashboard(false);
+    $("loginPanel").style.display =
+      "block";
+
+    $("dashboard").style.display =
+      "none";
 
     showMessage(
       "loginMessage",
-      "This account is not authorized as an NKDON administrator."
+      "This account is not authorized as an N.K DON administrator."
     );
 
-    return;
+    return false;
   }
 
-  showDashboard(true);
+
+  $("loginPanel").style.display =
+    "none";
+
+  $("dashboard").style.display =
+    "block";
+
+  $("signOutBtn").style.display =
+    "inline-block";
 
   await loadShipments();
 
+  return true;
 }
 
+
+/* LOGIN */
+
+$("loginBtn").addEventListener(
+  "click",
+  async () => {
+
+    const email =
+      $("adminEmail").value.trim();
+
+    const password =
+      $("adminPassword").value;
+
+    if(!email || !password){
+
+      showMessage(
+        "loginMessage",
+        "Enter your administrator email and password."
+      );
+
+      return;
+    }
+
+    hideMessage("loginMessage");
+
+    const {
+      error
+    } =
+    await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if(error){
+
+      showMessage(
+        "loginMessage",
+        error.message
+      );
+
+      return;
+    }
+
+    await checkAdmin();
+
+  }
+);
+
+
+/* SIGN OUT */
+
+$("signOutBtn").addEventListener(
+  "click",
+  async () => {
+
+    await supabase.auth.signOut();
+
+    $("dashboard").style.display =
+      "none";
+
+    $("loginPanel").style.display =
+      "block";
+
+    $("signOutBtn").style.display =
+      "none";
+
+    showMessage(
+      "loginMessage",
+      "You have been signed out.",
+      "success"
+    );
+
+  }
+);
+
+
+/* =========================================================
+   PASSWORD RESET
+   ========================================================= */
+
+const SITE_URL =
+  window.location.origin +
+  window.location.pathname;
+
+$("forgotPasswordBtn")
+.addEventListener(
+  "click",
+  async () => {
+
+    const email =
+      $("adminEmail").value.trim();
+
+    if(!email){
+
+      showMessage(
+        "resetMessage",
+        "Enter your administrator email first."
+      );
+
+      return;
+    }
+
+    hideMessage("resetMessage");
+
+    const {
+      error
+    } =
+    await supabase.auth.resetPasswordForEmail(
+      email,
+      {
+        redirectTo:SITE_URL
+      }
+    );
+
+    if(error){
+
+      showMessage(
+        "resetMessage",
+        error.message
+      );
+
+      return;
+    }
+
+    showMessage(
+      "resetMessage",
+      "Password reset instructions have been sent to your email.",
+      "success"
+    );
+
+  }
+);
+
+
+/* PASSWORD RECOVERY */
+
+supabase.auth.onAuthStateChange(
+  async event => {
+
+    if(event === "PASSWORD_RECOVERY"){
+
+      $("loginPanel").style.display =
+        "block";
+
+      $("dashboard").style.display =
+        "none";
+
+      $("resetPanel").style.display =
+        "block";
+
+      showMessage(
+        "resetMessage",
+        "Enter your new administrator password below.",
+        "success"
+      );
+
+    }
+
+  }
+);
+
+
+/* UPDATE PASSWORD */
+
+$("updatePasswordBtn")
+.addEventListener(
+  "click",
+  async () => {
+
+    const password =
+      $("newAdminPassword").value;
+
+    const confirm =
+      $("confirmAdminPassword").value;
+
+    if(!password || !confirm){
+
+      showMessage(
+        "resetMessage",
+        "Enter and confirm your new password."
+      );
+
+      return;
+    }
+
+    if(password !== confirm){
+
+      showMessage(
+        "resetMessage",
+        "The passwords do not match."
+      );
+
+      return;
+    }
+
+    if(password.length < 8){
+
+      showMessage(
+        "resetMessage",
+        "Use a password of at least 8 characters."
+      );
+
+      return;
+    }
+
+    const {
+      error
+    } =
+    await supabase.auth.updateUser({
+      password
+    });
+
+    if(error){
+
+      showMessage(
+        "resetMessage",
+        error.message
+      );
+
+      return;
+    }
+
+    showMessage(
+      "resetMessage",
+      "Administrator password updated successfully.",
+      "success"
+    );
+
+    $("newAdminPassword").value = "";
+    $("confirmAdminPassword").value = "";
+
+    setTimeout(
+      () => {
+        $("resetPanel").style.display =
+          "none";
+      },
+      2500
+    );
+
+  }
+);
+
+
+/* =========================================================
+   CREATE SHIPMENT
+   ========================================================= */
+
+$("shipmentForm")
+.addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+    hideMessage("shipmentMessage");
+
+    const shipment = {
+
+      tracking_number:
+        $("sTracking").value.trim(),
+
+      reference_number:
+        $("sReference").value.trim() || null,
+
+      sender_name:
+        $("sSender").value.trim() || null,
+
+      sender_phone:
+        $("sSenderPhone").value.trim() || null,
+
+      recipient_name:
+        $("sRecipient").value.trim() || null,
+
+      recipient_phone:
+        $("sRecipientPhone").value.trim() || null,
+
+      origin:
+        $("sOrigin").value.trim(),
+
+      destination:
+        $("sDestination").value.trim(),
+
+      package_description:
+        $("sDescription").value.trim() || null,
+
+      quantity:
+        Number($("sQuantity").value) || 1,
+
+      package_weight:
+        $("sWeight").value.trim() || null,
+
+      package_dimensions:
+        $("sDimensions").value.trim() || null,
+
+      shipping_method:
+        $("sMethod").value || null,
+
+      shipment_type:
+        $("sType").value || null,
+
+      pickup_date:
+        $("sPickup").value
+          ? new Date($("sPickup").value).toISOString()
+          : null,
+
+      estimated_delivery:
+        $("sDelivery").value || null,
+
+      declared_value:
+        $("sValue").value
+          ? Number($("sValue").value)
+          : null,
+
+      currency:
+        $("sCurrency").value || "NGN",
+
+      insurance_status:
+        $("sInsurance").value || null,
+
+      delivery_instructions:
+        $("sInstructions").value.trim() || null,
+
+      internal_notes:
+        $("sNotes").value.trim() || null,
+
+      status:
+        $("sStatus").value
+
+    };
+
+
+    const {
+      data,
+      error
+    } =
+    await supabase
+      .from("shipments")
+      .insert(shipment)
+      .select()
+      .single();
+
+
+    if(error){
+
+      showMessage(
+        "shipmentMessage",
+        error.message
+      );
+
+      return;
+    }
+
+
+    await supabase
+      .from("shipment_events")
+      .insert({
+
+        shipment_id:data.id,
+
+        status:data.status,
+
+        location:data.origin,
+
+        facility:"N.K DON",
+
+        description:
+          "Consignment record created.",
+
+        created_by:
+          (await supabase.auth.getUser())
+          .data.user?.id
+
+      });
+
+
+    await logActivity(
+      "Created shipment",
+      data
+    );
+
+
+    showMessage(
+      "shipmentMessage",
+      "Consignment created successfully.",
+      "success"
+    );
+
+    $("shipmentForm").reset();
+
+    $("sQuantity").value = 1;
+
+    await loadShipments();
+
+  }
+);
+
+
+/* =========================================================
+   ADD TRACKING EVENT
+   ========================================================= */
+
+$("eventForm")
+.addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+    hideMessage("eventMessage");
+
+    const tracking =
+      $("eTracking").value.trim();
+
+
+    const {
+      data:shipment,
+      error:shipmentError
+    } =
+    await supabase
+      .from("shipments")
+      .select("id,tracking_number")
+      .eq("tracking_number",tracking)
+      .maybeSingle();
+
+
+    if(shipmentError){
+
+      showMessage(
+        "eventMessage",
+        shipmentError.message
+      );
+
+      return;
+    }
+
+
+    if(!shipment){
+
+      showMessage(
+        "eventMessage",
+        "No shipment was found with that tracking number."
+      );
+
+      return;
+    }
+
+
+    const {
+      error
+    } =
+    await supabase
+      .from("shipment_events")
+      .insert({
+
+        shipment_id:
+          shipment.id,
+
+        status:
+          $("eStatus").value,
+
+        location:
+          $("eLocation").value.trim() || null,
+
+        facility:
+          $("eFacility").value.trim() || null,
+
+        event_code:
+          $("eCode").value.trim() || null,
+
+        description:
+          $("eDescription").value.trim() || null,
+
+        created_by:
+          (await supabase.auth.getUser())
+          .data.user?.id
+
+      });
+
+
+    if(error){
+
+      showMessage(
+        "eventMessage",
+        error.message
+      );
+
+      return;
+    }
+
+
+    await logActivity(
+      "Added tracking event",
+      shipment
+    );
+
+
+    showMessage(
+      "eventMessage",
+      "Tracking event added successfully.",
+      "success"
+    );
+
+    $("eventForm").reset();
+
+    await loadShipments();
+
+  }
+);
+
+
+/* =========================================================
+   LOAD SHIPMENTS
+   ========================================================= */
+
+let allShipments = [];
 
 async function loadShipments(){
 
@@ -1907,117 +2456,172 @@ async function loadShipments(){
   await supabase
     .from("shipments")
     .select("*")
-    .order(
-      "created_at",
-      {
-        ascending:false
-      }
-    );
+    .order("created_at",{ascending:false});
+
 
   if(error){
 
-    $("shipmentList").innerHTML =
-      `<p style="color:#ff9dab">
-        ${escapeHTML(error.message)}
-      </p>`;
-
-    return;
-  }
-
-  if(!data.length){
-
-    $("shipmentList").innerHTML =
-      `<p style="color:var(--muted);font-size:12px">
-        No consignments have been created yet.
-      </p>`;
-
-    $("eventShipment").innerHTML = "";
+    console.error(error);
 
     return;
   }
 
 
-  $("shipmentList").innerHTML =
-    data.map(shipment => `
+  allShipments =
+    data || [];
 
-      <div class="shipment">
+  updateStats(
+    allShipments
+  );
 
-        <div>
+  renderShipmentTable(
+    allShipments
+  );
 
+}
+
+
+function updateStats(list){
+
+  $("statTotal").textContent =
+    list.length;
+
+  $("statPending").textContent =
+    list.filter(
+      s =>
+        [
+          "Pending",
+          "Created",
+          "Pickup Scheduled",
+          "Processing"
+        ].includes(s.status)
+    ).length;
+
+  $("statTransit").textContent =
+    list.filter(
+      s =>
+        [
+          "In Transit",
+          "Departed Facility",
+          "Arrived at Destination"
+        ].includes(s.status)
+    ).length;
+
+  $("statOut").textContent =
+    list.filter(
+      s =>
+        s.status ===
+        "Out for Delivery"
+    ).length;
+
+  $("statDelivered").textContent =
+    list.filter(
+      s =>
+        s.status ===
+        "Delivered"
+    ).length;
+
+}
+
+
+/* =========================================================
+   SHIPMENT TABLE
+   ========================================================= */
+
+function renderShipmentTable(list){
+
+  const body =
+    $("shipmentTableBody");
+
+  if(!list.length){
+
+    body.innerHTML = `
+      <tr>
+        <td colspan="6"
+            style="color:var(--muted);text-align:center;padding:30px">
+          No shipments found.
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+
+  body.innerHTML =
+    list.map(s => `
+
+      <tr>
+
+        <td>
           <strong>
-            ${escapeHTML(
-              shipment.tracking_number
-            )}
+            ${escapeHTML(s.tracking_number)}
           </strong>
+        </td>
 
-          <small>
-            ${escapeHTML(
-              shipment.origin || "—"
-            )}
-            →
-            ${escapeHTML(
-              shipment.destination || "—"
-            )}
-          </small>
+        <td>
+          ${escapeHTML(s.origin || "—")}
+          →
+          ${escapeHTML(s.destination || "—")}
+        </td>
 
-          <small>
-            Status:
-            ${escapeHTML(
-              shipment.status
-            )}
-          </small>
+        <td>
+          <span class="status ${statusClass(s.status)}">
+            ${escapeHTML(s.status)}
+          </span>
+        </td>
 
-        </div>
+        <td>
+          ${formatDateOnly(s.estimated_delivery)}
+        </td>
 
-        <div style="display:flex;gap:6px">
+        <td>
+          ${formatDate(s.created_at)}
+        </td>
 
-          <button
-            class="mini"
-            data-use="${escapeHTML(shipment.id)}"
-          >
-            Use
-          </button>
+        <td>
 
-          <button
-            class="mini danger"
-            data-delete="${escapeHTML(shipment.id)}"
-          >
-            Delete
-          </button>
+          <div class="table-actions">
 
-        </div>
+            <button
+              class="small-btn"
+              data-track="${escapeHTML(s.tracking_number)}">
+              View
+            </button>
 
-      </div>
+            <button
+              class="small-btn danger"
+              data-delete="${escapeHTML(s.id)}"
+              data-tracking="${escapeHTML(s.tracking_number)}">
+              Delete
+            </button>
 
-    `).join("");
+          </div>
 
+        </td>
 
-  $("eventShipment").innerHTML =
-    data.map(shipment => `
-
-      <option value="${escapeHTML(shipment.id)}">
-        ${escapeHTML(shipment.tracking_number)}
-        — ${escapeHTML(shipment.status)}
-      </option>
+      </tr>
 
     `).join("");
 
 
-  document
-    .querySelectorAll("[data-use]")
-    .forEach(button => {
+  body
+    .querySelectorAll("[data-track]")
+    .forEach(btn => {
 
-      button.addEventListener(
+      btn.addEventListener(
         "click",
         () => {
 
-          $("eventShipment").value =
-            button.dataset.use;
+          $("trackingNumber").value =
+            btn.dataset.track;
 
-          $("eventShipment").scrollIntoView({
-            behavior:"smooth",
-            block:"center"
-          });
+          document
+            .getElementById("tracking")
+            .scrollIntoView();
+
+          $("trackingForm")
+            .requestSubmit();
 
         }
       );
@@ -2025,15 +2629,17 @@ async function loadShipments(){
     });
 
 
-  document
+  body
     .querySelectorAll("[data-delete]")
-    .forEach(button => {
+    .forEach(btn => {
 
-      button.addEventListener(
+      btn.addEventListener(
         "click",
-        () => deleteShipment(
-          button.dataset.delete
-        )
+        () =>
+          deleteShipment(
+            btn.dataset.delete,
+            btn.dataset.tracking
+          )
       );
 
     });
@@ -2041,291 +2647,33 @@ async function loadShipments(){
 }
 
 
-$("refreshBtn").addEventListener(
-  "click",
-  loadShipments
-);
-
-
-/* =========================================================
-   CREATE CONSIGNMENT
-========================================================= */
-
-async function createShipment(){
-
-  hideMessage("createMessage");
-
-  const tracking =
-    $("sTracking").value
-      .trim()
-      .toUpperCase();
-
-  if(!tracking){
-
-    showMessage(
-      "createMessage",
-      "Tracking reference is required."
-    );
-
-    return;
-  }
-
-
-  const shipment = {
-
-    tracking_number:tracking,
-
-    sender_name:
-      $("sSender").value.trim(),
-
-    recipient_name:
-      $("sRecipient").value.trim(),
-
-    sender_phone:
-      $("sSenderPhone").value.trim(),
-
-    recipient_phone:
-      $("sRecipientPhone").value.trim(),
-
-    origin:
-      $("sOrigin").value.trim(),
-
-    destination:
-      $("sDestination").value.trim(),
-
-    package_description:
-      $("sDescription").value.trim(),
-
-    package_weight:
-      $("sWeight").value.trim(),
-
-    shipping_method:
-      $("sMethod").value.trim(),
-
-    status:
-      $("sStatus").value,
-
-    estimated_delivery:
-      $("sEta").value || null
-
-  };
-
-
-  const {
-    data,
-    error
-  } =
-  await supabase
-    .from("shipments")
-    .insert(shipment)
-    .select()
-    .single();
-
-
-  if(error){
-
-    showMessage(
-      "createMessage",
-      error.message
-    );
-
-    return;
-  }
-
-
-  /*
-    Automatically create the first
-    tracking event.
-  */
-
-  const {
-    error:eventError
-  } =
-  await supabase
-    .from("shipment_events")
-    .insert({
-      shipment_id:data.id,
-      status:"Registered",
-      location:shipment.origin || null,
-      description:"Consignment registered.",
-      event_time:new Date().toISOString()
-    });
-
-
-  if(eventError){
-
-    console.error(eventError);
-
-  }
-
-
-  showMessage(
-    "createMessage",
-    "Consignment created successfully.",
-    "success"
-  );
-
-
-  [
-    "sTracking",
-    "sOrigin",
-    "sDestination",
-    "sMethod",
-    "sEta",
-    "sSender",
-    "sRecipient",
-    "sSenderPhone",
-    "sRecipientPhone",
-    "sWeight",
-    "sDescription"
-  ].forEach(
-    id => $(id).value = ""
-  );
-
-
-  await loadShipments();
-
-}
-
-$("createBtn").addEventListener(
-  "click",
-  createShipment
-);
-
-
-/* =========================================================
-   ADD TRACKING EVENT
-========================================================= */
-
-async function addTrackingEvent(){
-
-  hideMessage("eventMessage");
-
-  const shipmentId =
-    $("eventShipment").value;
-
-  if(!shipmentId){
-
-    showMessage(
-      "eventMessage",
-      "Select a consignment first."
-    );
-
-    return;
-  }
-
-
-  const status =
-    $("eventStatus").value;
-
-  const location =
-    $("eventLocation").value.trim();
-
-  const description =
-    $("eventDescription").value.trim();
-
-
-  const {
-    error:eventError
-  } =
-  await supabase
-    .from("shipment_events")
-    .insert({
-
-      shipment_id:shipmentId,
-
-      status,
-
-      location:
-        location || null,
-
-      description:
-        description || null,
-
-      event_time:
-        new Date().toISOString()
-
-    });
-
-
-  if(eventError){
-
-    showMessage(
-      "eventMessage",
-      eventError.message
-    );
-
-    return;
-  }
-
-
-  /*
-    Update the shipment's main status
-    whenever a new event is recorded.
-  */
-
-  const {
-    error:updateError
-  } =
-  await supabase
-    .from("shipments")
-    .update({
-
-      status,
-
-      updated_at:
-        new Date().toISOString()
-
-    })
-    .eq(
-      "id",
-      shipmentId
-    );
-
-
-  if(updateError){
-
-    showMessage(
-      "eventMessage",
-      "Tracking event was added, but the shipment status could not be updated."
-    );
-
-    return;
-  }
-
-
-  showMessage(
-    "eventMessage",
-    "Tracking event added successfully.",
-    "success"
-  );
-
-
-  $("eventLocation").value = "";
-  $("eventDescription").value = "";
-
-  await loadShipments();
-
-}
-
-$("eventBtn").addEventListener(
-  "click",
-  addTrackingEvent
-);
-
-
 /* =========================================================
    DELETE
-========================================================= */
+   ========================================================= */
 
-async function deleteShipment(id){
+async function deleteShipment(
+  id,
+  tracking
+){
 
   const confirmed =
     confirm(
-      "Delete this consignment and all of its tracking events?"
+      "Delete consignment " +
+      tracking +
+      "? This will also remove its tracking events."
     );
 
   if(!confirmed) return;
+
+
+  const {
+    data:shipment
+  } =
+  await supabase
+    .from("shipments")
+    .select("*")
+    .eq("id",id)
+    .maybeSingle();
 
 
   const {
@@ -2345,27 +2693,156 @@ async function deleteShipment(id){
   }
 
 
+  await logActivity(
+    "Deleted shipment",
+    shipment
+  );
+
+
   await loadShipments();
 
 }
 
 
 /* =========================================================
-   AUTH STATE
-========================================================= */
+   SEARCH
+   ========================================================= */
 
-supabase.auth.onAuthStateChange(
+$("shipmentSearch")
+.addEventListener(
+  "input",
   () => {
-    loadDashboard();
+
+    const q =
+      $("shipmentSearch")
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    if(!q){
+
+      renderShipmentTable(
+        allShipments
+      );
+
+      return;
+    }
+
+
+    const filtered =
+      allShipments.filter(s =>
+
+        String(
+          s.tracking_number || ""
+        ).toLowerCase().includes(q)
+
+        ||
+
+        String(
+          s.origin || ""
+        ).toLowerCase().includes(q)
+
+        ||
+
+        String(
+          s.destination || ""
+        ).toLowerCase().includes(q)
+
+        ||
+
+        String(
+          s.status || ""
+        ).toLowerCase().includes(q)
+
+      );
+
+
+    renderShipmentTable(
+      filtered
+    );
+
   }
 );
 
 
 /* =========================================================
-   INITIAL LOAD
-========================================================= */
+   REFRESH
+   ========================================================= */
 
-loadDashboard();
+$("refreshBtn")
+.addEventListener(
+  "click",
+  loadShipments
+);
+
+
+/* =========================================================
+   ADMIN ACTIVITY
+   ========================================================= */
+
+async function logActivity(
+  action,
+  shipment
+){
+
+  try{
+
+    const {
+      data:{
+        user
+      }
+    } =
+    await supabase.auth.getUser();
+
+
+    await supabase
+      .from("admin_activity")
+      .insert({
+
+        admin_user_id:
+          user?.id || null,
+
+        action,
+
+        shipment_id:
+          shipment?.id || null,
+
+        tracking_number:
+          shipment?.tracking_number || null,
+
+        description:
+          action +
+          (
+            shipment?.tracking_number
+              ? " — " +
+                shipment.tracking_number
+              : ""
+          )
+
+      });
+
+  }catch(error){
+
+    console.warn(
+      "Activity logging failed:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   INITIALIZE
+   ========================================================= */
+
+$("year").textContent =
+  new Date().getFullYear();
+
+
+checkAdmin();
 
 </script>
 
