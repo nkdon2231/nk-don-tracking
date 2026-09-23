@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111111">
+<title>N.K DON | Shipment Tracking</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  background:#f5f5f5;
+  color:#151515;
+}
+header{
+  background:#111;
+  color:white;
+  padding:18px 16px;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+.header-inner{
+  max-width:1000px;
+  margin:auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.logo{
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:.5px;
+}
+.tag{
+  font-size:12px;
+  opacity:.7;
+}
+.container{
+  max-width:1000px;
+  margin:auto;
+  padding:22px 16px 50px;
+}
+.hero{
+  background:white;
+  border-radius:18px;
+  padding:28px 20px;
+  box-shadow:0 5px 20px rgba(0,0,0,.06);
+  margin-bottom:20px;
+}
+h1{
+  margin:0 0 8px;
+  font-size:30px;
+}
+.subtitle{
+  color:#666;
+  margin:0 0 22px;
+  line-height:1.5;
+}
+.input-row{
+  display:flex;
+  gap:10px;
+}
+input,select,textarea{
+  width:100%;
+  border:1px solid #d8d8d8;
+  border-radius:12px;
+  padding:14px;
+  font-size:16px;
+  background:white;
+}
+button{
+  border:0;
+  border-radius:12px;
+  padding:14px 18px;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+}
+.primary{
+  background:#111;
+  color:white;
+}
+.secondary{
+  background:#eee;
+  color:#111;
+}
+.danger{
+  background:#c62828;
+  color:white;
+}
+.result{
+  margin-top:20px;
+}
+.card{
+  background:white;
+  border-radius:16px;
+  padding:20px;
+  box-shadow:0 4px 15px rgba(0,0,0,.05);
+  margin-bottom:16px;
+}
+.hidden{display:none!important}
+.status{
+  display:inline-block;
+  padding:7px 11px;
+  border-radius:999px;
+  background:#eee;
+  font-size:13px;
+  font-weight:700;
+}
+.status.delivered{background:#dff5e5;color:#176b32}
+.status.transit{background:#e5efff;color:#174f9d}
+.status.pending{background:#fff1cc;color:#7a5700}
+.status.cancelled{background:#ffe0e0;color:#9d2020}
+.status.exception{background:#ffe6d5;color:#9a4b00}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
+}
+.detail{
+  background:#f7f7f7;
+  border-radius:12px;
+  padding:13px;
+}
+.detail small{
+  display:block;
+  color:#777;
+  margin-bottom:4px;
+}
+.timeline{
+  margin-top:20px;
+  border-left:3px solid #ddd;
+  padding-left:18px;
+}
+.event{
+  position:relative;
+  margin-bottom:20px;
+}
+.event:before{
+  content:"";
+  position:absolute;
+  left:-27px;
+  top:3px;
+  width:11px;
+  height:11px;
+  background:#111;
+  border-radius:50%;
+}
+.event strong{display:block}
+.event small{color:#777}
+.notice{
+  font-size:12px;
+  color:#777;
+  line-height:1.5;
+  margin-top:16px;
+}
+.admin{
+  display:none;
+}
+.admin.active{
+  display:block;
+}
+.admin-panel{
+  background:#171717;
+  color:white;
+  border-radius:18px;
+  padding:20px;
+  margin-top:20px;
+}
+.admin-panel input,
+.admin-panel select,
+.admin-panel textarea{
+  background:#222;
+  color:white;
+  border-color:#444;
+}
+.admin-panel label{
+  display:block;
+  font-size:13px;
+  margin:12px 0 6px;
+  color:#bbb;
+}
+.admin-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:15px;
+}
+.shipment-item{
+  background:#222;
+  border:1px solid #333;
+  border-radius:14px;
+  padding:15px;
+  margin-top:10px;
+}
+.shipment-item h3{
+  margin:0 0 6px;
+  font-size:16px;
+}
+.shipment-item p{
+  margin:5px 0;
+  color:#bbb;
+  font-size:13px;
+}
+.admin-title{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+}
+footer{
+  text-align:center;
+  padding:30px 15px;
+  color:#777;
+  font-size:12px;
+}
+@media(max-width:650px){
+  .input-row{flex-direction:column}
+  .grid{grid-template-columns:1fr}
+  h1{font-size:25px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="logo">N.K DON</div>
+      <div class="tag">Shipment Tracking</div>
+    </div>
+    <button class="secondary" onclick="openAdmin()">Owner Login</button>
+  </div>
+</header>
+
+<main class="container">
+
+<section class="hero">
+  <h1>Track Your Shipment</h1>
+  <p class="subtitle">
+    Enter your N.K DON tracking reference below to view the latest shipment status and tracking history.
+  </p>
+
+  <div class="input-row">
+    <input id="trackingInput" type="text" placeholder="Example: NKD-7A29-X4P8">
+    <button class="primary" onclick="trackShipment()">Track Shipment</button>
+  </div>
+
+  <div id="trackingResult" class="result"></div>
+
+  <div class="notice">
+    N.K DON tracking references are independent internal shipment references issued by N.K DON.
+    They are not DHL, FedEx, UPS, or other carrier-issued tracking numbers.
+  </div>
+</section>
+
+<section id="adminSection" class="admin">
+  <div class="admin-panel">
+
+    <div class="admin-title">
+      <h2>N.K DON Operations</h2>
+      <button class="secondary" onclick="logout()">Logout</button>
+    </div>
+
+    <div id="loginBox">
+      <p>Owner access</p>
+      <label>Passcode</label>
+      <input id="adminPassword" type="password" placeholder="Enter owner passcode">
+      <div class="admin-actions">
+        <button class="primary" onclick="login()">Login</button>
+        <button class="secondary" onclick="closeAdmin()">Close</button>
+      </div>
+      <p class="notice" style="color:#aaa">
+        Prototype passcode: NKDON2026
+      </p>
+    </div>
+
+    <div id="dashboard" class="hidden">
+
+      <h3>Create Shipment</h3>
+
+      <label>Sender</label>
+      <input id="sender" placeholder="Sender name">
+
+      <label>Recipient</label>
+      <input id="recipient" placeholder="Recipient name">
+
+      <label>Origin</label>
+      <input id="origin" placeholder="Example: Port Harcourt, Nigeria">
+
+      <label>Destination</label>
+      <input id="destination" placeholder="Example: Lagos, Nigeria">
+
+      <label>Shipment Type</label>
+      <select id="shipmentType">
+        <option>Domestic Courier</option>
+        <option>International Air Freight</option>
+        <option>International Courier</option>
+        <option>Sea Freight</option>
+        <option>Local Delivery</option>
+      </select>
+
+      <label>Initial Status</label>
+      <select id="initialStatus">
+        <option>Shipment Created</option>
+        <option>Processing</option>
+        <option>In Transit</option>
+        <option>Out for Delivery</option>
+        <option>Delivered</option>
+      </select>
+
+      <div class="admin-actions">
+        <button class="primary" onclick="createShipment()">Create Shipment</button>
+        <button class="secondary" onclick="clearForm()">Clear</button>
+      </div>
+
+      <hr style="border-color:#333;margin:25px 0">
+
+      <h3>Shipments</h3>
+      <div id="shipmentList"></div>
+
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  © 2026 N.K DON. Independent shipment tracking system.
+</footer>
+
+<script>
+const STORAGE_KEY = "nkdon_tracking_database_v1";
+const ADMIN_KEY = "nkdon_admin_session";
+
+const starterShipments = [
+  {
+    id:"NKD-7A29-X4P8",
+    sender:"N.K DON",
+    recipient:"Customer",
+    origin:"Port Harcourt, Nigeria",
+    destination:"Lagos, Nigeria",
+    type:"Domestic Courier",
+    createdAt:"2026-09-20T09:00:00",
+    events:[
+      {
+        status:"Shipment Created",
+        location:"Port Harcourt, Nigeria",
+        note:"Shipment information received.",
+        time:"2026-09-20T09:00:00"
+      },
+      {
+        status:"In Transit",
+        location:"Port Harcourt, Nigeria",
+        note:"Shipment has departed the origin facility.",
+        time:"2026-09-21T14:30:00"
+      }
+    ]
+  },
+  {
+    id:"NKD-B7Q4-M8Z2",
+    sender:"N.K DON",
+    recipient:"International Customer",
+    origin:"Lagos, Nigeria",
+    destination:"Dubai, UAE",
+    type:"International Air Freight",
+    createdAt:"2026-09-19T10:00:00",
+    events:[
+      {
+        status:"Shipment Created",
+        location:"Lagos, Nigeria",
+        note:"International shipment registered.",
+        time:"2026-09-19T10:00:00"
+      },
+      {
+        status:"Processing",
+        location:"Lagos, Nigeria",
+        note:"Shipment is being prepared for dispatch.",
+        time:"2026-09-20T12:00:00"
+      }
+    ]
+  }
+];
+
+function getShipments(){
+  const saved = localStorage.getItem(STORAGE_KEY);
+
+  if(!saved){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(starterShipments));
+    return starterShipments;
+  }
+
+  try{
+    return JSON.parse(saved);
+  }catch(e){
+    return starterShipments;
+  }
+}
+
+function saveShipments(data){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function normalizeTrackingId(value){
+  return String(value || "").trim().toUpperCase();
+}
+
+function getLatestEvent(shipment){
+  if(!shipment.events || shipment.events.length === 0) return null;
+
+  return [...shipment.events].sort(
+    (a,b)=>new Date(b.time)-new Date(a.time)
+  )[0];
+}
+
+function statusClass(status){
+  const s = status.toLowerCase();
+
+  if(s.includes("delivered")) return "delivered";
+  if(s.includes("transit") || s.includes("out for")) return "transit";
+  if(s.includes("cancel")) return "cancelled";
+  if(s.includes("exception")) return "exception";
+  return "pending";
+}
+
+function formatDate(date){
+  return new Date(date).toLocaleString([],{
+    year:"numeric",
+    month:"short",
+    day:"numeric",
+    hour:"2-digit",
+    minute:"2-digit"
+  });
+}
+
+function trackShipment(){
+  const id = normalizeTrackingId(
+    document.getElementById("trackingInput").value
+  );
+
+  const result = document.getElementById("trackingResult");
+
+  if(!id){
+    result.innerHTML = `
+      <div class="card">
+        Please enter your tracking reference.
+      </div>
+    `;
+    return;
+  }
+
+  const shipment = getShipments().find(
+    s => normalizeTrackingId(s.id) === id
+  );
+
+  if(!shipment){
+    result.innerHTML = `
+      <div class="card">
+        <h3>Tracking reference not found</h3>
+        <p>
+          We could not find <strong>${escapeHtml(id)}</strong>.
+          Please check the reference and try again.
+        </p>
+      </div>
+    `;
+    return;
+  }
+
+  renderTrackingResult(shipment);
+}
+
+function renderTrackingResult(shipment){
+  const result = document.getElementById("trackingResult");
+  const latest = getLatestEvent(shipment);
+
+  const events = [...shipment.events].sort(
+    (a,b)=>new Date(b.time)-new Date(a.time)
+  );
+
+  result.innerHTML = `
+    <div class="card">
+
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+        <div>
+          <div style="font-size:12px;color:#777">N.K DON Tracking Reference</div>
+          <h2 style="margin:3px 0">${escapeHtml(shipment.id)}</h2>
+        </div>
+
+        <span class="status ${statusClass(latest ? latest.status : "")}">
+          ${escapeHtml(latest ? latest.status : "Pending")}
+        </span>
+      </div>
+
+      <div class="grid" style="margin-top:18px">
+
+        <div class="detail">
+          <small>Origin</small>
+          ${escapeHtml(shipment.origin)}
+        </div>
+
+        <div class="detail">
+          <small>Destination</small>
+          ${escapeHtml(shipment.destination)}
+        </div>
+
+        <div class="detail">
+          <small>Shipment Type</small>
+          ${escapeHtml(shipment.type)}
+        </div>
+
+        <div class="detail">
+          <small>Last Updated</small>
+          ${latest ? formatDate(latest.time) : "—"}
+        </div>
+
+      </div>
+
+      <h3 style="margin-top:25px">Tracking History</h3>
+
+      <div class="timeline">
+        ${
+          events.map(event => `
+            <div class="event">
+              <strong>${escapeHtml(event.status)}</strong>
+              <small>${formatDate(event.time)} · ${escapeHtml(event.location)}</small>
+              <div style="margin-top:5px">${escapeHtml(event.note || "")}</div>
+            </div>
+          `).join("")
+        }
+      </div>
+
+    </div>
+  `;
+}
+
+function openAdmin(){
+  document.getElementById("adminSection").classList.add("active");
+
+  if(sessionStorage.getItem(ADMIN_KEY)==="true"){
+    showDashboard();
+  }else{
+    document.getElementById("loginBox").classList.remove("hidden");
+    document.getElementById("dashboard").classList.add("hidden");
+  }
+
+  document.getElementById("adminSection").scrollIntoView({
+    behavior:"smooth"
+  });
+}
+
+function closeAdmin(){
+  document.getElementById("adminSection").classList.remove("active");
+}
+
+function login(){
+  const password = document.getElementById("adminPassword").value;
+
+  if(password === "NKDON2026"){
+    sessionStorage.setItem(ADMIN_KEY,"true");
+    document.getElementById("adminPassword").value="";
+    showDashboard();
+  }else{
+    alert("Incorrect passcode.");
+  }
+}
+
+function logout(){
+  sessionStorage.removeItem(ADMIN_KEY);
+  document.getElementById("dashboard").classList.add("hidden");
+  document.getElementById("loginBox").classList.remove("hidden");
+}
+
+function showDashboard(){
+  document.getElementById("loginBox").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+  renderShipments();
+}
+
+function generateTrackingId(){
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+  function group(length){
+    let output="";
+    for(let i=0;i<length;i++){
+      output += chars[Math.floor(Math.random()*chars.length)];
+    }
+    return output;
+  }
+
+  let id;
+
+  do{
+    id = `NKD-${group(4)}-${group(4)}`;
+  }while(getShipments().some(s=>s.id===id));
+
+  return id;
+}
+
+function createShipment(){
+
+  const sender = document.getElementById("sender").value.trim();
+  const recipient = document.getElementById("recipient").value.trim();
+  const origin = document.getElementById("origin").value.trim();
+  const destination = document.getElementById("destination").value.trim();
+  const type = document.getElementById("shipmentType").value;
+  const status = document.getElementById("initialStatus").value;
+
+  if(!sender || !recipient || !origin || !destination){
+    alert("Please complete all shipment fields.");
+    return;
+  }
+
+  const now = new Date().toISOString();
+  const id = generateTrackingId();
+
+  const shipment = {
+    id,
+    sender,
+    recipient,
+    origin,
+    destination,
+    type,
+    createdAt:now,
+    events:[
+      {
+        status,
+        location:origin,
+        note:"Shipment record created by N.K DON.",
+        time:now
+      }
+    ]
+  };
+
+  const shipments = getShipments();
+  shipments.push(shipment);
+  saveShipments(shipments);
+
+  clearForm();
+  renderShipments();
+
+  alert(
+    "Shipment created successfully.\n\nN.K DON Tracking ID:\n" + id
+  );
+}
+
+function clearForm(){
+  document.getElementById("sender").value="";
+  document.getElementById("recipient").value="";
+  document.getElementById("origin").value="";
+  document.getElementById("destination").value="";
+  document.getElementById("shipmentType").value="Domestic Courier";
+  document.getElementById("initialStatus").value="Shipment Created";
+}
+
+function renderShipments(){
+  const list = document.getElementById("shipmentList");
+  const shipments = getShipments();
+
+  if(!shipments.length){
+    list.innerHTML="<p>No shipments yet.</p>";
+    return;
+  }
+
+  list.innerHTML = shipments.map(shipment=>{
+
+    const latest = getLatestEvent(shipment);
+
+    return `
+      <div class="shipment-item">
+
+        <h3>${escapeHtml(shipment.id)}</h3>
+
+        <p>
+          ${escapeHtml(shipment.origin)}
+          →
+          ${escapeHtml(shipment.destination)}
+        </p>
+
+        <p>
+          Recipient: ${escapeHtml(shipment.recipient)}
+        </p>
+
+        <p>
+          Status:
+          <strong>${escapeHtml(latest ? latest.status : "Pending")}</strong>
+        </p>
+
+        <div class="admin-actions">
+          <button class="secondary"
+            onclick="viewShipment('${shipment.id}')">
+            View
+          </button>
+
+          <button class="secondary"
+            onclick="addTrackingEvent('${shipment.id}')">
+            Add Event
+          </button>
+
+          <button class="danger"
+            onclick="deleteShipment('${shipment.id}')">
+            Delete
+          </button>
+        </div>
+
+      </div>
+    `;
+
+  }).join("");
+}
+
+function viewShipment(id){
+  const shipment = getShipments().find(s=>s.id===id);
+
+  if(!shipment) return;
+
+  const latest = getLatestEvent(shipment);
+
+  alert(
+    "Tracking ID: " + shipment.id +
+    "\nSender: " + shipment.sender +
+    "\nRecipient: " + shipment.recipient +
+    "\nOrigin: " + shipment.origin +
+    "\nDestination: " + shipment.destination +
+    "\nType: " + shipment.type +
+    "\nLatest status: " + (latest ? latest.status : "Pending")
+  );
+}
+
+function addTrackingEvent(id){
+
+  const shipments = getShipments();
+  const shipment = shipments.find(s=>s.id===id);
+
+  if(!shipment) return;
+
+  const status = prompt(
+    "Enter status:\nExample: In Transit"
+  );
+
+  if(!status) return;
+
+  const location = prompt(
+    "Enter current location:"
+  );
+
+  if(!location) return;
+
+  const note = prompt(
+    "Enter tracking note:"
+  ) || "";
+
+  shipment.events.push({
+    status,
+    location,
+    note,
+    time:new Date().toISOString()
+  });
+
+  saveShipments(shipments);
+  renderShipments();
+
+  alert("Tracking event added.");
+}
+
+function deleteShipment(id){
+
+  const shipment = getShipments().find(s=>s.id===id);
+
+  if(!shipment) return;
+
+  const confirmed = confirm(
+    "Delete shipment " + id + "?"
+  );
+
+  if(!confirmed) return;
+
+  const shipments = getShipments().filter(
+    s=>s.id!==id
+  );
+
+  saveShipments(shipments);
+  renderShipments();
+
+  document.getElementById("trackingResult").innerHTML="";
+}
+
+function escapeHtml(value){
+  return String(value || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+document.getElementById("trackingInput").addEventListener(
+  "keydown",
+  function(event){
+    if(event.key==="Enter"){
+      trackShipment();
+    }
+  }
+);
+</script>
+
+</body>
+</html>
