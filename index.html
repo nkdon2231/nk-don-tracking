@@ -3,38 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>N.K DON | Consignment Management Platform</title>
-  <meta name="theme-color" content="#0f172a" />
+  <title>NKDON Tracking Logistics | Consignment Management & Shipment Tracking</title>
+  <meta name="theme-color" content="#0b1220" />
+  <meta name="description" content="NKDON Tracking Logistics — Professional consignment management and shipment tracking platform." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            nk: {
-              50:  '#f0f9ff',
-              100: '#e0f2fe',
-              200: '#bae6fd',
-              300: '#7dd3fc',
-              400: '#38bdf8',
-              500: '#0ea5e9',
-              600: '#0284c7',
-              700: '#0369a1',
-              800: '#075985',
-              900: '#0c4a6e',
-              950: '#082f49',
+            navy: {
+              950: '#070b14',
+              900: '#0b1220',
+              800: '#111827',
+              700: '#1a2438',
+              600: '#243047'
             },
             gold: {
+              300: '#fcd34d',
               400: '#fbbf24',
               500: '#f59e0b',
-              600: '#d97706',
+              600: '#d97706'
             }
           },
           fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
@@ -43,952 +41,951 @@
     }
   </script>
   <style>
-    * { -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Inter', system-ui, sans-serif; }
-    .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
-    .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); }
-    .card-shadow { box-shadow: 0 4px 24px -4px rgba(0,0,0,0.25); }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; }
-    .timeline-line { position: absolute; left: 15px; top: 28px; bottom: -12px; width: 2px; background: #334155; }
+    * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #070b14; color: #e2e8f0; }
+    .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0); }
+    .glass { background: rgba(11, 18, 32, 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+    .card { background: #111827; border: 1px solid #1e293b; border-radius: 14px; box-shadow: 0 4px 24px -6px rgba(0,0,0,0.45); }
+    .gold-accent { color: #fbbf24; }
+    .btn-gold { background: linear-gradient(135deg, #d97706, #f59e0b); color: #0b1220; font-weight: 600; }
+    .btn-gold:hover { filter: brightness(1.08); }
+    .btn-navy { background: #1a2438; border: 1px solid #334155; }
+    .btn-navy:hover { background: #243047; }
+    .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; }
+    .timeline-line { position: absolute; left: 15px; top: 28px; bottom: -8px; width: 2px; background: #334155; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    input, select, textarea { font-size: 16px !important; } /* prevent iOS zoom */
+    input, select, textarea { font-size: 16px !important; }
+    .skeleton { background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    .fade-in { animation: fadeIn 0.25s ease-out; }
+    .drawer { transform: translateX(100%); transition: transform 0.28s ease; }
+    .drawer.open { transform: translateX(0); }
+    .modal-backdrop { background: rgba(0,0,0,0.72); }
+    table.data-table th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: #94a3b8; font-weight: 600; }
+    table.data-table td { font-size: 13px; }
+    .progress-step.active .dot { background: #f59e0b; box-shadow: 0 0 0 4px rgba(245,158,11,0.25); }
+    .progress-step.done .dot { background: #10b981; }
+    .progress-step.done .bar { background: #10b981; }
+    .progress-step.exception .dot { background: #f59e0b; }
+    #toast-container { pointer-events: none; }
+    #toast-container > div { pointer-events: auto; }
+    .print-only { display: none; }
+    @media print {
+      body * { visibility: hidden; }
+      .print-area, .print-area * { visibility: visible; }
+      .print-area { position: absolute; left: 0; top: 0; width: 100%; }
+      .no-print { display: none !important; }
+    }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen">
+<body class="min-h-screen bg-navy-950 text-slate-100">
 
-  <!-- ===================== LOGIN / AUTH GATE ===================== -->
-  <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 px-4">
-    <div class="w-full max-w-sm">
-      <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-nk-500 to-nk-700 mb-4 shadow-lg shadow-nk-500/30">
-          <span class="text-2xl font-bold tracking-tight">NK</span>
-        </div>
-        <h1 class="text-2xl font-bold tracking-tight">N.K DON</h1>
-        <p class="text-slate-400 text-sm mt-1">Consignment Management Platform</p>
+  <!-- ===================== TOAST ===================== -->
+  <div id="toast-container" class="fixed top-4 right-4 z-[100] space-y-2 max-w-sm w-full px-2"></div>
+
+  <!-- ===================== CONFIRM DIALOG ===================== -->
+  <div id="confirm-modal" class="hidden fixed inset-0 z-[90] modal-backdrop flex items-center justify-center p-4">
+    <div class="card w-full max-w-sm p-6 fade-in">
+      <h3 id="confirm-title" class="text-lg font-bold mb-2">Confirm</h3>
+      <p id="confirm-msg" class="text-sm text-slate-400 mb-6"></p>
+      <div class="flex gap-3">
+        <button onclick="closeConfirm(false)" class="flex-1 py-2.5 rounded-xl btn-navy text-sm font-medium">Cancel</button>
+        <button id="confirm-ok" class="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-sm font-semibold">Confirm</button>
       </div>
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 card-shadow">
-        <div class="space-y-4">
+    </div>
+  </div>
+
+  <!-- ===================== PUBLIC PORTAL ===================== -->
+  <div id="view-public" class="min-h-screen flex flex-col">
+    <!-- Public Nav -->
+    <header class="sticky top-0 z-40 glass border-b border-slate-800">
+      <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-gold-500 to-gold-600 flex items-center justify-center shadow-lg shadow-gold-500/20">
+            <span class="text-navy-950 font-extrabold text-sm tracking-tight">NK</span>
+          </div>
+          <div>
+            <div class="font-bold text-sm leading-tight">NKDON Tracking Logistics</div>
+            <div class="text-[10px] text-slate-400 leading-tight">Consignment Management & Shipment Tracking</div>
+          </div>
+        </div>
+        <nav class="hidden md:flex items-center gap-6 text-sm">
+          <a href="#track" class="text-gold-400 font-medium">Track Consignment</a>
+          <a href="#services" class="text-slate-400 hover:text-white transition">Services</a>
+          <a href="#about" class="text-slate-400 hover:text-white transition">About</a>
+          <a href="#support" class="text-slate-400 hover:text-white transition">Support</a>
+          <button onclick="showOwnerLogin()" class="px-4 py-2 rounded-lg btn-navy text-xs font-semibold border border-slate-700">Owner Access</button>
+        </nav>
+        <button onclick="toggleMobileNav()" class="md:hidden p-2 rounded-lg hover:bg-slate-800" aria-label="Menu">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+      <div id="mobile-nav" class="hidden md:hidden border-t border-slate-800 px-4 py-3 space-y-2">
+        <a href="#track" onclick="toggleMobileNav()" class="block py-2 text-sm text-gold-400">Track Consignment</a>
+        <a href="#services" onclick="toggleMobileNav()" class="block py-2 text-sm text-slate-300">Services</a>
+        <a href="#about" onclick="toggleMobileNav()" class="block py-2 text-sm text-slate-300">About</a>
+        <a href="#support" onclick="toggleMobileNav()" class="block py-2 text-sm text-slate-300">Support</a>
+        <button onclick="showOwnerLogin(); toggleMobileNav()" class="w-full text-left py-2 text-sm text-slate-300">Owner Access</button>
+      </div>
+    </header>
+
+    <main class="flex-1">
+      <!-- HERO / TRACK MODULE -->
+      <section id="track" class="relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-navy-900 via-navy-950 to-navy-950"></div>
+        <div class="absolute inset-0 opacity-30" style="background-image: radial-gradient(ellipse at 30% 20%, rgba(245,158,11,0.12), transparent 50%), radial-gradient(ellipse at 70% 60%, rgba(30,58,138,0.2), transparent 45%);"></div>
+        <div class="relative max-w-4xl mx-auto px-4 pt-14 pb-16 md:pt-20 md:pb-24">
+          <div class="text-center mb-10">
+            <p class="text-gold-400 text-xs font-semibold tracking-widest uppercase mb-3">NKDON Tracking Logistics</p>
+            <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight mb-3">Track Every Recorded Milestone.</h1>
+            <p class="text-slate-400 text-sm md:text-base max-w-xl mx-auto">Enter your NKDON consignment reference to view recorded shipment information from authorized operational updates.</p>
+          </div>
+
+          <!-- Tracking Search Card -->
+          <div class="card p-5 md:p-7 max-w-2xl mx-auto">
+            <label class="block text-xs font-medium text-slate-400 mb-2">Consignment / Tracking Number</label>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <div class="relative flex-1">
+                <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input id="public-track-input" type="text" placeholder="e.g. NKDON-XXXXXXXX" autocomplete="off"
+                  class="w-full bg-navy-950 border border-slate-700 rounded-xl pl-11 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500"
+                  onkeydown="if(event.key==='Enter') publicTrack()" />
+              </div>
+              <button id="public-track-btn" onclick="publicTrack()" class="btn-gold px-6 py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 min-w-[160px]">
+                <span id="track-btn-label">TRACK CONSIGNMENT</span>
+                <svg id="track-btn-spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+              </button>
+            </div>
+            <p id="track-hint" class="text-[11px] text-slate-500 mt-3">Use the exact reference provided on your consignment note. Results show operational milestones only.</p>
+          </div>
+
+          <!-- Tracking Result -->
+          <div id="public-result" class="hidden mt-8 max-w-3xl mx-auto fade-in"></div>
+        </div>
+      </section>
+
+      <!-- Secondary sections -->
+      <section id="services" class="border-t border-slate-800/80 py-14">
+        <div class="max-w-5xl mx-auto px-4">
+          <h2 class="text-xl font-bold mb-2">Operational Services</h2>
+          <p class="text-sm text-slate-400 mb-8 max-w-2xl">Structured consignment registration, milestone recording, and controlled public tracking for shipments managed by NKDON.</p>
+          <div class="grid md:grid-cols-3 gap-4">
+            <div class="card p-5">
+              <div class="w-9 h-9 rounded-lg bg-gold-500/10 text-gold-400 flex items-center justify-center mb-3">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              </div>
+              <h3 class="font-semibold text-sm mb-1">Consignment Registration</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">Shipments are registered with route, package, and operational metadata by authorized staff.</p>
+            </div>
+            <div class="card p-5">
+              <div class="w-9 h-9 rounded-lg bg-gold-500/10 text-gold-400 flex items-center justify-center mb-3">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+              </div>
+              <h3 class="font-semibold text-sm mb-1">Milestone Tracking</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">Status events are recorded as they occur — not simulated. Public views reflect actual entries.</p>
+            </div>
+            <div class="card p-5">
+              <div class="w-9 h-9 rounded-lg bg-gold-500/10 text-gold-400 flex items-center justify-center mb-3">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              </div>
+              <h3 class="font-semibold text-sm mb-1">Controlled Access</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">Customer contact details and internal notes remain restricted to authorized operators.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="about" class="border-t border-slate-800/80 py-14 bg-navy-900/40">
+        <div class="max-w-5xl mx-auto px-4">
+          <h2 class="text-xl font-bold mb-2">About NKDON</h2>
+          <p class="text-sm text-slate-400 max-w-2xl leading-relaxed">NKDON Tracking Logistics operates an internal consignment management and shipment tracking system. Tracking references are issued by NKDON and represent recorded operational milestones for consignments under NKDON management.</p>
+        </div>
+      </section>
+
+      <section id="support" class="border-t border-slate-800/80 py-14">
+        <div class="max-w-5xl mx-auto px-4">
+          <h2 class="text-xl font-bold mb-2">Customer Support</h2>
+          <p class="text-sm text-slate-400 mb-4">For questions about a consignment reference, contact support with your NKDON tracking number.</p>
+          <a href="https://wa.me/" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl btn-navy text-sm border border-slate-700">
+            <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.555 4.12 1.527 5.86L.057 24l6.305-1.654A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.78 9.78 0 01-4.986-1.362l-.357-.212-3.746.983 1.001-3.65-.232-.374A9.77 9.77 0 012.182 12 9.82 9.82 0 0112 2.182 9.82 9.82 0 0121.818 12 9.82 9.82 0 0112 21.818z"/></svg>
+            WhatsApp Support
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="border-t border-slate-800 py-10 mt-auto">
+      <div class="max-w-5xl mx-auto px-4">
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+          <div>
+            <div class="font-bold">NKDON Tracking Logistics</div>
+            <div class="text-xs text-slate-400 mt-1">Consignment Management & Shipment Tracking</div>
+          </div>
+          <div class="text-xs text-slate-500 max-w-md leading-relaxed">
+            NKDON tracking references are independent internal shipment references created by NKDON Tracking Logistics and are not DHL, FedEx, UPS or other carrier-issued tracking numbers.
+          </div>
+        </div>
+        <div class="mt-6 pt-4 border-t border-slate-800/60 text-[11px] text-slate-600">© <span id="year"></span> NKDON Tracking Logistics. All rights reserved.</div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ===================== OWNER LOGIN ===================== -->
+  <div id="view-login" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-navy-950 px-4">
+    <div class="w-full max-w-md">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-gold-500 to-gold-600 mb-4 shadow-lg shadow-gold-500/25">
+          <span class="text-navy-950 font-extrabold text-lg">NK</span>
+        </div>
+        <h1 class="text-xl font-bold">Owner Operations Center</h1>
+        <p class="text-slate-400 text-sm mt-1">Authorized administrators only</p>
+      </div>
+      <div class="card p-6">
+        <div id="login-form" class="space-y-4">
           <div>
             <label class="block text-xs font-medium text-slate-400 mb-1.5">Email</label>
-            <input id="login-email" type="email" value="admin@nkdon.com" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-nk-500" />
+            <input id="login-email" type="email" autocomplete="username" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500/40" placeholder="admin@example.com" />
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-400 mb-1.5">Password</label>
-            <input id="login-password" type="password" value="admin123" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-nk-500" />
+            <input id="login-password" type="password" autocomplete="current-password" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500/40" placeholder="••••••••" onkeydown="if(event.key==='Enter') handleLogin()" />
           </div>
-          <button onclick="handleLogin()" class="w-full bg-gradient-to-r from-nk-600 to-nk-500 hover:from-nk-500 hover:to-nk-400 text-white font-semibold py-3 rounded-xl transition active:scale-[0.98]">
-            Sign In
-          </button>
-          <p class="text-center text-xs text-slate-500 mt-3">Demo credentials pre-filled · Admin access</p>
+          <button id="login-btn" onclick="handleLogin()" class="w-full btn-gold py-3 rounded-xl text-sm font-bold">Sign In</button>
+          <button onclick="showResetForm()" class="w-full text-xs text-slate-400 hover:text-gold-400 py-1">Forgot password?</button>
         </div>
+        <div id="reset-form" class="hidden space-y-4">
+          <p class="text-sm text-slate-400">Enter your email to receive a password reset link.</p>
+          <input id="reset-email" type="email" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500/40" placeholder="admin@example.com" />
+          <button onclick="handlePasswordReset()" class="w-full btn-gold py-3 rounded-xl text-sm font-bold">Send Reset Link</button>
+          <button onclick="showLoginForm()" class="w-full text-xs text-slate-400 hover:text-gold-400 py-1">Back to sign in</button>
+        </div>
+        <p id="login-error" class="hidden text-xs text-red-400 mt-3 text-center"></p>
       </div>
-      <p class="text-center text-xs text-slate-600 mt-6">Public Tracking → <button onclick="showPublicTracking()" class="text-nk-400 underline">Track a shipment</button></p>
+      <p class="text-center text-xs text-slate-500 mt-6">
+        <button onclick="showPublic()" class="text-gold-400 hover:underline">← Return to public tracking</button>
+      </p>
     </div>
   </div>
 
-  <!-- ===================== PUBLIC TRACKING PORTAL ===================== -->
-  <div id="public-tracking" class="hidden min-h-screen bg-slate-950">
-    <header class="sticky top-0 z-40 glass border-b border-slate-800 px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-nk-500 to-nk-700 flex items-center justify-center text-xs font-bold">NK</div>
-        <span class="font-semibold text-sm">N.K DON Tracking</span>
-      </div>
-      <button onclick="hidePublicTracking()" class="text-xs text-slate-400 hover:text-white">Staff Login</button>
-    </header>
-    <main class="px-4 py-6 max-w-lg mx-auto">
-      <h2 class="text-xl font-bold mb-1">Track Your Shipment</h2>
-      <p class="text-sm text-slate-400 mb-6">Enter your tracking number to view public status updates.</p>
-      <div class="flex gap-2 mb-6">
-        <input id="public-track-input" type="text" placeholder="e.g. NKD-20260923-001" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-nk-500" />
-        <button onclick="publicTrack()" class="bg-nk-600 hover:bg-nk-500 px-5 rounded-xl font-medium text-sm">Track</button>
-      </div>
-      <div id="public-result" class="hidden"></div>
-    </main>
-  </div>
-
-  <!-- ===================== MAIN APP ===================== -->
-  <div id="app" class="hidden min-h-screen flex flex-col">
-
-    <!-- Top Bar -->
-    <header class="sticky top-0 z-40 glass border-b border-slate-800 px-4 py-3 flex items-center justify-between safe-bottom">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-nk-500 to-nk-700 flex items-center justify-center text-sm font-bold shadow-lg shadow-nk-500/20">NK</div>
+  <!-- ===================== ADMIN APP ===================== -->
+  <div id="view-admin" class="hidden min-h-screen flex">
+    <!-- Desktop Sidebar -->
+    <aside id="sidebar" class="hidden lg:flex flex-col w-60 border-r border-slate-800 bg-navy-900 shrink-0">
+      <div class="p-4 border-b border-slate-800 flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-gold-500 to-gold-600 flex items-center justify-center">
+          <span class="text-navy-950 font-extrabold text-xs">NK</span>
+        </div>
         <div>
-          <div class="font-bold text-sm leading-tight">N.K DON</div>
-          <div class="text-[10px] text-slate-400 leading-tight">Operations</div>
+          <div class="font-bold text-sm">NKDON</div>
+          <div class="text-[10px] text-slate-400">Operations Center</div>
         </div>
       </div>
-      <div class="flex items-center gap-2">
-        <button onclick="showSection('audit')" class="p-2 rounded-lg hover:bg-slate-800 text-slate-400" title="Audit Log">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      <nav class="flex-1 p-3 space-y-0.5 overflow-y-auto">
+        <button data-admin-nav="overview" onclick="adminNav('overview')" class="admin-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left text-gold-400 bg-slate-800/60">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg>
+          Overview
         </button>
-        <button onclick="logout()" class="p-2 rounded-lg hover:bg-slate-800 text-slate-400" title="Logout">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        <button data-admin-nav="consignments" onclick="adminNav('consignments')" class="admin-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left text-slate-400 hover:bg-slate-800/40">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          Consignments
+        </button>
+        <button data-admin-nav="new" onclick="adminNav('new')" class="admin-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left text-slate-400 hover:bg-slate-800/40">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          New Consignment
+        </button>
+        <button data-admin-nav="events" onclick="adminNav('events')" class="admin-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left text-slate-400 hover:bg-slate-800/40">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Tracking Events
+        </button>
+        <button data-admin-nav="documents" onclick="adminNav('documents')" class="admin-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left text-slate-400 hover:bg-slate-800/40">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Documents
+        </button>
+        <button data-admin-nav="analytics" onclick="adminNav('analytics')" class="admin-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left text-slate-400 hover:bg-slate-800/40">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Analytics
+        </button>
+        <button data-admin-nav="activity" onclick="adminNav('activity')" class="admin-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left text-slate-400 hover:bg-slate-800/40">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          Activity Log
+        </button>
+        <button data-admin-nav="settings" onclick="adminNav('settings')" class="admin-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left text-slate-400 hover:bg-slate-800/40">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Settings
+        </button>
+      </nav>
+      <div class="p-3 border-t border-slate-800">
+        <button onclick="handleLogout()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:bg-slate-800/40">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          Sign Out
         </button>
       </div>
-    </header>
+    </aside>
 
-    <!-- Content -->
-    <main class="flex-1 overflow-y-auto pb-24">
-
-      <!-- ===== DASHBOARD ===== -->
-      <section id="sec-dashboard" class="px-4 py-5 space-y-5">
-        <div>
-          <h2 class="text-lg font-bold">Operations Dashboard</h2>
-          <p class="text-xs text-slate-400">Real-time overview · Updated just now</p>
-        </div>
-
-        <!-- KPI Cards -->
-        <div class="grid grid-cols-2 gap-3">
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 card-shadow">
-            <div class="text-xs text-slate-400 mb-1">Total Shipments</div>
-            <div id="kpi-total" class="text-2xl font-bold">0</div>
-          </div>
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 card-shadow">
-            <div class="text-xs text-slate-400 mb-1">Active</div>
-            <div id="kpi-active" class="text-2xl font-bold text-nk-400">0</div>
-          </div>
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 card-shadow">
-            <div class="text-xs text-slate-400 mb-1">Delivered</div>
-            <div id="kpi-delivered" class="text-2xl font-bold text-emerald-400">0</div>
-          </div>
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 card-shadow">
-            <div class="text-xs text-slate-400 mb-1">Delayed / Issues</div>
-            <div id="kpi-delayed" class="text-2xl font-bold text-amber-400">0</div>
-          </div>
-        </div>
-
-        <!-- Status Distribution -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 card-shadow">
-          <h3 class="text-sm font-semibold mb-3">Status Distribution</h3>
-          <div class="h-40"><canvas id="statusChart"></canvas></div>
-        </div>
-
-        <!-- Recent Activity -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 card-shadow">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold">Recent Consignments</h3>
-            <button onclick="showSection('consignments')" class="text-xs text-nk-400">View all</button>
-          </div>
-          <div id="recent-list" class="space-y-2"></div>
-        </div>
-      </section>
-
-      <!-- ===== CONSIGNMENTS ===== -->
-      <section id="sec-consignments" class="hidden px-4 py-5 space-y-4">
-        <div class="flex items-center justify-between">
-          <div>
-            <h2 class="text-lg font-bold">Consignments</h2>
-            <p class="text-xs text-slate-400">Create, search & manage</p>
-          </div>
-          <button onclick="openCreateModal()" class="bg-nk-600 hover:bg-nk-500 text-white text-sm font-medium px-4 py-2 rounded-xl flex items-center gap-1.5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            New
+    <!-- Main Admin Content -->
+    <div class="flex-1 flex flex-col min-w-0">
+      <header class="sticky top-0 z-30 glass border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <button onclick="toggleAdminDrawer()" class="lg:hidden p-2 rounded-lg hover:bg-slate-800">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
           </button>
-        </div>
-
-        <!-- Search & Filters -->
-        <div class="space-y-2">
-          <input id="search-input" type="search" placeholder="Search tracking #, consignee, origin..." oninput="filterConsignments()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-nk-500" />
-          <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-            <button onclick="setStatusFilter('all')" data-filter="all" class="filter-btn active shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-nk-600 text-white">All</button>
-            <button onclick="setStatusFilter('pickup')" data-filter="pickup" class="filter-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300">Pickup</button>
-            <button onclick="setStatusFilter('processing')" data-filter="processing" class="filter-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300">Processing</button>
-            <button onclick="setStatusFilter('transit')" data-filter="transit" class="filter-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300">In Transit</button>
-            <button onclick="setStatusFilter('destination')" data-filter="destination" class="filter-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300">At Destination</button>
-            <button onclick="setStatusFilter('delivered')" data-filter="delivered" class="filter-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300">Delivered</button>
-            <button onclick="setStatusFilter('delayed')" data-filter="delayed" class="filter-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300">Delayed</button>
+          <div>
+            <div id="admin-page-title" class="font-bold text-sm">Overview</div>
+            <div class="text-[10px] text-slate-400">NKDON Operations</div>
           </div>
         </div>
-
-        <!-- Actions row -->
-        <div class="flex gap-2">
-          <button onclick="exportCSV()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-xs font-medium py-2.5 rounded-xl">Export CSV</button>
-          <label class="flex-1 bg-slate-800 hover:bg-slate-700 text-xs font-medium py-2.5 rounded-xl text-center cursor-pointer">
-            Import CSV
-            <input type="file" accept=".csv" onchange="importCSV(event)" class="hidden" />
-          </label>
+        <div class="flex items-center gap-2">
+          <span id="admin-email-label" class="hidden sm:inline text-xs text-slate-400 truncate max-w-[160px]"></span>
+          <button onclick="showPublic()" class="text-xs text-slate-400 hover:text-gold-400 px-2 py-1">Public Portal</button>
         </div>
+      </header>
 
-        <div id="consignments-list" class="space-y-3"></div>
-      </section>
-
-      <!-- ===== DETAIL / TRACKING VIEW ===== -->
-      <section id="sec-detail" class="hidden px-4 py-5 space-y-5">
-        <button onclick="showSection('consignments')" class="flex items-center gap-1 text-sm text-slate-400 hover:text-white mb-2">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-          Back
-        </button>
-        <div id="detail-content"></div>
-      </section>
-
-      <!-- ===== AUDIT LOG ===== -->
-      <section id="sec-audit" class="hidden px-4 py-5 space-y-4">
-        <h2 class="text-lg font-bold">Audit Log</h2>
-        <p class="text-xs text-slate-400">Administrator actions recorded for compliance</p>
-        <div id="audit-list" class="space-y-2"></div>
-      </section>
-
-    </main>
-
-    <!-- Bottom Navigation (iPhone style) -->
-    <nav class="fixed bottom-0 inset-x-0 glass border-t border-slate-800 px-2 pt-2 pb-safe safe-bottom z-40">
-      <div class="flex justify-around max-w-md mx-auto">
-        <button onclick="showSection('dashboard')" data-nav="dashboard" class="nav-btn flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl text-nk-400">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg>
-          <span class="text-[10px] font-medium">Dashboard</span>
-        </button>
-        <button onclick="showSection('consignments')" data-nav="consignments" class="nav-btn flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl text-slate-500">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-          <span class="text-[10px] font-medium">Shipments</span>
-        </button>
-        <button onclick="openCreateModal()" class="flex flex-col items-center gap-0.5 py-1.5 px-3 -mt-4">
-          <div class="w-12 h-12 rounded-full bg-gradient-to-br from-nk-500 to-nk-700 flex items-center justify-center shadow-lg shadow-nk-500/40">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+      <main class="flex-1 overflow-y-auto p-4 md:p-6 pb-24 lg:pb-6">
+        <!-- OVERVIEW -->
+        <section id="admin-overview" class="space-y-5">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="card p-4"><div class="text-[11px] text-slate-400 mb-1">Total Consignments</div><div id="kpi-total" class="text-2xl font-bold">—</div></div>
+            <div class="card p-4"><div class="text-[11px] text-slate-400 mb-1">Active Shipments</div><div id="kpi-active" class="text-2xl font-bold text-sky-400">—</div></div>
+            <div class="card p-4"><div class="text-[11px] text-slate-400 mb-1">Processing</div><div id="kpi-processing" class="text-2xl font-bold text-indigo-400">—</div></div>
+            <div class="card p-4"><div class="text-[11px] text-slate-400 mb-1">In Transit</div><div id="kpi-transit" class="text-2xl font-bold text-blue-400">—</div></div>
+            <div class="card p-4"><div class="text-[11px] text-slate-400 mb-1">Out for Delivery</div><div id="kpi-ofd" class="text-2xl font-bold text-violet-400">—</div></div>
+            <div class="card p-4"><div class="text-[11px] text-slate-400 mb-1">Delivered</div><div id="kpi-delivered" class="text-2xl font-bold text-emerald-400">—</div></div>
+            <div class="card p-4"><div class="text-[11px] text-slate-400 mb-1">Delayed</div><div id="kpi-delayed" class="text-2xl font-bold text-amber-400">—</div></div>
+            <div class="card p-4"><div class="text-[11px] text-slate-400 mb-1">Held</div><div id="kpi-held" class="text-2xl font-bold text-orange-400">—</div></div>
           </div>
-        </button>
-        <button onclick="showSection('audit')" data-nav="audit" class="nav-btn flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl text-slate-500">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          <span class="text-[10px] font-medium">Audit</span>
-        </button>
-        <button onclick="showPublicTracking()" class="nav-btn flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl text-slate-500">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          <span class="text-[10px] font-medium">Public</span>
-        </button>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="card p-4">
+              <h3 class="text-sm font-semibold mb-3">Status Distribution</h3>
+              <div class="h-48"><canvas id="chart-status"></canvas></div>
+            </div>
+            <div class="card p-4">
+              <h3 class="text-sm font-semibold mb-3">Recent Consignments</h3>
+              <div id="overview-recent" class="space-y-2 max-h-52 overflow-y-auto"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CONSIGNMENTS -->
+        <section id="admin-consignments" class="hidden space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 class="text-lg font-bold">Consignment Register</h2>
+              <p class="text-xs text-slate-400">Search, filter, and manage shipments</p>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+              <button onclick="exportCSV()" class="px-3 py-2 rounded-lg btn-navy text-xs font-medium">Export CSV</button>
+              <label class="px-3 py-2 rounded-lg btn-navy text-xs font-medium cursor-pointer">
+                Import CSV
+                <input type="file" accept=".csv" class="hidden" onchange="importCSV(event)" />
+              </label>
+              <button onclick="adminNav('new')" class="px-3 py-2 rounded-lg btn-gold text-xs font-bold">+ New</button>
+            </div>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input id="c-search" type="search" placeholder="Search tracking, reference, sender, recipient..." oninput="debouncedFilter()" class="flex-1 bg-navy-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500/30" />
+            <select id="c-status-filter" onchange="filterConsignments()" class="bg-navy-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm">
+              <option value="">All statuses</option>
+            </select>
+            <input id="c-dest-filter" type="text" placeholder="Destination" oninput="debouncedFilter()" class="bg-navy-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm w-full sm:w-36" />
+          </div>
+          <div class="card overflow-x-auto">
+            <table class="data-table w-full min-w-[900px]">
+              <thead>
+                <tr class="border-b border-slate-800 text-left">
+                  <th class="px-3 py-3 cursor-pointer" onclick="sortBy('tracking_number')">Consignment</th>
+                  <th class="px-3 py-3">Reference</th>
+                  <th class="px-3 py-3">Sender</th>
+                  <th class="px-3 py-3">Recipient</th>
+                  <th class="px-3 py-3">Origin</th>
+                  <th class="px-3 py-3">Destination</th>
+                  <th class="px-3 py-3">Status</th>
+                  <th class="px-3 py-3">Location</th>
+                  <th class="px-3 py-3">ETA</th>
+                  <th class="px-3 py-3">Updated</th>
+                  <th class="px-3 py-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="c-table-body"></tbody>
+            </table>
+            <div id="c-empty" class="hidden p-10 text-center text-sm text-slate-500">No consignments match your filters.</div>
+          </div>
+          <div class="flex items-center justify-between text-xs text-slate-400">
+            <span id="c-page-info">—</span>
+            <div class="flex gap-2">
+              <button onclick="prevPage()" class="px-3 py-1.5 rounded-lg btn-navy">Prev</button>
+              <button onclick="nextPage()" class="px-3 py-1.5 rounded-lg btn-navy">Next</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- NEW / EDIT CONSIGNMENT -->
+        <section id="admin-new" class="hidden space-y-4">
+          <div>
+            <h2 id="form-title" class="text-lg font-bold">New Consignment</h2>
+            <p class="text-xs text-slate-400">All fields marked * are required</p>
+          </div>
+          <form id="shipment-form" onsubmit="saveShipment(event)" class="space-y-5">
+            <input type="hidden" id="f-id" />
+            <div class="card p-5 space-y-4">
+              <h3 class="text-sm font-semibold text-gold-400">Identification</h3>
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Consignment / Tracking Number *</label>
+                  <div class="flex gap-2">
+                    <input id="f-tracking" required class="flex-1 bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" />
+                    <button type="button" onclick="genTracking()" class="px-3 rounded-xl btn-navy text-xs">Generate</button>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Reference Number</label>
+                  <input id="f-reference" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" />
+                </div>
+              </div>
+            </div>
+            <div class="card p-5 space-y-4">
+              <h3 class="text-sm font-semibold text-gold-400">Shipper</h3>
+              <div class="grid sm:grid-cols-3 gap-3">
+                <div><label class="block text-xs text-slate-400 mb-1">Sender Name *</label><input id="f-sender" required class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+                <div><label class="block text-xs text-slate-400 mb-1">Sender Phone</label><input id="f-sender-phone" type="tel" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+                <div><label class="block text-xs text-slate-400 mb-1">Sender Email</label><input id="f-sender-email" type="email" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+              </div>
+            </div>
+            <div class="card p-5 space-y-4">
+              <h3 class="text-sm font-semibold text-gold-400">Consignee</h3>
+              <div class="grid sm:grid-cols-3 gap-3">
+                <div><label class="block text-xs text-slate-400 mb-1">Recipient Name *</label><input id="f-recipient" required class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+                <div><label class="block text-xs text-slate-400 mb-1">Recipient Phone</label><input id="f-recipient-phone" type="tel" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+                <div><label class="block text-xs text-slate-400 mb-1">Recipient Email</label><input id="f-recipient-email" type="email" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+              </div>
+            </div>
+            <div class="card p-5 space-y-4">
+              <h3 class="text-sm font-semibold text-gold-400">Route</h3>
+              <div class="grid sm:grid-cols-3 gap-3">
+                <div><label class="block text-xs text-slate-400 mb-1">Origin *</label><input id="f-origin" required class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+                <div><label class="block text-xs text-slate-400 mb-1">Destination *</label><input id="f-destination" required class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+                <div><label class="block text-xs text-slate-400 mb-1">Current Location</label><input id="f-current-location" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+              </div>
+            </div>
+            <div class="card p-5 space-y-4">
+              <h3 class="text-sm font-semibold text-gold-400">Shipment</h3>
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div class="sm:col-span-2"><label class="block text-xs text-slate-400 mb-1">Package Description</label><input id="f-package-desc" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+                <div><label class="block text-xs text-slate-400 mb-1">Quantity</label><input id="f-quantity" type="number" min="1" value="1" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+                <div><label class="block text-xs text-slate-400 mb-1">Weight (kg)</label><input id="f-weight" type="number" step="0.01" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+                <div><label class="block text-xs text-slate-400 mb-1">Dimensions</label><input id="f-dimensions" placeholder="L x W x H cm" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+                <div><label class="block text-xs text-slate-400 mb-1">Shipment Type</label><input id="f-shipment-type" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+                <div><label class="block text-xs text-slate-400 mb-1">Shipping Method</label><input id="f-shipping-method" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+              </div>
+            </div>
+            <div class="card p-5 space-y-4">
+              <h3 class="text-sm font-semibold text-gold-400">Delivery</h3>
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div><label class="block text-xs text-slate-400 mb-1">Pickup Date</label><input id="f-pickup" type="date" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+                <div><label class="block text-xs text-slate-400 mb-1">Estimated Delivery</label><input id="f-eta" type="date" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+                <div><label class="block text-xs text-slate-400 mb-1">Actual Delivery</label><input id="f-actual-delivery" type="date" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+                <div><label class="block text-xs text-slate-400 mb-1">Delivery Contact</label><input id="f-delivery-contact" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+                <div class="sm:col-span-2"><label class="block text-xs text-slate-400 mb-1">Delivery Instructions</label><textarea id="f-delivery-instructions" rows="2" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm"></textarea></div>
+              </div>
+            </div>
+            <div class="card p-5 space-y-4">
+              <h3 class="text-sm font-semibold text-gold-400">Value / Insurance</h3>
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div><label class="block text-xs text-slate-400 mb-1">Declared Value</label><input id="f-declared-value" type="number" step="0.01" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+                <div><label class="block text-xs text-slate-400 mb-1">Currency</label><input id="f-currency" value="NGN" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+                <div><label class="block text-xs text-slate-400 mb-1">Insurance Status</label><input id="f-insurance-status" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+                <div><label class="block text-xs text-slate-400 mb-1">Insurance Value</label><input id="f-insurance-value" type="number" step="0.01" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+              </div>
+            </div>
+            <div class="card p-5 space-y-4">
+              <h3 class="text-sm font-semibold text-gold-400">Operations</h3>
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Status *</label>
+                  <select id="f-status" required class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm"></select>
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-xs text-slate-400 mb-1">Internal Notes (not public)</label>
+                  <textarea id="f-internal-notes" rows="2" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm"></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <button type="button" onclick="adminNav('consignments')" class="flex-1 py-3 rounded-xl btn-navy text-sm font-medium">Cancel</button>
+              <button type="submit" id="save-btn" class="flex-1 py-3 rounded-xl btn-gold text-sm font-bold">Save Consignment</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- DETAIL -->
+        <section id="admin-detail" class="hidden space-y-4">
+          <button onclick="adminNav('consignments')" class="text-sm text-slate-400 hover:text-white flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            Back to register
+          </button>
+          <div id="detail-panel"></div>
+        </section>
+
+        <!-- EVENTS (quick add by tracking) -->
+        <section id="admin-events" class="hidden space-y-4">
+          <h2 class="text-lg font-bold">Tracking Event Management</h2>
+          <p class="text-xs text-slate-400">Add operational events to an existing consignment. Events update status and location.</p>
+          <div class="card p-5 space-y-4 max-w-xl">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Tracking Number *</label>
+              <input id="ev-tracking" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" placeholder="NKDON-..." />
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Status *</label>
+              <select id="ev-status" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm"></select>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="block text-xs text-slate-400 mb-1">Event Date/Time *</label><input id="ev-time" type="datetime-local" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+              <div><label class="block text-xs text-slate-400 mb-1">Event Code</label><input id="ev-code" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" placeholder="e.g. TRN" /></div>
+            </div>
+            <div><label class="block text-xs text-slate-400 mb-1">Location</label><input id="ev-location" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+            <div><label class="block text-xs text-slate-400 mb-1">Facility</label><input id="ev-facility" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+            <div><label class="block text-xs text-slate-400 mb-1">Description *</label><textarea id="ev-desc" rows="2" required class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm"></textarea></div>
+            <button onclick="addEventFromForm()" class="w-full py-3 rounded-xl btn-gold text-sm font-bold">Add Tracking Event</button>
+          </div>
+        </section>
+
+        <!-- DOCUMENTS -->
+        <section id="admin-documents" class="hidden space-y-4">
+          <h2 class="text-lg font-bold">Document Center</h2>
+          <p class="text-xs text-slate-400">Generate printable documents from recorded consignment data only.</p>
+          <div class="card p-5 max-w-md space-y-3">
+            <label class="block text-xs text-slate-400">Tracking Number</label>
+            <input id="doc-tracking" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" />
+            <div class="grid grid-cols-1 gap-2">
+              <button onclick="printDoc('note')" class="py-2.5 rounded-xl btn-navy text-sm">Consignment Note</button>
+              <button onclick="printDoc('summary')" class="py-2.5 rounded-xl btn-navy text-sm">Shipment Summary</button>
+              <button onclick="printDoc('pod')" class="py-2.5 rounded-xl btn-navy text-sm">Delivery Confirmation</button>
+              <button onclick="printDoc('codes')" class="py-2.5 rounded-xl btn-gold text-sm font-bold">QR & Barcode Sheet</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ANALYTICS -->
+        <section id="admin-analytics" class="hidden space-y-4">
+          <h2 class="text-lg font-bold">Analytics</h2>
+          <p class="text-xs text-slate-400">Derived from live database records. Empty states shown when no data exists.</p>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="card p-4"><h3 class="text-sm font-semibold mb-3">Status Distribution</h3><div class="h-52"><canvas id="chart-analytics-status"></canvas></div></div>
+            <div class="card p-4"><h3 class="text-sm font-semibold mb-3">Destination Distribution</h3><div class="h-52"><canvas id="chart-dest"></canvas></div></div>
+            <div class="card p-4"><h3 class="text-sm font-semibold mb-3">Shipment Type</h3><div class="h-52"><canvas id="chart-type"></canvas></div></div>
+            <div class="card p-4">
+              <h3 class="text-sm font-semibold mb-3">Performance Snapshot</h3>
+              <div id="analytics-stats" class="space-y-2 text-sm"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ACTIVITY LOG -->
+        <section id="admin-activity" class="hidden space-y-4">
+          <h2 class="text-lg font-bold">Admin Activity / Audit Log</h2>
+          <div class="card overflow-x-auto">
+            <table class="data-table w-full min-w-[640px]">
+              <thead>
+                <tr class="border-b border-slate-800 text-left">
+                  <th class="px-3 py-3">Date/Time</th>
+                  <th class="px-3 py-3">Action</th>
+                  <th class="px-3 py-3">Tracking</th>
+                  <th class="px-3 py-3">Description</th>
+                </tr>
+              </thead>
+              <tbody id="activity-body"></tbody>
+            </table>
+            <div id="activity-empty" class="hidden p-8 text-center text-sm text-slate-500">No activity recorded yet.</div>
+          </div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section id="admin-settings" class="hidden space-y-4">
+          <h2 class="text-lg font-bold">Settings</h2>
+          <div class="card p-5 space-y-4 max-w-lg">
+            <div>
+              <div class="text-xs text-slate-400">Signed in as</div>
+              <div id="settings-email" class="font-medium text-sm"></div>
+            </div>
+            <div class="border-t border-slate-800 pt-4">
+              <h3 class="text-sm font-semibold mb-2">Notifications (Architecture)</h3>
+              <p class="text-xs text-slate-400 mb-3">Email, WhatsApp, and status-change notification channels are prepared for future integration. No messages are sent until a notification service is configured.</p>
+              <div class="space-y-2 text-xs text-slate-500">
+                <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-slate-600"></span> Email shipment updates — not configured</div>
+                <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-slate-600"></span> WhatsApp notifications — not configured</div>
+                <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-slate-600"></span> Status-change notifications — not configured</div>
+              </div>
+            </div>
+            <button onclick="handleLogout()" class="w-full py-2.5 rounded-xl bg-red-900/40 text-red-300 text-sm font-medium border border-red-900/50">Sign Out</button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Mobile drawer -->
+    <div id="admin-drawer-bg" class="hidden fixed inset-0 z-40 bg-black/60 lg:hidden" onclick="toggleAdminDrawer()"></div>
+    <div id="admin-drawer" class="drawer fixed top-0 right-0 z-50 h-full w-64 bg-navy-900 border-l border-slate-800 lg:hidden flex flex-col">
+      <div class="p-4 border-b border-slate-800 flex justify-between items-center">
+        <span class="font-bold text-sm">Menu</span>
+        <button onclick="toggleAdminDrawer()" class="p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
       </div>
-    </nav>
-  </div>
-
-  <!-- ===================== CREATE / EDIT MODAL ===================== -->
-  <div id="modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70">
-    <div class="bg-slate-900 w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl border border-slate-700 card-shadow">
-      <div class="sticky top-0 bg-slate-900 border-b border-slate-800 px-5 py-4 flex items-center justify-between">
-        <h3 id="modal-title" class="font-bold text-lg">New Consignment</h3>
-        <button onclick="closeModal()" class="p-1.5 rounded-lg hover:bg-slate-800">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <form id="consign-form" onsubmit="saveConsignment(event)" class="p-5 space-y-4">
-        <input type="hidden" id="edit-id" />
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Origin City</label>
-            <input id="f-origin" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" placeholder="Lagos" />
-          </div>
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Destination City</label>
-            <input id="f-dest" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" placeholder="Abuja" />
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Consignee Name (Private)</label>
-          <input id="f-consignee" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" />
-        </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Consignee Phone (Private)</label>
-          <input id="f-phone" type="tel" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" />
-        </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Consignee Address (Private)</label>
-          <textarea id="f-address" rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm"></textarea>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Weight (kg)</label>
-            <input id="f-weight" type="number" step="0.1" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" />
-          </div>
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Pieces</label>
-            <input id="f-pieces" type="number" value="1" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" />
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Description / Contents</label>
-          <input id="f-desc" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" />
-        </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Status</label>
-          <select id="f-status" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm">
-            <option value="pickup">Pickup Scheduled</option>
-            <option value="processing">Processing</option>
-            <option value="transit">In Transit</option>
-            <option value="destination">At Destination</option>
-            <option value="delivered">Delivered</option>
-            <option value="delayed">Delayed</option>
-          </select>
-        </div>
-        <div class="pt-2 flex gap-3">
-          <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl bg-slate-800 text-sm font-medium">Cancel</button>
-          <button type="submit" class="flex-1 py-3 rounded-xl bg-nk-600 hover:bg-nk-500 text-sm font-semibold">Save</button>
-        </div>
-      </form>
+      <nav class="flex-1 p-3 space-y-0.5 overflow-y-auto" id="drawer-nav"></nav>
     </div>
   </div>
 
-  <!-- Toast -->
-  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-[60] hidden px-5 py-3 rounded-xl bg-slate-800 border border-slate-700 text-sm font-medium shadow-xl"></div>
+  <!-- ADD EVENT MODAL -->
+  <div id="event-modal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="card w-full max-w-md max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl p-5 fade-in">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold">Add Tracking Event</h3>
+        <button onclick="closeEventModal()" class="p-1.5 rounded-lg hover:bg-slate-800"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <input type="hidden" id="em-shipment-id" />
+      <div class="space-y-3">
+        <div><label class="block text-xs text-slate-400 mb-1">Status *</label><select id="em-status" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm"></select></div>
+        <div><label class="block text-xs text-slate-400 mb-1">Date/Time *</label><input id="em-time" type="datetime-local" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+        <div><label class="block text-xs text-slate-400 mb-1">Location</label><input id="em-location" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+        <div><label class="block text-xs text-slate-400 mb-1">Facility</label><input id="em-facility" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+        <div><label class="block text-xs text-slate-400 mb-1">Event Code</label><input id="em-code" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+        <div><label class="block text-xs text-slate-400 mb-1">Description *</label><textarea id="em-desc" rows="2" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm"></textarea></div>
+        <button onclick="submitEventModal()" class="w-full py-3 rounded-xl btn-gold text-sm font-bold">Save Event</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POD MODAL -->
+  <div id="pod-modal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="card w-full max-w-md max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl p-5 fade-in">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold">Record Proof of Delivery</h3>
+        <button onclick="closePodModal()" class="p-1.5 rounded-lg hover:bg-slate-800"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <input type="hidden" id="pod-shipment-id" />
+      <div class="space-y-3">
+        <div><label class="block text-xs text-slate-400 mb-1">Delivery Date/Time *</label><input id="pod-time" type="datetime-local" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+        <div><label class="block text-xs text-slate-400 mb-1">Recipient Name *</label><input id="pod-name" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+        <div><label class="block text-xs text-slate-400 mb-1">Delivery Status</label><select id="pod-status" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm"><option value="Delivered">Delivered</option><option value="Delivery Attempted">Delivery Attempted</option></select></div>
+        <div><label class="block text-xs text-slate-400 mb-1">Notes</label><textarea id="pod-notes" rows="2" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm"></textarea></div>
+        <div><label class="block text-xs text-slate-400 mb-1">Signature / Photo Reference</label><input id="pod-sig" placeholder="Optional reference only — not fabricated" class="w-full bg-navy-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm" /></div>
+        <button onclick="submitPOD()" class="w-full py-3 rounded-xl btn-gold text-sm font-bold">Record POD</button>
+      </div>
+    </div>
+  </div>
 
   <script>
-    // ===================== DATA LAYER (localStorage + seed) =====================
-    const STATUS_LABELS = {
-      pickup: 'Pickup Scheduled',
-      processing: 'Processing',
-      transit: 'In Transit',
-      destination: 'At Destination',
-      delivered: 'Delivered',
-      delayed: 'Delayed'
-    };
-    const STATUS_COLORS = {
-      pickup: 'bg-blue-500',
-      processing: 'bg-indigo-500',
-      transit: 'bg-sky-500',
-      destination: 'bg-violet-500',
-      delivered: 'bg-emerald-500',
-      delayed: 'bg-amber-500'
-    };
+  // ===================== CONFIG =====================
+  const SUPABASE_URL = 'https://cpjbxllhabghsvpsdzrm.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_ZmrGlIzkRy4RKenj9s8HyQ_q-6t8GsW';
 
-    let consignments = [];
-    let auditLog = [];
-    let currentFilter = 'all';
-    let statusChart = null;
-    let currentUser = { email: 'admin@nkdon.com', role: 'admin' };
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    function loadData() {
-      const raw = localStorage.getItem('nkdon_consignments');
-      const aud = localStorage.getItem('nkdon_audit');
-      if (raw) {
-        consignments = JSON.parse(raw);
-      } else {
-        // Seed data
-        const now = Date.now();
-        consignments = [
-          {
-            id: 'c1',
-            tracking: 'NKD-20260922-001',
-            origin: 'Lagos',
-            destination: 'Abuja',
-            consignee: 'Adaobi Okeke',
-            phone: '+234 803 123 4567',
-            address: '12 Wuse Zone 2, Abuja',
-            weight: 12.5,
-            pieces: 2,
-            description: 'Electronics – Laptops',
-            status: 'transit',
-            createdAt: now - 86400000 * 2,
-            timeline: [
-              { facility: 'Lagos Hub', location: 'Ikeja, Lagos', code: 'PUK', ts: now - 86400000 * 2, desc: 'Picked up from shipper' },
-              { facility: 'Lagos Sorting', location: 'Ikeja, Lagos', code: 'PRO', ts: now - 86400000 * 1.5, desc: 'Processed and sorted' },
-              { facility: 'Transit Hub', location: 'Ibadan', code: 'TRN', ts: now - 86400000, desc: 'Departed for Abuja' }
-            ],
-            pod: null
-          },
-          {
-            id: 'c2',
-            tracking: 'NKD-20260921-014',
-            origin: 'Port Harcourt',
-            destination: 'Enugu',
-            consignee: 'Chinedu Eze',
-            phone: '+234 802 987 6543',
-            address: '45 Independence Layout, Enugu',
-            weight: 4.2,
-            pieces: 1,
-            description: 'Documents & samples',
-            status: 'delivered',
-            createdAt: now - 86400000 * 4,
-            timeline: [
-              { facility: 'PH Hub', location: 'Port Harcourt', code: 'PUK', ts: now - 86400000 * 4, desc: 'Picked up' },
-              { facility: 'Enugu Facility', location: 'Enugu', code: 'DST', ts: now - 86400000 * 2, desc: 'Arrived at destination' },
-              { facility: 'Enugu Facility', location: 'Enugu', code: 'DLV', ts: now - 86400000, desc: 'Delivered to consignee' }
-            ],
-            pod: { signedBy: 'Chinedu Eze', note: 'Received in good condition', ts: now - 86400000 }
-          },
-          {
-            id: 'c3',
-            tracking: 'NKD-20260923-007',
-            origin: 'Kano',
-            destination: 'Kaduna',
-            consignee: 'Fatima Bello',
-            phone: '+234 701 555 1212',
-            address: '8 Ahmadu Bello Way, Kaduna',
-            weight: 28,
-            pieces: 3,
-            description: 'Textile rolls',
-            status: 'delayed',
-            createdAt: now - 86400000,
-            timeline: [
-              { facility: 'Kano Hub', location: 'Kano', code: 'PUK', ts: now - 86400000, desc: 'Picked up' },
-              { facility: 'Kano Hub', location: 'Kano', code: 'DLY', ts: now - 3600000 * 6, desc: 'Delay due to road conditions' }
-            ],
-            pod: null
-          },
-          {
-            id: 'c4',
-            tracking: 'NKD-20260923-012',
-            origin: 'Lagos',
-            destination: 'Ibadan',
-            consignee: 'Tunde Adebayo',
-            phone: '+234 809 444 3333',
-            address: '22 Ring Road, Ibadan',
-            weight: 7.8,
-            pieces: 1,
-            description: 'Spare parts',
-            status: 'processing',
-            createdAt: now - 3600000 * 5,
-            timeline: [
-              { facility: 'Lagos Hub', location: 'Ikeja, Lagos', code: 'PUK', ts: now - 3600000 * 5, desc: 'Picked up from shipper' },
-              { facility: 'Lagos Sorting', location: 'Ikeja, Lagos', code: 'PRO', ts: now - 3600000 * 2, desc: 'In processing' }
-            ],
-            pod: null
-          }
-        ];
-        saveData();
-      }
-      if (aud) auditLog = JSON.parse(aud);
-      else auditLog = [{ id: 'a1', action: 'System initialized with seed data', user: 'system', ts: Date.now() }];
-    }
+  const STATUSES = [
+    'Created', 'Pickup Scheduled', 'Picked Up', 'Received', 'Processing',
+    'Departed Facility', 'In Transit', 'Arrived at Destination', 'Customs Clearance',
+    'Out for Delivery', 'Delivered',
+    'Delayed', 'Held', 'Delivery Attempted', 'Address Issue', 'Returned'
+  ];
 
-    function saveData() {
-      localStorage.setItem('nkdon_consignments', JSON.stringify(consignments));
-      localStorage.setItem('nkdon_audit', JSON.stringify(auditLog));
-    }
+  const EXCEPTION_STATUSES = ['Delayed', 'Held', 'Delivery Attempted', 'Address Issue', 'Returned'];
 
-    function logAudit(action) {
-      auditLog.unshift({ id: 'a' + Date.now(), action, user: currentUser.email, ts: Date.now() });
-      if (auditLog.length > 100) auditLog.length = 100;
-      saveData();
-    }
+  const PROGRESS_STEPS = [
+    'Registered', 'Picked Up', 'Processing', 'In Transit', 'Destination', 'Out for Delivery', 'Delivered'
+  ];
 
-    function generateTracking() {
-      const d = new Date();
-      const date = d.toISOString().slice(0,10).replace(/-/g,'');
-      const seq = String(Math.floor(Math.random() * 900) + 100);
-      return `NKD-${date}-${seq}`;
-    }
+  // Map DB status → progress index
+  function progressIndex(status) {
+    const s = (status || '').toLowerCase();
+    if (s.includes('deliver') && !s.includes('attempt')) return 6;
+    if (s.includes('out for')) return 5;
+    if (s.includes('destination') || s.includes('arrived') || s.includes('customs')) return 4;
+    if (s.includes('transit') || s.includes('departed')) return 3;
+    if (s.includes('process') || s.includes('received')) return 2;
+    if (s.includes('pick')) return 1;
+    return 0;
+  }
 
-    // ===================== AUTH & NAV =====================
-    function handleLogin() {
-      const email = document.getElementById('login-email').value.trim();
-      const pass = document.getElementById('login-password').value;
-      if (email && pass) {
-        currentUser = { email, role: 'admin' };
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('app').classList.remove('hidden');
-        logAudit('Admin signed in');
-        showSection('dashboard');
-        toast('Welcome back, ' + email.split('@')[0]);
-      }
-    }
+  function statusPill(status) {
+    const s = status || 'Unknown';
+    const isEx = EXCEPTION_STATUSES.some(e => s.toLowerCase().includes(e.toLowerCase()));
+    const isDel = s.toLowerCase() === 'delivered';
+    let cls = 'bg-slate-700 text-slate-200';
+    if (isDel) cls = 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+    else if (isEx) cls = 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+    else if (s.toLowerCase().includes('transit')) cls = 'bg-sky-500/20 text-sky-300 border border-sky-500/30';
+    else if (s.toLowerCase().includes('process')) cls = 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30';
+    else cls = 'bg-blue-500/15 text-blue-300 border border-blue-500/25';
+    return `<span class="status-pill ${cls}">${esc(s)}</span>`;
+  }
 
-    function logout() {
-      document.getElementById('app').classList.add('hidden');
-      document.getElementById('auth-screen').classList.remove('hidden');
-      logAudit('Admin signed out');
-    }
+  function esc(str) {
+    if (str == null) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
 
-    function showPublicTracking() {
-      document.getElementById('auth-screen').classList.add('hidden');
-      document.getElementById('app').classList.add('hidden');
-      document.getElementById('public-tracking').classList.remove('hidden');
-      document.getElementById('public-result').classList.add('hidden');
-    }
+  function fmtDate(d) {
+    if (!d) return '—';
+    try {
+      const dt = new Date(d);
+      if (isNaN(dt)) return '—';
+      return dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    } catch { return '—'; }
+  }
 
-    function hidePublicTracking() {
-      document.getElementById('public-tracking').classList.add('hidden');
-      document.getElementById('auth-screen').classList.remove('hidden');
-    }
+  function fmtDateTime(d) {
+    if (!d) return '—';
+    try {
+      const dt = new Date(d);
+      if (isNaN(dt)) return '—';
+      return dt.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch { return '—'; }
+  }
 
-    function showSection(name) {
-      ['dashboard','consignments','detail','audit'].forEach(s => {
-        document.getElementById('sec-' + s).classList.toggle('hidden', s !== name);
-      });
-      document.querySelectorAll('.nav-btn').forEach(btn => {
-        const isActive = btn.dataset.nav === name;
-        btn.classList.toggle('text-nk-400', isActive);
-        btn.classList.toggle('text-slate-500', !isActive);
-      });
-      if (name === 'dashboard') renderDashboard();
-      if (name === 'consignments') renderConsignments();
-      if (name === 'audit') renderAudit();
-    }
+  function toast(msg, type = 'info') {
+    const el = document.createElement('div');
+    const colors = { info: 'border-slate-600', success: 'border-emerald-600', error: 'border-red-600' };
+    el.className = `card px-4 py-3 text-sm border ${colors[type] || colors.info} fade-in shadow-xl`;
+    el.textContent = msg;
+    document.getElementById('toast-container').appendChild(el);
+    setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(() => el.remove(), 300); }, 3200);
+  }
 
-    // ===================== DASHBOARD =====================
-    function renderDashboard() {
-      const total = consignments.length;
-      const active = consignments.filter(c => !['delivered'].includes(c.status)).length;
-      const delivered = consignments.filter(c => c.status === 'delivered').length;
-      const delayed = consignments.filter(c => c.status === 'delayed').length;
-      document.getElementById('kpi-total').textContent = total;
-      document.getElementById('kpi-active').textContent = active;
-      document.getElementById('kpi-delivered').textContent = delivered;
-      document.getElementById('kpi-delayed').textContent = delayed;
+  let confirmResolve = null;
+  function confirmDialog(title, msg) {
+    return new Promise(resolve => {
+      confirmResolve = resolve;
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-msg').textContent = msg;
+      document.getElementById('confirm-modal').classList.remove('hidden');
+      document.getElementById('confirm-ok').onclick = () => closeConfirm(true);
+    });
+  }
+  function closeConfirm(ok) {
+    document.getElementById('confirm-modal').classList.add('hidden');
+    if (confirmResolve) confirmResolve(ok);
+    confirmResolve = null;
+  }
 
-      // Chart
-      const counts = { pickup:0, processing:0, transit:0, destination:0, delivered:0, delayed:0 };
-      consignments.forEach(c => counts[c.status] = (counts[c.status]||0) + 1);
-      const ctx = document.getElementById('statusChart').getContext('2d');
-      if (statusChart) statusChart.destroy();
-      statusChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: Object.keys(counts).map(k => STATUS_LABELS[k]),
-          datasets: [{
-            data: Object.values(counts),
-            backgroundColor: ['#3b82f6','#6366f1','#0ea5e9','#8b5cf6','#10b981','#f59e0b'],
-            borderWidth: 0
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { position: 'right', labels: { boxWidth: 12, color: '#94a3b8', font: { size: 11 } } } }
-        }
-      });
+  // ===================== STATE =====================
+  let currentUser = null;
+  let isAdminUser = false;
+  let allShipments = [];
+  let filteredShipments = [];
+  let page = 0;
+  const PAGE_SIZE = 15;
+  let sortKey = 'updated_at';
+  let sortDir = -1;
+  let detailShipment = null;
+  let charts = {};
 
-      // Recent
-      const recent = [...consignments].sort((a,b) => b.createdAt - a.createdAt).slice(0,5);
-      document.getElementById('recent-list').innerHTML = recent.map(c => `
-        <div onclick="openDetail('${c.id}')" class="flex items-center justify-between p-3 rounded-xl bg-slate-800/50 hover:bg-slate-800 cursor-pointer">
-          <div>
-            <div class="text-sm font-medium">${c.tracking}</div>
-            <div class="text-xs text-slate-400">${c.origin} → ${c.destination}</div>
-          </div>
-          <span class="text-[10px] px-2 py-1 rounded-full ${STATUS_COLORS[c.status]} bg-opacity-20 text-white">${STATUS_LABELS[c.status]}</span>
-        </div>
-      `).join('') || '<p class="text-sm text-slate-500">No consignments yet</p>';
-    }
-
-    // ===================== CONSIGNMENTS LIST =====================
-    function setStatusFilter(f) {
-      currentFilter = f;
-      document.querySelectorAll('.filter-btn').forEach(btn => {
-        const active = btn.dataset.filter === f;
-        btn.classList.toggle('bg-nk-600', active);
-        btn.classList.toggle('text-white', active);
-        btn.classList.toggle('bg-slate-800', !active);
-        btn.classList.toggle('text-slate-300', !active);
-      });
-      renderConsignments();
-    }
-
-    function filterConsignments() {
-      renderConsignments();
-    }
-
-    function renderConsignments() {
-      const q = (document.getElementById('search-input')?.value || '').toLowerCase();
-      let list = consignments;
-      if (currentFilter !== 'all') list = list.filter(c => c.status === currentFilter);
-      if (q) list = list.filter(c =>
-        c.tracking.toLowerCase().includes(q) ||
-        c.consignee.toLowerCase().includes(q) ||
-        c.origin.toLowerCase().includes(q) ||
-        c.destination.toLowerCase().includes(q)
-      );
-      list = [...list].sort((a,b) => b.createdAt - a.createdAt);
-
-      document.getElementById('consignments-list').innerHTML = list.map(c => `
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 card-shadow">
-          <div class="flex items-start justify-between gap-2">
-            <div class="min-w-0 flex-1" onclick="openDetail('${c.id}')">
-              <div class="font-semibold text-sm truncate">${c.tracking}</div>
-              <div class="text-xs text-slate-400 mt-0.5">${c.origin} → ${c.destination}</div>
-              <div class="text-xs text-slate-500 mt-1 truncate">${c.consignee}</div>
-            </div>
-            <span class="shrink-0 text-[10px] px-2 py-1 rounded-full ${STATUS_COLORS[c.status]} bg-opacity-20 text-white">${STATUS_LABELS[c.status]}</span>
-          </div>
-          <div class="flex gap-2 mt-3">
-            <button onclick="openDetail('${c.id}')" class="flex-1 text-xs py-2 rounded-lg bg-slate-800 hover:bg-slate-700">View</button>
-            <button onclick="openEditModal('${c.id}')" class="flex-1 text-xs py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Edit</button>
-            <button onclick="deleteConsignment('${c.id}')" class="px-3 text-xs py-2 rounded-lg bg-red-900/40 text-red-400 hover:bg-red-900/60">Del</button>
-          </div>
-        </div>
-      `).join('') || '<p class="text-center text-sm text-slate-500 py-8">No consignments match your filters</p>';
-    }
-
-    // ===================== DETAIL VIEW =====================
-    function openDetail(id) {
-      const c = consignments.find(x => x.id === id);
-      if (!c) return;
-      showSection('detail');
-      const timelineHtml = (c.timeline || []).slice().reverse().map((e, i, arr) => `
-        <div class="relative pl-10 pb-5 ${i === arr.length-1 ? '' : ''}">
-          ${i < arr.length-1 ? '<div class="timeline-line"></div>' : ''}
-          <div class="absolute left-2 top-1 w-4 h-4 rounded-full ${STATUS_COLORS[c.status] || 'bg-nk-500'} border-2 border-slate-900"></div>
-          <div class="text-sm font-medium">${e.desc}</div>
-          <div class="text-xs text-slate-400 mt-0.5">${e.facility} · ${e.location}</div>
-          <div class="text-[10px] text-slate-500 mt-0.5">${new Date(e.ts).toLocaleString()} · ${e.code}</div>
-        </div>
-      `).join('');
-
-      document.getElementById('detail-content').innerHTML = `
-        <div class="flex items-start justify-between gap-3">
-          <div>
-            <h2 class="text-xl font-bold">${c.tracking}</h2>
-            <p class="text-sm text-slate-400">${c.origin} → ${c.destination}</p>
-          </div>
-          <span class="text-xs px-2.5 py-1 rounded-full ${STATUS_COLORS[c.status]} bg-opacity-20 text-white font-medium">${STATUS_LABELS[c.status]}</span>
-        </div>
-
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
-          <h3 class="text-sm font-semibold text-slate-300">Customer (Private)</h3>
-          <div class="grid grid-cols-1 gap-2 text-sm">
-            <div><span class="text-slate-500">Name:</span> ${c.consignee}</div>
-            <div><span class="text-slate-500">Phone:</span> ${c.phone || '—'}</div>
-            <div><span class="text-slate-500">Address:</span> ${c.address || '—'}</div>
-          </div>
-        </div>
-
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2 text-sm">
-          <div class="flex justify-between"><span class="text-slate-500">Weight</span><span>${c.weight || '—'} kg</span></div>
-          <div class="flex justify-between"><span class="text-slate-500">Pieces</span><span>${c.pieces || 1}</span></div>
-          <div class="flex justify-between"><span class="text-slate-500">Contents</span><span class="text-right max-w-[60%]">${c.description || '—'}</span></div>
-        </div>
-
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-          <h3 class="text-sm font-semibold mb-3">Tracking Timeline</h3>
-          <div class="relative">${timelineHtml || '<p class="text-sm text-slate-500">No events yet</p>'}</div>
-        </div>
-
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-          <h3 class="text-sm font-semibold mb-3">QR Code</h3>
-          <div class="flex justify-center"><canvas id="qr-canvas" class="rounded-xl bg-white p-2"></canvas></div>
-        </div>
-
-        ${c.pod ? `
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-          <h3 class="text-sm font-semibold mb-2">Proof of Delivery</h3>
-          <div class="text-sm space-y-1">
-            <div>Signed by: <strong>${c.pod.signedBy}</strong></div>
-            <div class="text-slate-400">${c.pod.note || ''}</div>
-            <div class="text-xs text-slate-500">${new Date(c.pod.ts).toLocaleString()}</div>
-          </div>
-        </div>` : `
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-          <h3 class="text-sm font-semibold mb-3">Record Proof of Delivery</h3>
-          <input id="pod-name" placeholder="Signed by" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm mb-2" />
-          <input id="pod-note" placeholder="Notes (optional)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm mb-3" />
-          <button onclick="recordPOD('${c.id}')" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-sm font-medium">Mark Delivered + POD</button>
-        </div>`}
-
-        <div class="flex flex-wrap gap-2">
-          <button onclick="addTimelineEvent('${c.id}')" class="flex-1 min-w-[120px] py-2.5 rounded-xl bg-slate-800 text-sm font-medium">+ Timeline Event</button>
-          <button onclick="printConsignmentNote('${c.id}')" class="flex-1 min-w-[120px] py-2.5 rounded-xl bg-nk-600 text-sm font-medium">Print Note</button>
-          <button onclick="printTrackingHistory('${c.id}')" class="flex-1 min-w-[120px] py-2.5 rounded-xl bg-slate-800 text-sm font-medium">Print History</button>
-        </div>
-      `;
-
-      // Generate QR
-      setTimeout(() => {
-        const canvas = document.getElementById('qr-canvas');
-        if (canvas && window.QRCode) {
-          QRCode.toCanvas(canvas, c.tracking, { width: 160, margin: 1 }, () => {});
-        }
-      }, 50);
-    }
-
-    function addTimelineEvent(id) {
-      const c = consignments.find(x => x.id === id);
-      if (!c) return;
-      const desc = prompt('Event description (e.g. Arrived at facility)');
-      if (!desc) return;
-      const facility = prompt('Facility name', 'Hub') || 'Hub';
-      const location = prompt('Location', c.destination) || c.destination;
-      const code = prompt('Event code (e.g. ARR, TRN, DLY)', 'UPD') || 'UPD';
-      c.timeline = c.timeline || [];
-      c.timeline.push({ facility, location, code, ts: Date.now(), desc });
-      // Auto-update status based on code if obvious
-      if (code === 'DLV') c.status = 'delivered';
-      if (code === 'DLY') c.status = 'delayed';
-      if (code === 'TRN') c.status = 'transit';
-      if (code === 'DST') c.status = 'destination';
-      saveData();
-      logAudit(`Added timeline event to ${c.tracking}: ${desc}`);
-      openDetail(id);
-      toast('Timeline updated');
-    }
-
-    function recordPOD(id) {
-      const c = consignments.find(x => x.id === id);
-      if (!c) return;
-      const name = document.getElementById('pod-name').value.trim();
-      if (!name) return toast('Enter signed-by name');
-      c.pod = { signedBy: name, note: document.getElementById('pod-note').value.trim(), ts: Date.now() };
-      c.status = 'delivered';
-      c.timeline = c.timeline || [];
-      c.timeline.push({ facility: 'Delivery', location: c.destination, code: 'DLV', ts: Date.now(), desc: `Delivered – signed by ${name}` });
-      saveData();
-      logAudit(`POD recorded for ${c.tracking}`);
-      openDetail(id);
-      toast('Proof of Delivery saved');
-    }
-
-    // ===================== CREATE / EDIT =====================
-    function openCreateModal() {
-      document.getElementById('modal-title').textContent = 'New Consignment';
-      document.getElementById('edit-id').value = '';
-      document.getElementById('consign-form').reset();
-      document.getElementById('f-status').value = 'pickup';
-      document.getElementById('modal').classList.remove('hidden');
-    }
-
-    function openEditModal(id) {
-      const c = consignments.find(x => x.id === id);
-      if (!c) return;
-      document.getElementById('modal-title').textContent = 'Edit Consignment';
-      document.getElementById('edit-id').value = id;
-      document.getElementById('f-origin').value = c.origin;
-      document.getElementById('f-dest').value = c.destination;
-      document.getElementById('f-consignee').value = c.consignee;
-      document.getElementById('f-phone').value = c.phone || '';
-      document.getElementById('f-address').value = c.address || '';
-      document.getElementById('f-weight').value = c.weight || '';
-      document.getElementById('f-pieces').value = c.pieces || 1;
-      document.getElementById('f-desc').value = c.description || '';
-      document.getElementById('f-status').value = c.status;
-      document.getElementById('modal').classList.remove('hidden');
-    }
-
-    function closeModal() {
-      document.getElementById('modal').classList.add('hidden');
-    }
-
-    function saveConsignment(e) {
-      e.preventDefault();
-      const id = document.getElementById('edit-id').value;
-      const data = {
-        origin: document.getElementById('f-origin').value.trim(),
-        destination: document.getElementById('f-dest').value.trim(),
-        consignee: document.getElementById('f-consignee').value.trim(),
-        phone: document.getElementById('f-phone').value.trim(),
-        address: document.getElementById('f-address').value.trim(),
-        weight: parseFloat(document.getElementById('f-weight').value) || null,
-        pieces: parseInt(document.getElementById('f-pieces').value) || 1,
-        description: document.getElementById('f-desc').value.trim(),
-        status: document.getElementById('f-status').value
-      };
-
-      if (id) {
-        const c = consignments.find(x => x.id === id);
-        Object.assign(c, data);
-        logAudit(`Updated consignment ${c.tracking}`);
-        toast('Consignment updated');
-      } else {
-        const tracking = generateTracking();
-        const newC = {
-          id: 'c' + Date.now(),
-          tracking,
-          ...data,
-          createdAt: Date.now(),
-          timeline: [{
-            facility: data.origin + ' Hub',
-            location: data.origin,
-            code: 'CRT',
-            ts: Date.now(),
-            desc: 'Consignment created'
-          }],
-          pod: null
-        };
-        consignments.unshift(newC);
-        logAudit(`Created consignment ${tracking}`);
-        toast('Consignment created: ' + tracking);
-      }
-      saveData();
-      closeModal();
-      showSection('consignments');
-    }
-
-    function deleteConsignment(id) {
-      if (!confirm('Delete this consignment permanently?')) return;
-      const c = consignments.find(x => x.id === id);
-      consignments = consignments.filter(x => x.id !== id);
-      saveData();
-      logAudit(`Deleted consignment ${c?.tracking || id}`);
-      renderConsignments();
-      toast('Deleted');
-    }
-
-    // ===================== CSV =====================
-    function exportCSV() {
-      const rows = consignments.map(c => ({
-        Tracking: c.tracking,
-        Origin: c.origin,
-        Destination: c.destination,
-        Consignee: c.consignee,
-        Phone: c.phone,
-        Address: c.address,
-        Weight_kg: c.weight,
-        Pieces: c.pieces,
-        Description: c.description,
-        Status: STATUS_LABELS[c.status],
-        Created: new Date(c.createdAt).toISOString()
-      }));
-      const csv = Papa.unparse(rows);
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `nkdon-consignments-${new Date().toISOString().slice(0,10)}.csv`;
-      a.click();
-      logAudit('Exported CSV');
-      toast('CSV exported');
-    }
-
-    function importCSV(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      Papa.parse(file, {
-        header: true,
-        complete: (res) => {
-          let added = 0;
-          res.data.forEach(row => {
-            if (!row.Tracking && !row.Origin) return;
-            const tracking = row.Tracking || generateTracking();
-            if (consignments.some(c => c.tracking === tracking)) return;
-            consignments.push({
-              id: 'c' + Date.now() + Math.random(),
-              tracking,
-              origin: row.Origin || '',
-              destination: row.Destination || '',
-              consignee: row.Consignee || '',
-              phone: row.Phone || '',
-              address: row.Address || '',
-              weight: parseFloat(row.Weight_kg) || null,
-              pieces: parseInt(row.Pieces) || 1,
-              description: row.Description || '',
-              status: Object.keys(STATUS_LABELS).find(k => STATUS_LABELS[k] === row.Status) || 'pickup',
-              createdAt: Date.now(),
-              timeline: [{ facility: 'Import', location: '', code: 'IMP', ts: Date.now(), desc: 'Imported via CSV' }],
-              pod: null
-            });
-            added++;
-          });
-          saveData();
-          logAudit(`Imported ${added} consignments from CSV`);
-          renderConsignments();
-          toast(`Imported ${added} records`);
-          e.target.value = '';
-        }
-      });
-    }
-
-    // ===================== DOCUMENTS (jsPDF) =====================
-    function printConsignmentNote(id) {
-      const c = consignments.find(x => x.id === id);
-      if (!c) return;
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.setFontSize(18);
-      doc.text('N.K DON Consignment Note', 20, 20);
-      doc.setFontSize(10);
-      doc.text('Premium Logistics Operations', 20, 28);
-      doc.setFontSize(12);
-      doc.text(`Tracking: ${c.tracking}`, 20, 45);
-      doc.text(`Origin: ${c.origin}`, 20, 55);
-      doc.text(`Destination: ${c.destination}`, 20, 65);
-      doc.text(`Consignee: ${c.consignee}`, 20, 80);
-      doc.text(`Phone: ${c.phone || '—'}`, 20, 90);
-      doc.text(`Address: ${c.address || '—'}`, 20, 100);
-      doc.text(`Weight: ${c.weight || '—'} kg  |  Pieces: ${c.pieces}`, 20, 115);
-      doc.text(`Contents: ${c.description || '—'}`, 20, 125);
-      doc.text(`Status: ${STATUS_LABELS[c.status]}`, 20, 140);
-      doc.text(`Created: ${new Date(c.createdAt).toLocaleString()}`, 20, 150);
-      doc.setFontSize(9);
-      doc.text('This document is confidential. Customer details are for authorized staff only.', 20, 270);
-      doc.save(`${c.tracking}-note.pdf`);
-      logAudit(`Generated consignment note for ${c.tracking}`);
-      toast('PDF generated');
-    }
-
-    function printTrackingHistory(id) {
-      const c = consignments.find(x => x.id === id);
-      if (!c) return;
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.setFontSize(16);
-      doc.text('N.K DON Tracking History', 20, 20);
-      doc.setFontSize(11);
-      doc.text(`Tracking Number: ${c.tracking}`, 20, 35);
-      doc.text(`${c.origin} → ${c.destination}`, 20, 43);
-      let y = 55;
-      (c.timeline || []).forEach(e => {
-        doc.setFontSize(10);
-        doc.text(`${new Date(e.ts).toLocaleString()}  [${e.code}]`, 20, y);
-        y += 6;
-        doc.text(`${e.desc}`, 25, y);
-        y += 6;
-        doc.setFontSize(9);
-        doc.setTextColor(100);
-        doc.text(`${e.facility} · ${e.location}`, 25, y);
-        doc.setTextColor(0);
-        y += 10;
-        if (y > 270) { doc.addPage(); y = 20; }
-      });
-      doc.save(`${c.tracking}-history.pdf`);
-      logAudit(`Generated tracking history for ${c.tracking}`);
-      toast('PDF generated');
-    }
-
-    // ===================== PUBLIC TRACK =====================
-    function publicTrack() {
-      const num = document.getElementById('public-track-input').value.trim().toUpperCase();
-      const c = consignments.find(x => x.tracking.toUpperCase() === num);
-      const box = document.getElementById('public-result');
-      if (!c) {
-        box.classList.remove('hidden');
-        box.innerHTML = `<div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-center text-sm text-slate-400">No shipment found for <strong class="text-white">${num}</strong></div>`;
+  // ===================== AUTH =====================
+  async function checkSession() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session?.user) {
+      currentUser = session.user;
+      isAdminUser = await verifyAdmin();
+      if (isAdminUser) {
+        showAdmin();
         return;
       }
-      // Public view: NO private customer details
-      const events = (c.timeline || []).slice().reverse();
+      await sb.auth.signOut();
+      currentUser = null;
+    }
+    showPublic();
+  }
+
+  async function verifyAdmin() {
+    try {
+      const { data, error } = await sb.rpc('is_admin');
+      if (error) {
+        // Fallback: try checking via a simple query that only admins can pass RLS
+        const { error: e2 } = await sb.from('shipments').select('id').limit(1);
+        return !e2;
+      }
+      return !!data;
+    } catch {
+      return false;
+    }
+  }
+
+  async function handleLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errEl = document.getElementById('login-error');
+    errEl.classList.add('hidden');
+    if (!email || !password) {
+      errEl.textContent = 'Email and password are required.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+    const btn = document.getElementById('login-btn');
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+    if (error) {
+      errEl.textContent = error.message || 'Sign-in failed.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+    currentUser = data.user;
+    isAdminUser = await verifyAdmin();
+    if (!isAdminUser) {
+      await sb.auth.signOut();
+      currentUser = null;
+      errEl.textContent = 'This account is not authorized as an NKDON administrator.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+    toast('Signed in successfully', 'success');
+    showAdmin();
+  }
+
+  async function handleLogout() {
+    await sb.auth.signOut();
+    currentUser = null;
+    isAdminUser = false;
+    toast('Signed out');
+    showOwnerLogin();
+  }
+
+  function showResetForm() {
+    document.getElementById('login-form').classList.add('hidden');
+    document.getElementById('reset-form').classList.remove('hidden');
+    document.getElementById('login-error').classList.add('hidden');
+  }
+  function showLoginForm() {
+    document.getElementById('reset-form').classList.add('hidden');
+    document.getElementById('login-form').classList.remove('hidden');
+  }
+
+  async function handlePasswordReset() {
+    const email = document.getElementById('reset-email').value.trim();
+    if (!email) return toast('Enter your email', 'error');
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+    if (error) return toast(error.message, 'error');
+    toast('If an account exists, a reset link has been sent.', 'success');
+    showLoginForm();
+  }
+
+  sb.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      isAdminUser = false;
+    }
+  });
+
+  // ===================== VIEW SWITCHING =====================
+  function showPublic() {
+    document.getElementById('view-public').classList.remove('hidden');
+    document.getElementById('view-login').classList.add('hidden');
+    document.getElementById('view-admin').classList.add('hidden');
+  }
+  function showOwnerLogin() {
+    document.getElementById('view-public').classList.add('hidden');
+    document.getElementById('view-login').classList.remove('hidden');
+    document.getElementById('view-admin').classList.add('hidden');
+    showLoginForm();
+  }
+  function showAdmin() {
+    document.getElementById('view-public').classList.add('hidden');
+    document.getElementById('view-login').classList.add('hidden');
+    document.getElementById('view-admin').classList.remove('hidden');
+    document.getElementById('admin-email-label').textContent = currentUser?.email || '';
+    document.getElementById('settings-email').textContent = currentUser?.email || '';
+    populateStatusSelects();
+    buildDrawerNav();
+    adminNav('overview');
+  }
+
+  function toggleMobileNav() {
+    document.getElementById('mobile-nav').classList.toggle('hidden');
+  }
+  function toggleAdminDrawer() {
+    const d = document.getElementById('admin-drawer');
+    const bg = document.getElementById('admin-drawer-bg');
+    const open = d.classList.contains('open');
+    if (open) {
+      d.classList.remove('open');
+      bg.classList.add('hidden');
+    } else {
+      d.classList.add('open');
+      bg.classList.remove('hidden');
+    }
+  }
+
+  function buildDrawerNav() {
+    const items = [
+      ['overview','Overview'],['consignments','Consignments'],['new','New Consignment'],
+      ['events','Tracking Events'],['documents','Documents'],['analytics','Analytics'],
+      ['activity','Activity Log'],['settings','Settings']
+    ];
+    document.getElementById('drawer-nav').innerHTML = items.map(([k,l]) =>
+      `<button onclick="adminNav('${k}'); toggleAdminDrawer()" class="w-full text-left px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800">${l}</button>`
+    ).join('') + `<button onclick="handleLogout()" class="w-full text-left px-3 py-2.5 rounded-lg text-sm text-red-400 mt-2">Sign Out</button>`;
+  }
+
+  const ADMIN_TITLES = {
+    overview: 'Overview', consignments: 'Consignments', new: 'New Consignment',
+    events: 'Tracking Events', documents: 'Documents', analytics: 'Analytics',
+    activity: 'Activity Log', settings: 'Settings', detail: 'Consignment Detail'
+  };
+
+  function adminNav(name) {
+    ['overview','consignments','new','events','documents','analytics','activity','settings','detail'].forEach(s => {
+      const el = document.getElementById('admin-' + s);
+      if (el) el.classList.toggle('hidden', s !== name);
+    });
+    document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+      const active = btn.dataset.adminNav === name;
+      btn.classList.toggle('text-gold-400', active);
+      btn.classList.toggle('bg-slate-800/60', active);
+      btn.classList.toggle('text-slate-400', !active);
+    });
+    document.getElementById('admin-page-title').textContent = ADMIN_TITLES[name] || name;
+    if (name === 'overview') loadOverview();
+    if (name === 'consignments') loadConsignments();
+    if (name === 'new' && !document.getElementById('f-id').value) resetForm();
+    if (name === 'analytics') loadAnalytics();
+    if (name === 'activity') loadActivity();
+  }
+
+  function populateStatusSelects() {
+    const opts = STATUSES.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    ['f-status','ev-status','em-status','c-status-filter'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (id === 'c-status-filter') {
+        el.innerHTML = '<option value="">All statuses</option>' + opts;
+      } else {
+        el.innerHTML = opts;
+      }
+    });
+  }
+
+  // ===================== PUBLIC TRACKING =====================
+  async function publicTrack() {
+    const input = document.getElementById('public-track-input');
+    const num = (input.value || '').trim();
+    const box = document.getElementById('public-result');
+    const btnLabel = document.getElementById('track-btn-label');
+    const spinner = document.getElementById('track-btn-spinner');
+    const btn = document.getElementById('public-track-btn');
+
+    if (!num) {
       box.classList.remove('hidden');
-      box.innerHTML = `
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="font-bold text-lg">${c.tracking}</div>
-              <div class="text-sm text-slate-400">${c.origin} → ${c.destination}</div>
-            </div>
-            <span class="text-xs px-2.5 py-1 rounded-full ${STATUS_COLORS[c.status]} bg-opacity-20 text-white">${STATUS_LABELS[c.status]}</span>
-          </div>
-          <div>
-            <h4 class="text-sm font-semibold mb-3">Public Tracking Events</h4>
-            <div class="space-y-3">
-              ${events.map(e => `
-                <div class="border-l-2 border-nk-600 pl-3">
-                  <div class="text-sm font-medium">${e.desc}</div>
-                  <div class="text-xs text-slate-400">${e.facility} · ${e.location}</div>
-                  <div class="text-[10px] text-slate-500">${new Date(e.ts).toLocaleString()}</div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-          <p class="text-[10px] text-slate-600 pt-2 border-t border-slate-800">Customer contact details are not shown on the public portal.</p>
-        </div>
-      `;
+      box.innerHTML = `<div class="card p-6 text-center"><p class="text-sm text-amber-400">Please enter a consignment / tracking number.</p></div>`;
+      return;
     }
 
-    // ===================== AUDIT =====================
-    function renderAudit() {
-      document.getElementById('audit-list').innerHTML = auditLog.map(a => `
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3">
-          <div class="text-sm">${a.action}</div>
-          <div class="text-[10px] text-slate-500 mt-1">${a.user} · ${new Date(a.ts).toLocaleString()}</div>
-        </div>
-      `).join('') || '<p class="text-sm text-slate-500">No audit entries</p>';
-    }
+    btn.disabled = true;
+    btnLabel.classList.add('hidden');
+    spinner.classList.remove('hidden');
 
-    // ===================== TOAST =====================
-    function toast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.classList.remove('hidden');
-      setTimeout(() => t.classList.add('hidden'), 2500);
-    }
+    try {
+      const { data, error } = await sb.rpc('track_shipment', { p_tracking_number: num });
+      if (error) throw error;
 
-    // ===================== INIT =====================
-    loadData();
-    // Auto-login skipped – user must click Sign In (demo credentials pre-filled)
-  </script>
-</body>
-</html>
+      // RPC may return 
