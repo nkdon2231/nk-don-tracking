@@ -11,7 +11,11 @@
     content="Track your NKDON Logistics shipment using your tracking number."
   >
 
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Supabase JS -->
+  <script src="https://esm.sh/@supabase/supabase-js@2"></script>
 
   <style>
     html {
@@ -91,13 +95,9 @@
         Track Your Shipment
       </h1>
 
-      <p class="mt-5 max-w-2xl mx-auto
-                text-slate-400 leading-relaxed">
-
-        Enter your NKDON tracking number to view
-        your shipment status, current location,
-        delivery information and tracking history.
-
+      <p class="mt-5 max-w-2xl mx-auto text-slate-400 leading-relaxed">
+        Enter your NKDON tracking number to view your shipment status,
+        current location, delivery information and tracking history.
       </p>
 
     </section>
@@ -106,21 +106,14 @@
     <!-- TRACKING BOX -->
     <section class="max-w-3xl mx-auto">
 
-      <div class="glass rounded-3xl
-                  border border-white/10
-                  p-5 md:p-7
-                  shadow-2xl">
+      <div class="glass rounded-3xl border border-white/10 p-5 md:p-7 shadow-2xl">
 
         <label
           for="trackingInput"
-          class="block mb-3
-                 text-sm font-semibold
-                 text-slate-300">
-
+          class="block mb-3 text-sm font-semibold text-slate-300"
+        >
           Tracking Number
-
         </label>
-
 
         <div class="flex flex-col sm:flex-row gap-3">
 
@@ -130,35 +123,18 @@
             autocomplete="off"
             value="NKD-20260924-4034"
             placeholder="NKD-20260924-4034"
-            class="w-full flex-1
-                   rounded-2xl
-                   border border-white/10
-                   bg-black/20
-                   px-5 py-4
-                   text-white
-                   placeholder-slate-600
-                   outline-none
-                   focus:border-[#d4af37]"
+            class="w-full flex-1 rounded-2xl border border-white/10 bg-black/20 px-5 py-4 text-white placeholder-slate-600 outline-none focus:border-[#d4af37]"
           >
 
           <button
             id="trackButton"
             type="button"
-            class="rounded-2xl
-                   gold-bg
-                   px-7 py-4
-                   font-bold
-                   text-[#06111f]
-                   transition
-                   hover:brightness-110
-                   disabled:opacity-60">
-
+            class="rounded-2xl gold-bg px-7 py-4 font-bold text-[#06111f] transition hover:brightness-110 disabled:opacity-60"
+          >
             Track Shipment
-
           </button>
 
         </div>
-
 
         <div id="message" class="mt-5"></div>
 
@@ -170,8 +146,8 @@
     <!-- RESULT -->
     <section
       id="result"
-      class="max-w-4xl mx-auto mt-8">
-    </section>
+      class="max-w-4xl mx-auto mt-8"
+    ></section>
 
   </main>
 
@@ -179,28 +155,18 @@
   <!-- FOOTER -->
   <footer class="border-t border-white/10 mt-16">
 
-    <div class="max-w-6xl mx-auto
-                px-5 py-8
-                text-center">
+    <div class="max-w-6xl mx-auto px-5 py-8 text-center">
 
       <div class="font-black tracking-wide">
         NKDON
       </div>
 
-      <div class="text-xs uppercase
-                  tracking-[.3em]
-                  text-slate-500 mt-1">
-
+      <div class="text-xs uppercase tracking-[.3em] text-slate-500 mt-1">
         Logistics
-
       </div>
 
       <p class="text-xs text-slate-600 mt-4">
-
-        © <span id="year"></span>
-        NKDON Logistics.
-        All rights reserved.
-
+        © <span id="year"></span> NKDON Logistics. All rights reserved.
       </p>
 
     </div>
@@ -223,14 +189,14 @@ const SUPABASE_KEY =
 
 
 /* =========================================================
-   CREATE SUPABASE CLIENT
+   SUPABASE CLIENT
    ========================================================= */
 
 let supabaseClient = null;
 
 
 /* =========================================================
-   BASIC HELPERS
+   HELPERS
    ========================================================= */
 
 function escapeHtml(value) {
@@ -253,35 +219,16 @@ function formatStatus(status) {
 
   const names = {
 
-    pickup_scheduled:
-      "Pickup Scheduled",
-
-    picked_up:
-      "Picked Up",
-
-    processing:
-      "Processing",
-
-    in_transit:
-      "In Transit",
-
-    arrived:
-      "Arrived at Facility",
-
-    arrived_at_facility:
-      "Arrived at Facility",
-
-    out_for_delivery:
-      "Out for Delivery",
-
-    delivered:
-      "Delivered",
-
-    delayed:
-      "Delayed",
-
-    cancelled:
-      "Cancelled"
+    pickup_scheduled: "Pickup Scheduled",
+    picked_up: "Picked Up",
+    processing: "Processing",
+    in_transit: "In Transit",
+    arrived: "Arrived at Facility",
+    arrived_at_facility: "Arrived at Facility",
+    out_for_delivery: "Out for Delivery",
+    delivered: "Delivered",
+    delayed: "Delayed",
+    cancelled: "Cancelled"
 
   };
 
@@ -290,15 +237,10 @@ function formatStatus(status) {
       .toLowerCase()
       .replace(/[\s-]+/g, "_");
 
-  if (names[normalized]) {
-    return names[normalized];
-  }
-
-  return String(status)
-    .replace(/[_-]+/g, " ")
-    .replace(/\b\w/g, letter =>
-      letter.toUpperCase()
-    );
+  return names[normalized] ||
+    String(status)
+      .replace(/[_-]+/g, " ")
+      .replace(/\b\w/g, letter => letter.toUpperCase());
 
 }
 
@@ -354,7 +296,7 @@ function formatDateTime(value) {
 
 
 /* =========================================================
-   STATUS DESIGN
+   STATUS STYLE
    ========================================================= */
 
 function statusClass(status) {
@@ -363,7 +305,6 @@ function statusClass(status) {
     String(status || "")
       .toLowerCase()
       .replace(/[\s-]+/g, "_");
-
 
   if (normalized === "delivered") {
 
@@ -375,7 +316,6 @@ function statusClass(status) {
 
   }
 
-
   if (normalized === "out_for_delivery") {
 
     return `
@@ -386,7 +326,6 @@ function statusClass(status) {
 
   }
 
-
   if (normalized === "in_transit") {
 
     return `
@@ -396,7 +335,6 @@ function statusClass(status) {
     `;
 
   }
-
 
   if (
     normalized === "delayed" ||
@@ -411,7 +349,6 @@ function statusClass(status) {
 
   }
 
-
   return `
     bg-slate-500/10
     text-slate-300
@@ -425,21 +362,16 @@ function statusClass(status) {
    MESSAGE
    ========================================================= */
 
-function showMessage(
-  message,
-  type = "info"
-) {
+function showMessage(message, type = "info") {
 
   const element =
     document.getElementById("message");
-
 
   let style = `
     border-white/10
     bg-white/[0.04]
     text-slate-300
   `;
-
 
   if (type === "error") {
 
@@ -451,7 +383,6 @@ function showMessage(
 
   }
 
-
   if (type === "success") {
 
     style = `
@@ -462,7 +393,6 @@ function showMessage(
 
   }
 
-
   element.innerHTML = `
     <div class="
       rounded-2xl
@@ -472,7 +402,7 @@ function showMessage(
       text-sm
       ${style}
     ">
-      ${message}
+      ${escapeHtml(message)}
     </div>
   `;
 
@@ -483,10 +413,7 @@ function showMessage(
    DETAIL ROW
    ========================================================= */
 
-function detailRow(
-  label,
-  value
-) {
+function detailRow(label, value) {
 
   return `
 
@@ -535,38 +462,33 @@ function renderEvents(events) {
         py-10
         text-slate-500
       ">
-
         No tracking events available yet.
-
       </div>
 
     `;
 
   }
 
-
   const sortedEvents =
-    [...events].sort(
-      (a, b) => {
+    [...events].sort((a, b) => {
 
-        const dateA =
-          new Date(
-            a.event_time ||
-            a.created_at ||
-            0
-          ).getTime();
+      const dateA =
+        new Date(
+          a.event_time ||
+          a.created_at ||
+          0
+        ).getTime();
 
-        const dateB =
-          new Date(
-            b.event_time ||
-            b.created_at ||
-            0
-          ).getTime();
+      const dateB =
+        new Date(
+          b.event_time ||
+          b.created_at ||
+          0
+        ).getTime();
 
-        return dateB - dateA;
+      return dateB - dateA;
 
-      }
-    );
+    });
 
 
   return `
@@ -582,17 +504,11 @@ function renderEvents(events) {
         bg-white/10
       "></div>
 
-
       <div class="space-y-8">
 
-        ${sortedEvents.map(
-          (event, index) => `
+        ${sortedEvents.map((event, index) => `
 
-          <div class="
-            relative
-            flex
-            gap-5
-          ">
+          <div class="relative flex gap-5">
 
             <div class="
               relative
@@ -610,13 +526,11 @@ function renderEvents(events) {
 
               ${
                 index === 0
-
                   ? `
                     bg-[#d4af37]
                     text-[#06111f]
                     border-[#d4af37]
                   `
-
                   : `
                     bg-[#101c2d]
                     text-slate-400
@@ -625,11 +539,7 @@ function renderEvents(events) {
               }
             ">
 
-              ${
-                index === 0
-                  ? "✓"
-                  : "•"
-              }
+              ${index === 0 ? "✓" : "•"}
 
             </div>
 
@@ -645,10 +555,7 @@ function renderEvents(events) {
                 gap-1
               ">
 
-                <h3 class="
-                  font-bold
-                  text-white
-                ">
+                <h3 class="font-bold text-white">
 
                   ${escapeHtml(
                     formatStatus(event.status)
@@ -656,11 +563,7 @@ function renderEvents(events) {
 
                 </h3>
 
-
-                <span class="
-                  text-xs
-                  text-slate-500
-                ">
+                <span class="text-xs text-slate-500">
 
                   ${escapeHtml(
                     formatDateTime(
@@ -675,16 +578,9 @@ function renderEvents(events) {
 
 
               ${
-                event.location ||
-                event.facility
-
+                event.location || event.facility
                   ? `
-
-                    <p class="
-                      mt-1
-                      text-sm
-                      text-slate-400
-                    ">
+                    <p class="mt-1 text-sm text-slate-400">
 
                       📍
 
@@ -694,18 +590,14 @@ function renderEvents(events) {
                       )}
 
                     </p>
-
                   `
-
                   : ""
               }
 
 
               ${
                 event.description
-
                   ? `
-
                     <p class="
                       mt-2
                       text-sm
@@ -718,18 +610,14 @@ function renderEvents(events) {
                       )}
 
                     </p>
-
                   `
-
                   : ""
               }
 
 
               ${
                 event.event_code
-
                   ? `
-
                     <p class="
                       mt-2
                       text-[10px]
@@ -743,9 +631,7 @@ function renderEvents(events) {
                       )}
 
                     </p>
-
                   `
-
                   : ""
               }
 
@@ -753,8 +639,7 @@ function renderEvents(events) {
 
           </div>
 
-        `
-        ).join("")}
+        `).join("")}
 
       </div>
 
@@ -769,10 +654,7 @@ function renderEvents(events) {
    RENDER SHIPMENT
    ========================================================= */
 
-function renderShipment(
-  payload,
-  searchedTrackingNumber
-) {
+function renderShipment(payload, searchedTrackingNumber) {
 
   const shipment =
     payload.shipment;
@@ -782,32 +664,25 @@ function renderShipment(
       ? payload.events
       : [];
 
-
   const trackingNumber =
     shipment.tracking_number ||
     searchedTrackingNumber;
-
 
   const status =
     shipment.status ||
     "Processing";
 
-
   const result =
     document.getElementById("result");
 
-
-  document.getElementById(
-    "message"
-  ).innerHTML = "";
-
+  document.getElementById("message").innerHTML = "";
 
   result.innerHTML = `
 
     <div class="space-y-6">
 
 
-      <!-- MAIN STATUS CARD -->
+      <!-- MAIN STATUS -->
 
       <div class="
         glass
@@ -817,7 +692,6 @@ function renderShipment(
         overflow-hidden
         shadow-2xl
       ">
-
 
         <div class="p-6 md:p-8">
 
@@ -830,7 +704,6 @@ function renderShipment(
             gap-6
           ">
 
-
             <div>
 
               <p class="
@@ -839,11 +712,8 @@ function renderShipment(
                 tracking-[.3em]
                 text-slate-500
               ">
-
                 Tracking Number
-
               </p>
-
 
               <h2 class="
                 mt-2
@@ -853,23 +723,15 @@ function renderShipment(
                 break-all
               ">
 
-                ${escapeHtml(
-                  trackingNumber
-                )}
+                ${escapeHtml(trackingNumber)}
 
               </h2>
 
 
               ${
                 shipment.reference_number
-
                   ? `
-
-                    <p class="
-                      mt-2
-                      text-sm
-                      text-slate-500
-                    ">
+                    <p class="mt-2 text-sm text-slate-500">
 
                       Reference:
 
@@ -882,9 +744,7 @@ function renderShipment(
                       </span>
 
                     </p>
-
                   `
-
                   : ""
               }
 
@@ -907,7 +767,6 @@ function renderShipment(
 
             </div>
 
-
           </div>
 
         </div>
@@ -929,7 +788,6 @@ function renderShipment(
             items-center
           ">
 
-
             <div>
 
               <p class="
@@ -938,21 +796,13 @@ function renderShipment(
                 tracking-wider
                 text-slate-500
               ">
-
                 Origin
-
               </p>
 
-
-              <p class="
-                mt-1
-                font-semibold
-                text-white
-              ">
+              <p class="mt-1 font-semibold text-white">
 
                 ${escapeHtml(
-                  shipment.origin ||
-                  "—"
+                  shipment.origin || "—"
                 )}
 
               </p>
@@ -984,9 +834,7 @@ function renderShipment(
                 items-center
                 justify-center
               ">
-
                 🚚
-
               </div>
 
               <div class="
@@ -1006,27 +854,18 @@ function renderShipment(
                 tracking-wider
                 text-slate-500
               ">
-
                 Destination
-
               </p>
 
-
-              <p class="
-                mt-1
-                font-semibold
-                text-white
-              ">
+              <p class="mt-1 font-semibold text-white">
 
                 ${escapeHtml(
-                  shipment.destination ||
-                  "—"
+                  shipment.destination || "—"
                 )}
 
               </p>
 
             </div>
-
 
           </div>
 
@@ -1037,11 +876,7 @@ function renderShipment(
 
       <!-- DETAILS -->
 
-      <div class="
-        grid
-        md:grid-cols-2
-        gap-6
-      ">
+      <div class="grid md:grid-cols-2 gap-6">
 
 
         <div class="
@@ -1052,46 +887,34 @@ function renderShipment(
           p-6
         ">
 
-          <h3 class="
-            text-xl
-            font-bold
-            mb-4
-          ">
-
+          <h3 class="text-xl font-bold mb-4">
             Shipment Details
-
           </h3>
-
 
           ${detailRow(
             "Current Location",
             shipment.current_location
           )}
 
-
           ${detailRow(
             "Shipment Type",
             shipment.shipment_type
           )}
-
 
           ${detailRow(
             "Package",
             shipment.package_description
           )}
 
-
           ${detailRow(
             "Quantity",
             shipment.quantity
           )}
 
-
           ${detailRow(
             "Weight",
             shipment.package_weight
           )}
-
 
           ${detailRow(
             "Shipping Method",
@@ -1109,16 +932,9 @@ function renderShipment(
           p-6
         ">
 
-          <h3 class="
-            text-xl
-            font-bold
-            mb-4
-          ">
-
+          <h3 class="text-xl font-bold mb-4">
             Delivery Information
-
           </h3>
-
 
           ${detailRow(
             "Estimated Delivery",
@@ -1127,7 +943,6 @@ function renderShipment(
             )
           )}
 
-
           ${detailRow(
             "Pickup Date",
             formatDate(
@@ -1135,14 +950,12 @@ function renderShipment(
             )
           )}
 
-
           ${detailRow(
             "Created",
             formatDate(
               shipment.created_at
             )
           )}
-
 
           ${detailRow(
             "Actual Delivery",
@@ -1156,7 +969,7 @@ function renderShipment(
       </div>
 
 
-      <!-- TRACKING HISTORY -->
+      <!-- HISTORY -->
 
       <div class="
         glass
@@ -1167,7 +980,6 @@ function renderShipment(
         md:p-8
       ">
 
-
         <div class="mb-8">
 
           <p class="
@@ -1176,24 +988,14 @@ function renderShipment(
             tracking-[.3em]
             text-slate-500
           ">
-
             Shipment History
-
           </p>
 
-
-          <h3 class="
-            mt-1
-            text-2xl
-            font-bold
-          ">
-
+          <h3 class="mt-1 text-2xl font-bold">
             Tracking Updates
-
           </h3>
 
         </div>
-
 
         ${renderEvents(events)}
 
@@ -1211,24 +1013,12 @@ function renderShipment(
         text-center
       ">
 
-        <p class="
-          text-sm
-          text-slate-500
-        ">
-
+        <p class="text-sm text-slate-500">
           Need assistance with your shipment?
-
         </p>
 
-
-        <p class="
-          mt-1
-          font-semibold
-          text-slate-200
-        ">
-
+        <p class="mt-1 font-semibold text-slate-200">
           Contact NKDON Logistics Support
-
         </p>
 
       </div>
@@ -1242,16 +1032,12 @@ function renderShipment(
 
 
 /* =========================================================
-   SHIPMENT NOT FOUND
+   NOT FOUND
    ========================================================= */
 
-function showNotFound(
-  trackingNumber
-) {
+function showNotFound(trackingNumber) {
 
-  document.getElementById(
-    "result"
-  ).innerHTML = `
+  document.getElementById("result").innerHTML = `
 
     <div class="
       rounded-3xl
@@ -1266,48 +1052,24 @@ function showNotFound(
         📦
       </div>
 
-
-      <h2 class="
-        text-2xl
-        font-bold
-      ">
-
+      <h2 class="text-2xl font-bold">
         Shipment Not Found
-
       </h2>
 
+      <p class="mt-3 text-slate-400">
 
-      <p class="
-        mt-3
-        text-slate-400
-      ">
+        We could not find a shipment associated with
 
-        We could not find a shipment
-        associated with
+        <span class="text-white font-semibold">
 
-        <span class="
-          text-white
-          font-semibold
-        ">
-
-          ${escapeHtml(
-            trackingNumber
-          )}
+          ${escapeHtml(trackingNumber)}
 
         </span>.
 
       </p>
 
-
-      <p class="
-        mt-2
-        text-sm
-        text-slate-500
-      ">
-
-        Please check the tracking number
-        and try again.
-
+      <p class="mt-2 text-sm text-slate-500">
+        Please check the tracking number and try again.
       </p>
 
     </div>
@@ -1318,21 +1080,16 @@ function showNotFound(
 
 
 /* =========================================================
-   PUBLIC TRACKING
+   TRACK SHIPMENT
    ========================================================= */
 
 async function trackShipment() {
 
   const input =
-    document.getElementById(
-      "trackingInput"
-    );
+    document.getElementById("trackingInput");
 
   const button =
-    document.getElementById(
-      "trackButton"
-    );
-
+    document.getElementById("trackButton");
 
   const trackingNumber =
     input.value
@@ -1353,10 +1110,7 @@ async function trackShipment() {
 
 
   button.disabled = true;
-
-  button.textContent =
-    "Tracking...";
-
+  button.textContent = "Tracking...";
 
   document.getElementById(
     "result"
@@ -1370,21 +1124,21 @@ async function trackShipment() {
 
   try {
 
-    /*
-      Load Supabase JS only when needed.
-    */
+    /* Check Supabase library */
 
     if (
       !window.supabase ||
-      !window.supabase.createClient
+      typeof window.supabase.createClient !== "function"
     ) {
 
       throw new Error(
-        "Supabase library unavailable."
+        "Supabase library could not be loaded."
       );
 
     }
 
+
+    /* Create client */
 
     if (!supabaseClient) {
 
@@ -1397,14 +1151,7 @@ async function trackShipment() {
     }
 
 
-    /*
-      Existing NKDON RPC:
-
-      public.track_shipment(text)
-
-      The parameter is expected to be:
-      p_tracking_number
-    */
+    /* Call NKDON tracking RPC */
 
     const response =
       await supabaseClient.rpc(
@@ -1425,11 +1172,14 @@ async function trackShipment() {
     if (response.error) {
 
       console.error(
-        "Supabase RPC error:",
+        "NKDON RPC error:",
         response.error
       );
 
-      throw response.error;
+      throw new Error(
+        response.error.message ||
+        "Supabase tracking request failed."
+      );
 
     }
 
@@ -1438,12 +1188,16 @@ async function trackShipment() {
       response.data;
 
 
-    /*
-      Supabase returns one row
-      containing the track_shipment
-      JSON result.
+    console.log(
+      "NKDON tracking data:",
+      data
+    );
 
-      Example:
+
+    /*
+      Handle the RPC response.
+
+      Expected response:
 
       [
         {
@@ -1484,6 +1238,7 @@ async function trackShipment() {
 
     }
 
+
     else if (
       data &&
       data.track_shipment
@@ -1493,6 +1248,7 @@ async function trackShipment() {
         data.track_shipment;
 
     }
+
 
     else if (
       data &&
@@ -1506,7 +1262,7 @@ async function trackShipment() {
 
 
     console.log(
-      "NKDON tracking payload:",
+      "NKDON final payload:",
       payload
     );
 
@@ -1530,13 +1286,22 @@ async function trackShipment() {
     }
 
 
+    /* Render shipment */
+
     renderShipment(
       payload,
       trackingNumber
     );
 
 
+    showMessage(
+      "Shipment information retrieved successfully.",
+      "success"
+    );
+
+
   }
+
 
   catch (error) {
 
@@ -1563,25 +1328,26 @@ async function trackShipment() {
           ⚠️
         </div>
 
-
-        <h2 class="
-          text-xl
-          font-bold
-        ">
-
+        <h2 class="text-xl font-bold">
           Tracking Temporarily Unavailable
-
         </h2>
 
+        <p class="mt-2 text-sm text-slate-400">
+          The tracking service could not retrieve
+          the shipment right now.
+        </p>
 
         <p class="
-          mt-2
-          text-sm
-          text-slate-400
+          mt-4
+          text-xs
+          text-slate-600
+          break-words
         ">
 
-          Please check the tracking number
-          and try again.
+          ${escapeHtml(
+            error.message ||
+            "Unknown tracking error"
+          )}
 
         </p>
 
@@ -1601,9 +1367,7 @@ async function trackShipment() {
   finally {
 
     button.disabled = false;
-
-    button.textContent =
-      "Track Shipment";
+    button.textContent = "Track Shipment";
 
   }
 
@@ -1615,9 +1379,7 @@ async function trackShipment() {
    ========================================================= */
 
 document
-  .getElementById(
-    "trackButton"
-  )
+  .getElementById("trackButton")
   .addEventListener(
     "click",
     trackShipment
@@ -1629,16 +1391,12 @@ document
    ========================================================= */
 
 document
-  .getElementById(
-    "trackingInput"
-  )
+  .getElementById("trackingInput")
   .addEventListener(
     "keydown",
     function(event) {
 
-      if (
-        event.key === "Enter"
-      ) {
+      if (event.key === "Enter") {
 
         event.preventDefault();
 
@@ -1661,7 +1419,7 @@ document.getElementById(
 
 
 /* =========================================================
-   AUTOMATIC TEST
+   AUTOMATIC TRACKING
    ========================================================= */
 
 window.addEventListener(
@@ -1674,7 +1432,7 @@ window.addEventListener(
         trackShipment();
 
       },
-      500
+      800
     );
 
   }
