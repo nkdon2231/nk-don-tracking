@@ -11,11 +11,7 @@
     content="Track your NKDON Logistics shipment using your tracking number."
   >
 
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Supabase JS -->
-  <script src="https://esm.sh/@supabase/supabase-js@2"></script>
 
   <style>
     html {
@@ -47,138 +43,171 @@
 
 <body class="min-h-screen text-white">
 
-  <!-- HEADER -->
-  <header class="border-b border-white/10 bg-[#06111f]/95">
-    <div class="max-w-6xl mx-auto px-5 py-5">
+<header class="border-b border-white/10 bg-[#06111f]/95">
+  <div class="max-w-6xl mx-auto px-5 py-5">
+    <div class="flex items-center justify-between">
 
-      <div class="flex items-center justify-between">
-
-        <div>
-          <div class="text-2xl font-black tracking-wide">
-            NKDON
-          </div>
-
-          <div class="text-[10px] uppercase tracking-[.35em] text-slate-400">
-            Logistics
-          </div>
+      <div>
+        <div class="text-2xl font-black tracking-wide">
+          NKDON
         </div>
 
-        <div class="hidden sm:block text-sm text-slate-400">
-          Shipment Tracking
+        <div class="text-[10px] uppercase tracking-[.35em] text-slate-400">
+          Logistics
         </div>
+      </div>
 
+      <div class="hidden sm:block text-sm text-slate-400">
+        Shipment Tracking
       </div>
 
     </div>
-  </header>
+  </div>
+</header>
 
 
-  <!-- MAIN -->
-  <main class="max-w-5xl mx-auto px-5 py-12">
+<main class="max-w-5xl mx-auto px-5 py-12">
 
-    <!-- HERO -->
-    <section class="text-center mb-10">
+  <section class="text-center mb-10">
 
-      <div class="inline-flex items-center gap-2
-                  rounded-full border border-[#d4af37]/30
-                  bg-[#d4af37]/10
-                  px-4 py-2
-                  text-xs font-semibold gold">
+    <div class="
+      inline-flex items-center gap-2
+      rounded-full
+      border border-[#d4af37]/30
+      bg-[#d4af37]/10
+      px-4 py-2
+      text-xs font-semibold gold
+    ">
 
-        <span class="w-2 h-2 rounded-full bg-[#d4af37]"></span>
+      <span class="w-2 h-2 rounded-full bg-[#d4af37]"></span>
 
-        NKDON SHIPMENT TRACKING
+      NKDON SHIPMENT TRACKING
 
-      </div>
+    </div>
 
-      <h1 class="mt-6 text-4xl md:text-6xl font-black tracking-tight">
-        Track Your Shipment
-      </h1>
+    <h1 class="mt-6 text-4xl md:text-6xl font-black tracking-tight">
+      Track Your Shipment
+    </h1>
 
-      <p class="mt-5 max-w-2xl mx-auto text-slate-400 leading-relaxed">
-        Enter your NKDON tracking number to view your shipment status,
-        current location, delivery information and tracking history.
-      </p>
+    <p class="
+      mt-5 max-w-2xl mx-auto
+      text-slate-400
+      leading-relaxed
+    ">
+      Enter your NKDON tracking number to view your shipment
+      status, current location, delivery information and tracking history.
+    </p>
 
-    </section>
+  </section>
 
 
-    <!-- TRACKING BOX -->
-    <section class="max-w-3xl mx-auto">
+  <section class="max-w-3xl mx-auto">
 
-      <div class="glass rounded-3xl border border-white/10 p-5 md:p-7 shadow-2xl">
+    <div class="
+      glass
+      rounded-3xl
+      border border-white/10
+      p-5 md:p-7
+      shadow-2xl
+    ">
 
-        <label
-          for="trackingInput"
-          class="block mb-3 text-sm font-semibold text-slate-300"
+      <label
+        for="trackingInput"
+        class="block mb-3 text-sm font-semibold text-slate-300"
+      >
+        Tracking Number
+      </label>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+
+        <input
+          id="trackingInput"
+          type="text"
+          autocomplete="off"
+          value="NKD-20260924-4034"
+          placeholder="NKD-20260924-4034"
+          class="
+            w-full flex-1
+            rounded-2xl
+            border border-white/10
+            bg-black/20
+            px-5 py-4
+            text-white
+            placeholder-slate-600
+            outline-none
+            focus:border-[#d4af37]
+          "
         >
-          Tracking Number
-        </label>
 
-        <div class="flex flex-col sm:flex-row gap-3">
-
-          <input
-            id="trackingInput"
-            type="text"
-            autocomplete="off"
-            value="NKD-20260924-4034"
-            placeholder="NKD-20260924-4034"
-            class="w-full flex-1 rounded-2xl border border-white/10 bg-black/20 px-5 py-4 text-white placeholder-slate-600 outline-none focus:border-[#d4af37]"
-          >
-
-          <button
-            id="trackButton"
-            type="button"
-            class="rounded-2xl gold-bg px-7 py-4 font-bold text-[#06111f] transition hover:brightness-110 disabled:opacity-60"
-          >
-            Track Shipment
-          </button>
-
-        </div>
-
-        <div id="message" class="mt-5"></div>
+        <button
+          id="trackButton"
+          type="button"
+          class="
+            rounded-2xl
+            gold-bg
+            px-7 py-4
+            font-bold
+            text-[#06111f]
+            transition
+            hover:brightness-110
+            disabled:opacity-60
+          "
+        >
+          Track Shipment
+        </button>
 
       </div>
 
-    </section>
-
-
-    <!-- RESULT -->
-    <section
-      id="result"
-      class="max-w-4xl mx-auto mt-8"
-    ></section>
-
-  </main>
-
-
-  <!-- FOOTER -->
-  <footer class="border-t border-white/10 mt-16">
-
-    <div class="max-w-6xl mx-auto px-5 py-8 text-center">
-
-      <div class="font-black tracking-wide">
-        NKDON
-      </div>
-
-      <div class="text-xs uppercase tracking-[.3em] text-slate-500 mt-1">
-        Logistics
-      </div>
-
-      <p class="text-xs text-slate-600 mt-4">
-        © <span id="year"></span> NKDON Logistics. All rights reserved.
-      </p>
+      <div id="message" class="mt-5"></div>
 
     </div>
 
-  </footer>
+  </section>
+
+
+  <section
+    id="result"
+    class="max-w-4xl mx-auto mt-8"
+  ></section>
+
+</main>
+
+
+<footer class="border-t border-white/10 mt-16">
+
+  <div class="
+    max-w-6xl mx-auto
+    px-5 py-8
+    text-center
+  ">
+
+    <div class="font-black tracking-wide">
+      NKDON
+    </div>
+
+    <div class="
+      text-xs uppercase
+      tracking-[.3em]
+      text-slate-500
+      mt-1
+    ">
+      Logistics
+    </div>
+
+    <p class="text-xs text-slate-600 mt-4">
+      © <span id="year"></span> NKDON Logistics.
+      All rights reserved.
+    </p>
+
+  </div>
+
+</footer>
 
 
 <script>
 
 /* =========================================================
-   NKDON LOGISTICS
-   SUPABASE CONFIGURATION
+   NKDON SUPABASE CONFIGURATION
    ========================================================= */
 
 const SUPABASE_URL =
@@ -186,13 +215,6 @@ const SUPABASE_URL =
 
 const SUPABASE_KEY =
   "sb_publishable_ZmrGlIzkRyR4Kenj9s8HyQ_q-6t8GsW";
-
-
-/* =========================================================
-   SUPABASE CLIENT
-   ========================================================= */
-
-let supabaseClient = null;
 
 
 /* =========================================================
@@ -296,6 +318,56 @@ function formatDateTime(value) {
 
 
 /* =========================================================
+   MESSAGE
+   ========================================================= */
+
+function showMessage(message, type = "info") {
+
+  const element =
+    document.getElementById("message");
+
+  let style = `
+    border-white/10
+    bg-white/[0.04]
+    text-slate-300
+  `;
+
+  if (type === "error") {
+
+    style = `
+      border-red-500/30
+      bg-red-500/10
+      text-red-300
+    `;
+
+  }
+
+  if (type === "success") {
+
+    style = `
+      border-emerald-500/30
+      bg-emerald-500/10
+      text-emerald-300
+    `;
+
+  }
+
+  element.innerHTML = `
+    <div class="
+      rounded-2xl
+      border
+      px-4 py-3
+      text-sm
+      ${style}
+    ">
+      ${escapeHtml(message)}
+    </div>
+  `;
+
+}
+
+
+/* =========================================================
    STATUS STYLE
    ========================================================= */
 
@@ -359,70 +431,15 @@ function statusClass(status) {
 
 
 /* =========================================================
-   MESSAGE
-   ========================================================= */
-
-function showMessage(message, type = "info") {
-
-  const element =
-    document.getElementById("message");
-
-  let style = `
-    border-white/10
-    bg-white/[0.04]
-    text-slate-300
-  `;
-
-  if (type === "error") {
-
-    style = `
-      border-red-500/30
-      bg-red-500/10
-      text-red-300
-    `;
-
-  }
-
-  if (type === "success") {
-
-    style = `
-      border-emerald-500/30
-      bg-emerald-500/10
-      text-emerald-300
-    `;
-
-  }
-
-  element.innerHTML = `
-    <div class="
-      rounded-2xl
-      border
-      px-4
-      py-3
-      text-sm
-      ${style}
-    ">
-      ${escapeHtml(message)}
-    </div>
-  `;
-
-}
-
-
-/* =========================================================
    DETAIL ROW
    ========================================================= */
 
 function detailRow(label, value) {
 
   return `
-
     <div class="
-      flex
-      justify-between
-      gap-5
-      border-b
-      border-white/10
+      flex justify-between gap-5
+      border-b border-white/10
       py-3
       last:border-0
     ">
@@ -441,14 +458,13 @@ function detailRow(label, value) {
       </span>
 
     </div>
-
   `;
 
 }
 
 
 /* =========================================================
-   RENDER EVENTS
+   EVENTS
    ========================================================= */
 
 function renderEvents(events) {
@@ -456,7 +472,6 @@ function renderEvents(events) {
   if (!events || !events.length) {
 
     return `
-
       <div class="
         text-center
         py-10
@@ -464,10 +479,10 @@ function renderEvents(events) {
       ">
         No tracking events available yet.
       </div>
-
     `;
 
   }
+
 
   const sortedEvents =
     [...events].sort((a, b) => {
@@ -513,24 +528,22 @@ function renderEvents(events) {
             <div class="
               relative
               z-10
-              w-8
-              h-8
+              w-8 h-8
               shrink-0
               rounded-full
               border
-              flex
-              items-center
-              justify-center
-              text-xs
-              font-bold
+              flex items-center justify-center
+              text-xs font-bold
 
               ${
                 index === 0
+
                   ? `
                     bg-[#d4af37]
                     text-[#06111f]
                     border-[#d4af37]
                   `
+
                   : `
                     bg-[#101c2d]
                     text-slate-400
@@ -578,12 +591,17 @@ function renderEvents(events) {
 
 
               ${
-                event.location || event.facility
+                event.location ||
+                event.facility
+
                   ? `
-                    <p class="mt-1 text-sm text-slate-400">
+                    <p class="
+                      mt-1
+                      text-sm
+                      text-slate-400
+                    ">
 
                       📍
-
                       ${escapeHtml(
                         event.location ||
                         event.facility
@@ -591,12 +609,14 @@ function renderEvents(events) {
 
                     </p>
                   `
+
                   : ""
               }
 
 
               ${
                 event.description
+
                   ? `
                     <p class="
                       mt-2
@@ -611,12 +631,14 @@ function renderEvents(events) {
 
                     </p>
                   `
+
                   : ""
               }
 
 
               ${
                 event.event_code
+
                   ? `
                     <p class="
                       mt-2
@@ -632,6 +654,7 @@ function renderEvents(events) {
 
                     </p>
                   `
+
                   : ""
               }
 
@@ -654,7 +677,10 @@ function renderEvents(events) {
    RENDER SHIPMENT
    ========================================================= */
 
-function renderShipment(payload, searchedTrackingNumber) {
+function renderShipment(
+  payload,
+  searchedTrackingNumber
+) {
 
   const shipment =
     payload.shipment;
@@ -664,31 +690,35 @@ function renderShipment(payload, searchedTrackingNumber) {
       ? payload.events
       : [];
 
+
   const trackingNumber =
     shipment.tracking_number ||
     searchedTrackingNumber;
+
 
   const status =
     shipment.status ||
     "Processing";
 
-  const result =
-    document.getElementById("result");
 
-  document.getElementById("message").innerHTML = "";
+  document.getElementById(
+    "message"
+  ).innerHTML = "";
 
-  result.innerHTML = `
+
+  document.getElementById(
+    "result"
+  ).innerHTML = `
 
     <div class="space-y-6">
 
 
-      <!-- MAIN STATUS -->
+      <!-- STATUS -->
 
       <div class="
         glass
         rounded-3xl
-        border
-        border-white/10
+        border border-white/10
         overflow-hidden
         shadow-2xl
       ">
@@ -722,16 +752,19 @@ function renderShipment(payload, searchedTrackingNumber) {
                 font-black
                 break-all
               ">
-
                 ${escapeHtml(trackingNumber)}
-
               </h2>
 
 
               ${
                 shipment.reference_number
+
                   ? `
-                    <p class="mt-2 text-sm text-slate-500">
+                    <p class="
+                      mt-2
+                      text-sm
+                      text-slate-500
+                    ">
 
                       Reference:
 
@@ -745,6 +778,7 @@ function renderShipment(payload, searchedTrackingNumber) {
 
                     </p>
                   `
+
                   : ""
               }
 
@@ -754,8 +788,7 @@ function renderShipment(payload, searchedTrackingNumber) {
             <div class="
               rounded-2xl
               border
-              px-5
-              py-3
+              px-5 py-3
               font-bold
               text-center
               ${statusClass(status)}
@@ -777,13 +810,11 @@ function renderShipment(payload, searchedTrackingNumber) {
         <div class="
           border-t
           border-white/10
-          p-6
-          md:p-8
+          p-6 md:p-8
         ">
 
           <div class="
-            grid
-            md:grid-cols-3
+            grid md:grid-cols-3
             gap-6
             items-center
           ">
@@ -811,8 +842,7 @@ function renderShipment(payload, searchedTrackingNumber) {
 
 
             <div class="
-              hidden
-              md:flex
+              hidden md:flex
               items-center
             ">
 
@@ -824,15 +854,11 @@ function renderShipment(payload, searchedTrackingNumber) {
 
               <div class="
                 mx-3
-                w-10
-                h-10
+                w-10 h-10
                 rounded-full
-                border
-                border-white/10
+                border border-white/10
                 bg-[#101c2d]
-                flex
-                items-center
-                justify-center
+                flex items-center justify-center
               ">
                 🚚
               </div>
@@ -876,14 +902,17 @@ function renderShipment(payload, searchedTrackingNumber) {
 
       <!-- DETAILS -->
 
-      <div class="grid md:grid-cols-2 gap-6">
+      <div class="
+        grid
+        md:grid-cols-2
+        gap-6
+      ">
 
 
         <div class="
           glass
           rounded-3xl
-          border
-          border-white/10
+          border border-white/10
           p-6
         ">
 
@@ -927,8 +956,7 @@ function renderShipment(payload, searchedTrackingNumber) {
         <div class="
           glass
           rounded-3xl
-          border
-          border-white/10
+          border border-white/10
           p-6
         ">
 
@@ -974,10 +1002,8 @@ function renderShipment(payload, searchedTrackingNumber) {
       <div class="
         glass
         rounded-3xl
-        border
-        border-white/10
-        p-6
-        md:p-8
+        border border-white/10
+        p-6 md:p-8
       ">
 
         <div class="mb-8">
@@ -1007,8 +1033,7 @@ function renderShipment(payload, searchedTrackingNumber) {
       <div class="
         glass
         rounded-3xl
-        border
-        border-white/10
+        border border-white/10
         p-6
         text-center
       ">
@@ -1023,7 +1048,6 @@ function renderShipment(payload, searchedTrackingNumber) {
 
       </div>
 
-
     </div>
 
   `;
@@ -1037,12 +1061,13 @@ function renderShipment(payload, searchedTrackingNumber) {
 
 function showNotFound(trackingNumber) {
 
-  document.getElementById("result").innerHTML = `
+  document.getElementById(
+    "result"
+  ).innerHTML = `
 
     <div class="
       rounded-3xl
-      border
-      border-white/10
+      border border-white/10
       bg-white/[0.04]
       p-8
       text-center
@@ -1060,7 +1085,10 @@ function showNotFound(trackingNumber) {
 
         We could not find a shipment associated with
 
-        <span class="text-white font-semibold">
+        <span class="
+          text-white
+          font-semibold
+        ">
 
           ${escapeHtml(trackingNumber)}
 
@@ -1080,16 +1108,21 @@ function showNotFound(trackingNumber) {
 
 
 /* =========================================================
-   TRACK SHIPMENT
+   DIRECT SUPABASE RPC
    ========================================================= */
 
 async function trackShipment() {
 
   const input =
-    document.getElementById("trackingInput");
+    document.getElementById(
+      "trackingInput"
+    );
 
   const button =
-    document.getElementById("trackButton");
+    document.getElementById(
+      "trackButton"
+    );
+
 
   const trackingNumber =
     input.value
@@ -1112,6 +1145,7 @@ async function trackShipment() {
   button.disabled = true;
   button.textContent = "Tracking...";
 
+
   document.getElementById(
     "result"
   ).innerHTML = "";
@@ -1124,80 +1158,112 @@ async function trackShipment() {
 
   try {
 
-    /* Check Supabase library */
+    /*
+      Direct REST call to the
+      Supabase RPC endpoint.
 
-    if (
-      !window.supabase ||
-      typeof window.supabase.createClient !== "function"
-    ) {
+      No Supabase JavaScript
+      library is required.
+    */
 
-      throw new Error(
-        "Supabase library could not be loaded."
-      );
+    const rpcUrl =
+      SUPABASE_URL +
+      "/rest/v1/rpc/track_shipment";
 
-    }
-
-
-    /* Create client */
-
-    if (!supabaseClient) {
-
-      supabaseClient =
-        window.supabase.createClient(
-          SUPABASE_URL,
-          SUPABASE_KEY
-        );
-
-    }
-
-
-    /* Call NKDON tracking RPC */
 
     const response =
-      await supabaseClient.rpc(
-        "track_shipment",
+      await fetch(
+        rpcUrl,
         {
-          p_tracking_number:
-            trackingNumber
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "apikey":
+              SUPABASE_KEY,
+
+            "Authorization":
+              "Bearer " + SUPABASE_KEY
+          },
+
+          body: JSON.stringify({
+            p_tracking_number:
+              trackingNumber
+          })
         }
       );
 
 
+    const rawText =
+      await response.text();
+
+
     console.log(
-      "NKDON Supabase response:",
-      response
+      "NKDON RPC HTTP status:",
+      response.status
+    );
+
+    console.log(
+      "NKDON RPC raw response:",
+      rawText
     );
 
 
-    if (response.error) {
+    if (!response.ok) {
 
-      console.error(
-        "NKDON RPC error:",
-        response.error
-      );
+      let errorMessage =
+        "Supabase request failed.";
+
+      try {
+
+        const errorJson =
+          JSON.parse(rawText);
+
+        errorMessage =
+          errorJson.message ||
+          errorJson.hint ||
+          errorJson.details ||
+          errorMessage;
+
+      } catch (_) {}
+
 
       throw new Error(
-        response.error.message ||
-        "Supabase tracking request failed."
+        "HTTP " +
+        response.status +
+        ": " +
+        errorMessage
       );
 
     }
 
 
-    const data =
-      response.data;
+    let data;
+
+    try {
+
+      data =
+        JSON.parse(rawText);
+
+    } catch (error) {
+
+      throw new Error(
+        "Supabase returned an invalid response."
+      );
+
+    }
 
 
     console.log(
-      "NKDON tracking data:",
+      "NKDON parsed response:",
       data
     );
 
 
     /*
-      Handle the RPC response.
-
-      Expected response:
+      The RPC can return:
 
       [
         {
@@ -1207,7 +1273,15 @@ async function trackShipment() {
           }
         }
       ]
+
+      OR directly:
+
+      {
+        shipment: {...},
+        events: [...]
+      }
     */
+
 
     let payload = null;
 
@@ -1238,7 +1312,6 @@ async function trackShipment() {
 
     }
 
-
     else if (
       data &&
       data.track_shipment
@@ -1249,7 +1322,6 @@ async function trackShipment() {
 
     }
 
-
     else if (
       data &&
       data.shipment
@@ -1257,6 +1329,26 @@ async function trackShipment() {
 
       payload =
         data;
+
+    }
+
+
+    /*
+      Sometimes PostgreSQL/Supabase
+      can return the JSON payload
+      as a string.
+    */
+
+    if (
+      typeof payload === "string"
+    ) {
+
+      try {
+
+        payload =
+          JSON.parse(payload);
+
+      } catch (_) {}
 
     }
 
@@ -1286,8 +1378,6 @@ async function trackShipment() {
     }
 
 
-    /* Render shipment */
-
     renderShipment(
       payload,
       trackingNumber
@@ -1301,7 +1391,6 @@ async function trackShipment() {
 
 
   }
-
 
   catch (error) {
 
@@ -1317,8 +1406,7 @@ async function trackShipment() {
 
       <div class="
         rounded-3xl
-        border
-        border-red-500/20
+        border border-red-500/20
         bg-red-500/5
         p-8
         text-center
@@ -1332,7 +1420,11 @@ async function trackShipment() {
           Tracking Temporarily Unavailable
         </h2>
 
-        <p class="mt-2 text-sm text-slate-400">
+        <p class="
+          mt-2
+          text-sm
+          text-slate-400
+        ">
           The tracking service could not retrieve
           the shipment right now.
         </p>
@@ -1340,7 +1432,7 @@ async function trackShipment() {
         <p class="
           mt-4
           text-xs
-          text-slate-600
+          text-slate-500
           break-words
         ">
 
@@ -1379,7 +1471,9 @@ async function trackShipment() {
    ========================================================= */
 
 document
-  .getElementById("trackButton")
+  .getElementById(
+    "trackButton"
+  )
   .addEventListener(
     "click",
     trackShipment
@@ -1391,7 +1485,9 @@ document
    ========================================================= */
 
 document
-  .getElementById("trackingInput")
+  .getElementById(
+    "trackingInput"
+  )
   .addEventListener(
     "keydown",
     function(event) {
@@ -1432,7 +1528,7 @@ window.addEventListener(
         trackShipment();
 
       },
-      800
+      700
     );
 
   }
