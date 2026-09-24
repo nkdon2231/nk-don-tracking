@@ -1,4459 +1,943 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
-  <title>NKDON Logistics | Shipment Tracking & Consignment Management</title>
-
-  <meta name="description" content="NKDON Logistics shipment tracking and consignment management platform." />
-  <meta name="theme-color" content="#07111f" />
-  <link rel="canonical" href="https://nkdon2231.github.io/nk-don-tracking/" />
-
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://nkdon2231.github.io/nk-don-tracking/" />
-  <meta property="og:title" content="NKDON Logistics | Shipment Tracking" />
-  <meta property="og:description" content="Track NKDON shipments and view delivery milestones." />
-  <meta property="og:site_name" content="NKDON Logistics" />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            nk: {
-              50: "#f0f9ff",
-              100: "#e0f2fe",
-              200: "#bae6fd",
-              300: "#7dd3fc",
-              400: "#38bdf8",
-              500: "#0ea5e9",
-              600: "#0284c7",
-              700: "#0369a1",
-              800: "#075985",
-              900: "#0c4a6e",
-              950: "#082f49"
-            },
-            navy: {
-              950: "#050b14",
-              900: "#07111f",
-              800: "#0d1828",
-              700: "#142238"
-            },
-            gold: {
-              300: "#fcd34d",
-              400: "#fbbf24",
-              500: "#f59e0b",
-              600: "#d97706"
-            }
-          },
-          fontFamily: {
-            sans: ["Inter", "system-ui", "sans-serif"]
-          }
-        }
-      }
-    };
-  </script>
-
-  <style>
-    * {
-      -webkit-tap-highlight-color: transparent;
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      font-family: Inter, system-ui, sans-serif;
-      background: #07111f;
-    }
-
-    input,
-    select,
-    textarea {
-      font-size: 16px !important;
-    }
-
-    .glass {
-      background: rgba(7, 17, 31, .86);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-    }
-
-    .premium-card {
-      background:
-        linear-gradient(145deg, rgba(20, 34, 56, .94), rgba(7, 17, 31, .98));
-      border: 1px solid rgba(148, 163, 184, .11);
-      box-shadow:
-        0 18px 45px rgba(0,0,0,.22),
-        0 0 0 1px rgba(255,255,255,.015);
-    }
-
-    .hero-bg {
-      background:
-        radial-gradient(
-          ellipse 80% 60% at 50% -20%,
-          rgba(14,165,233,.16),
-          transparent 65%
-        ),
-        radial-gradient(
-          ellipse 50% 50% at 100% 20%,
-          rgba(245,158,11,.06),
-          transparent 70%
-        ),
-        linear-gradient(180deg,#07111f 0%,#0b1626 100%);
-    }
-
-    .gold {
-      background: linear-gradient(135deg,#fcd34d 0%,#f59e0b 55%,#d97706 100%);
-    }
-
-    .gold-text {
-      background: linear-gradient(135deg,#fcd34d,#f59e0b);
-      -webkit-background-clip:text;
-      background-clip:text;
-      color:transparent;
-    }
-
-    .glow {
-      box-shadow: 0 0 35px rgba(245,158,11,.18);
-    }
-
-    .no-scrollbar::-webkit-scrollbar {
-      display:none;
-    }
-
-    .no-scrollbar {
-      scrollbar-width:none;
-      -ms-overflow-style:none;
-    }
-
-    .loader {
-      width:18px;
-      height:18px;
-      border:2px solid rgba(255,255,255,.25);
-      border-top-color:#fbbf24;
-      border-radius:50%;
-      animation:spin .7s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform:rotate(360deg); }
-    }
-
-    .fade-in {
-      animation:fadeIn .25s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity:0; transform:translateY(5px); }
-      to { opacity:1; transform:translateY(0); }
-    }
-
-    .timeline-line {
-      position:absolute;
-      left:11px;
-      top:26px;
-      bottom:-10px;
-      width:2px;
-      background:linear-gradient(to bottom,#334155,transparent);
-    }
-
-    .safe-bottom {
-      padding-bottom:env(safe-area-inset-bottom);
-    }
-  </style>
-</head>
-
-<body class="min-h-screen bg-navy-900 text-slate-100 antialiased">
-
-  <!-- =========================================================
-       GLOBAL LOADING
-  ========================================================== -->
-  <div id="global-loading"
-       class="fixed inset-0 z-[100] bg-navy-950 flex items-center justify-center">
-    <div class="text-center">
-      <div class="w-16 h-16 rounded-2xl gold flex items-center justify-center mx-auto shadow-xl">
-        <span class="font-black text-2xl text-navy-950">NK</span>
-      </div>
-      <div class="loader mx-auto mt-5"></div>
-      <p class="text-xs text-slate-500 mt-4 uppercase tracking-[.2em]">
-        NKDON Logistics
-      </p>
-    </div>
-  </div>
-
-
-  <!-- =========================================================
-       PUBLIC PORTAL
-  ========================================================== -->
-  <div id="public-page" class="hidden min-h-screen">
-
-    <header class="sticky top-0 z-50 glass border-b border-slate-800/80">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6">
-        <div class="h-16 flex items-center justify-between">
-
-          <a href="#" class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl gold flex items-center justify-center shadow-lg">
-              <span class="font-black text-sm text-navy-950">NK</span>
-            </div>
-
-            <div>
-              <div class="font-extrabold tracking-tight">
-                NKDON
-              </div>
-              <div class="text-[9px] uppercase tracking-[.2em] text-slate-500">
-                Global Logistics
-              </div>
-            </div>
-          </a>
-
-          <nav class="hidden md:flex items-center gap-7 text-sm">
-            <a href="#track" class="text-slate-300 hover:text-white">Track</a>
-            <a href="#services" class="text-slate-300 hover:text-white">Services</a>
-            <a href="#about" class="text-slate-300 hover:text-white">About</a>
-            <button onclick="showLogin()"
-                    class="text-gold-400 hover:text-gold-300 font-semibold">
-              Staff Login
-            </button>
-          </nav>
-
-          <button onclick="showLogin()"
-                  class="md:hidden text-xs text-gold-400 font-semibold border border-gold-500/30 rounded-lg px-3 py-2">
-            Staff
-          </button>
-
-        </div>
-      </div>
-    </header>
-
-
-    <!-- HERO -->
-    <section class="hero-bg relative overflow-hidden">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
-
-        <div class="grid lg:grid-cols-2 gap-14 items-center">
-
-          <div>
-
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-700 bg-slate-900/50 mb-6">
-              <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-              <span class="text-[10px] uppercase tracking-[.18em] text-slate-400">
-                NKDON Logistics Platform
-              </span>
-            </div>
-
-            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.08] tracking-tight">
-              Your shipment.
-              <br />
-              <span class="gold-text">
-                Always visible.
-              </span>
-            </h1>
-
-            <p class="mt-6 text-slate-400 text-base sm:text-lg leading-relaxed max-w-xl">
-              Track consignments, monitor delivery milestones and access
-              shipment information through the NKDON Logistics tracking
-              platform.
-            </p>
-
-            <div class="mt-8 flex flex-col sm:flex-row gap-3">
-
-              <a href="#track"
-                 class="gold text-navy-950 font-extrabold rounded-xl px-6 py-4 text-center shadow-lg glow">
-                Track Your Shipment →
-              </a>
-
-              <a href="#services"
-                 class="border border-slate-700 hover:bg-slate-800/60 rounded-xl px-6 py-4 text-center font-semibold">
-                Explore Services
-              </a>
-
-            </div>
-
-            <div class="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-xs text-slate-500">
-              <span>✓ Secure lookup</span>
-              <span>✓ Shipment milestones</span>
-              <span>✓ Mobile optimized</span>
-              <span>✓ Online access</span>
-            </div>
-
-          </div>
-
-
-          <!-- VISUAL -->
-          <div class="premium-card rounded-3xl p-5 sm:p-7 glow">
-
-            <div class="flex justify-between items-center mb-6">
-              <div>
-                <div class="text-[10px] uppercase tracking-[.2em] text-slate-500">
-                  Shipment Control
-                </div>
-                <div class="font-bold mt-1">
-                  NKDON Operations
-                </div>
-              </div>
-
-              <div class="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-semibold">
-                SYSTEM ONLINE
-              </div>
-            </div>
-
-
-            <div class="space-y-3">
-
-              <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <div class="text-[10px] uppercase tracking-wider text-slate-500">
-                      Shipment Status
-                    </div>
-                    <div class="font-semibold mt-1">
-                      Live Tracking
-                    </div>
-                  </div>
-                  <div class="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-400">
-                    ✓
-                  </div>
-                </div>
-              </div>
-
-              <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <div class="text-[10px] uppercase tracking-wider text-slate-500">
-                      Shipment History
-                    </div>
-                    <div class="font-semibold mt-1">
-                      Recorded Milestones
-                    </div>
-                  </div>
-                  <div class="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-400">
-                    ◷
-                  </div>
-                </div>
-              </div>
-
-              <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <div class="text-[10px] uppercase tracking-wider text-slate-500">
-                      Data Protection
-                    </div>
-                    <div class="font-semibold mt-1">
-                      Controlled Access
-                    </div>
-                  </div>
-                  <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-                    🔒
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-
-    <!-- TRACK -->
-    <section id="track" class="py-16 sm:py-20">
-      <div class="max-w-3xl mx-auto px-4 sm:px-6">
-
-        <div class="text-center mb-8">
-
-          <div class="text-gold-400 text-[10px] uppercase tracking-[.25em] font-bold">
-            Shipment Tracking
-          </div>
-
-          <h2 class="text-3xl sm:text-4xl font-black mt-3">
-            Track your shipment
-          </h2>
-
-          <p class="text-slate-400 mt-3">
-            Enter your NKDON tracking number to view the latest available
-            shipment status and delivery milestones.
-          </p>
-
-        </div>
-
-
-        <div class="premium-card rounded-3xl p-4 sm:p-6">
-
-          <div class="flex flex-col sm:flex-row gap-3">
-
-            <input
-              id="public-tracking-input"
-              type="text"
-              autocomplete="off"
-              placeholder="e.g. NKD-20260924-001"
-              class="flex-1 bg-slate-950/80 border border-slate-700 rounded-xl px-5 py-4 outline-none focus:border-gold-500/60 focus:ring-2 focus:ring-gold-500/10"
-              onkeydown="if(event.key==='Enter') publicTrack()"
-            />
-
-            <button
-              id="public-track-btn"
-              onclick="publicTrack()"
-              class="gold text-navy-950 font-extrabold px-7 py-4 rounded-xl">
-              Track Shipment
-            </button>
-
-          </div>
-
-        </div>
-
-        <div id="public-result" class="mt-7"></div>
-
-      </div>
-    </section>
-
-
-    <!-- SERVICES -->
-    <section id="services" class="border-t border-slate-800/80 bg-slate-900/20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-16">
-
-        <div class="text-center mb-10">
-          <div class="text-gold-400 text-[10px] uppercase tracking-[.25em] font-bold">
-            Capabilities
-          </div>
-
-          <h2 class="text-3xl font-black mt-3">
-            Logistics management built around visibility
-          </h2>
-
-          <p class="text-slate-400 mt-3 max-w-2xl mx-auto">
-            Structured tools for shipment coordination, tracking and
-            operational record keeping.
-          </p>
-        </div>
-
-
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-
-          <div class="premium-card rounded-2xl p-6">
-            <div class="text-2xl mb-4">📦</div>
-            <h3 class="font-bold">Consignment Tracking</h3>
-            <p class="text-sm text-slate-400 mt-2 leading-relaxed">
-              Track shipment status and delivery milestones from registration
-              through completion.
-            </p>
-          </div>
-
-          <div class="premium-card rounded-2xl p-6">
-            <div class="text-2xl mb-4">🌍</div>
-            <h3 class="font-bold">International Logistics</h3>
-            <p class="text-sm text-slate-400 mt-2 leading-relaxed">
-              Maintain clear origin-to-destination shipment records.
-            </p>
-          </div>
-
-          <div class="premium-card rounded-2xl p-6">
-            <div class="text-2xl mb-4">🚚</div>
-            <h3 class="font-bold">Delivery Coordination</h3>
-            <p class="text-sm text-slate-400 mt-2 leading-relaxed">
-              Record movement, arrival and final delivery events.
-            </p>
-          </div>
-
-          <div class="premium-card rounded-2xl p-6">
-            <div class="text-2xl mb-4">📋</div>
-            <h3 class="font-bold">Shipment Records</h3>
-            <p class="text-sm text-slate-400 mt-2 leading-relaxed">
-              Keep structured shipment information available to authorized
-              operations staff.
-            </p>
-          </div>
-
-          <div class="premium-card rounded-2xl p-6">
-            <div class="text-2xl mb-4">🔐</div>
-            <h3 class="font-bold">Controlled Access</h3>
-            <p class="text-sm text-slate-400 mt-2 leading-relaxed">
-              Administrative shipment information remains protected behind
-              authenticated access.
-            </p>
-          </div>
-
-          <div class="premium-card rounded-2xl p-6">
-            <div class="text-2xl mb-4">📱</div>
-            <h3 class="font-bold">Mobile Optimized</h3>
-            <p class="text-sm text-slate-400 mt-2 leading-relaxed">
-              Designed for phones, tablets and desktop operations.
-            </p>
-          </div>
-
-        </div>
-
-      </div>
-    </section>
-
-
-    <!-- ABOUT -->
-    <section id="about" class="border-t border-slate-800/80">
-      <div class="max-w-3xl mx-auto px-4 sm:px-6 py-16 text-center">
-
-        <div class="text-gold-400 text-[10px] uppercase tracking-[.25em] font-bold">
-          About NKDON
-        </div>
-
-        <h2 class="text-3xl font-black mt-3">
-          Organized logistics. Clear information.
-        </h2>
-
-        <p class="text-slate-400 leading-relaxed mt-5">
-          NKDON Logistics provides structured shipment coordination and
-          consignment visibility through a centralized tracking platform.
+<script>
+/* =========================================================
+   NKDON LOGISTICS — SUPABASE PUBLIC TRACKING
+   ========================================================= */
+
+const SUPABASE_URL = "https://cpjbxllhabghsvpsdzrm.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_ZmrGlIzkRyR4Kenj9s8HyQ_q-6t8GsW";
+
+const { createClient } = supabase;
+const nkdonSupabase = createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
+
+
+/* =========================================================
+   PUBLIC SHIPMENT TRACKING
+   ========================================================= */
+
+async function publicTrack() {
+  const input = document.getElementById("public-tracking-input");
+  const result = document.getElementById("public-result");
+  const button = document.getElementById("public-track-btn");
+
+  if (!input || !result) {
+    console.error("NKDON tracking elements were not found.");
+    return;
+  }
+
+  const trackingNumber = input.value.trim().toUpperCase();
+
+  if (!trackingNumber) {
+    result.innerHTML = `
+      <div class="rounded-2xl border border-red-500/30 bg-red-500/10 p-5 text-center">
+        <div class="text-red-400 text-3xl mb-2">⚠️</div>
+        <h3 class="text-white font-bold text-lg">Tracking Number Required</h3>
+        <p class="text-slate-400 mt-1">
+          Please enter your NKDON tracking number.
         </p>
-
       </div>
-    </section>
+    `;
+    return;
+  }
 
+  if (button) {
+    button.disabled = true;
+    button.innerHTML = `
+      <span class="inline-flex items-center gap-2">
+        <span class="animate-spin">⟳</span>
+        Tracking...
+      </span>
+    `;
+  }
 
-    <footer class="border-t border-slate-800 bg-navy-950">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
-
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg gold flex items-center justify-center">
-            <span class="font-black text-xs text-navy-950">NK</span>
-          </div>
-          <span class="font-semibold text-sm">
-            NKDON Logistics
-          </span>
-        </div>
-
-        <div class="text-xs text-slate-600">
-          © 2026 NKDON. All rights reserved.
-        </div>
-
-      </div>
-    </footer>
-
-  </div>
-
-
-  <!-- =========================================================
-       LOGIN SCREEN
-  ========================================================== -->
-  <div id="login-page"
-       class="hidden min-h-screen hero-bg flex items-center justify-center px-4">
-
-    <div class="w-full max-w-md">
-
-      <div class="text-center mb-8">
-
-        <div class="w-16 h-16 rounded-2xl gold flex items-center justify-center mx-auto shadow-xl">
-          <span class="text-2xl font-black text-navy-950">
-            NK
-          </span>
-        </div>
-
-        <h1 class="text-3xl font-black mt-5">
-          NKDON
-        </h1>
-
-        <p class="text-slate-500 text-xs uppercase tracking-[.2em] mt-2">
-          Operations Portal
-        </p>
-
-      </div>
-
-
-      <div class="premium-card rounded-3xl p-6 sm:p-8">
-
-        <div class="mb-6">
-          <h2 class="text-xl font-bold">
-            Staff sign in
-          </h2>
-
-          <p class="text-sm text-slate-500 mt-1">
-            Authorized operations access
-          </p>
-        </div>
-
-
-        <form onsubmit="login(event)" class="space-y-4">
-
-          <div>
-            <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Email
-            </label>
-
-            <input
-              id="login-email"
-              type="email"
-              required
-              autocomplete="email"
-              placeholder="admin@example.com"
-              class="w-full mt-2 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3.5 outline-none focus:border-gold-500/60"
-            />
-          </div>
-
-
-          <div>
-            <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Password
-            </label>
-
-            <input
-              id="login-password"
-              type="password"
-              required
-              autocomplete="current-password"
-              placeholder="••••••••"
-              class="w-full mt-2 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3.5 outline-none focus:border-gold-500/60"
-            />
-          </div>
-
-
-          <button
-            id="login-btn"
-            type="submit"
-            class="w-full gold text-navy-950 font-extrabold py-4 rounded-xl">
-            Sign In
-          </button>
-
-        </form>
-
-
-        <button
-          onclick="showPublic()"
-          class="w-full mt-5 text-sm text-slate-500 hover:text-white">
-          ← Return to public tracking
-        </button>
-
-      </div>
-
+  result.innerHTML = `
+    <div class="rounded-2xl border border-slate-700 bg-slate-900/60 p-8 text-center">
+      <div class="text-4xl mb-3 animate-pulse">📦</div>
+      <p class="text-slate-300">Searching NKDON shipment network...</p>
+      <p class="text-slate-500 text-sm mt-1">${escapeHtml(trackingNumber)}</p>
     </div>
+  `;
 
-  </div>
+  try {
+    /*
+      Your Supabase function is:
 
+      public.track_shipment(text)
 
-  <!-- =========================================================
-       ADMIN APPLICATION
-  ========================================================== -->
-  <div id="admin-page" class="hidden min-h-screen">
+      The JavaScript RPC call below passes the tracking number.
+    */
 
-    <!-- TOP -->
-    <header class="sticky top-0 z-50 glass border-b border-slate-800">
-
-      <div class="px-4 sm:px-6 h-16 flex items-center justify-between">
-
-        <div class="flex items-center gap-3">
-
-          <div class="w-10 h-10 rounded-xl gold flex items-center justify-center shadow-lg">
-            <span class="font-black text-sm text-navy-950">NK</span>
-          </div>
-
-          <div>
-            <div class="font-extrabold text-sm">
-              NKDON
-            </div>
-            <div class="text-[9px] uppercase tracking-[.18em] text-slate-500">
-              Operations
-            </div>
-          </div>
-
-        </div>
-
-
-        <div class="flex items-center gap-2">
-
-          <button onclick="showAdminSection('audit')"
-                  class="hidden sm:block px-3 py-2 rounded-lg text-xs text-slate-400 hover:bg-slate-800">
-            Audit
-          </button>
-
-          <button onclick="showPublic()"
-                  class="px-3 py-2 rounded-lg text-xs text-slate-400 hover:bg-slate-800">
-            Public
-          </button>
-
-          <button onclick="logout()"
-                  class="px-3 py-2 rounded-lg text-xs text-red-400 hover:bg-red-500/10">
-            Logout
-          </button>
-
-        </div>
-
-      </div>
-
-    </header>
-
-
-    <!-- MAIN -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 pb-28">
-
-
-      <!-- DASHBOARD -->
-      <section id="admin-dashboard" class="admin-section space-y-6">
-
-        <div>
-          <div class="text-gold-400 text-[10px] uppercase tracking-[.25em] font-bold">
-            Operations
-          </div>
-
-          <h1 class="text-2xl sm:text-3xl font-black mt-2">
-            Dashboard
-          </h1>
-
-          <p class="text-sm text-slate-500 mt-1">
-            Live overview of your shipment database.
-          </p>
-        </div>
-
-
-        <!-- KPI -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-
-          <div class="premium-card rounded-2xl p-5">
-            <div class="text-[10px] uppercase tracking-wider text-slate-500">
-              Total
-            </div>
-            <div id="kpi-total" class="text-3xl font-black mt-2">
-              0
-            </div>
-          </div>
-
-          <div class="premium-card rounded-2xl p-5">
-            <div class="text-[10px] uppercase tracking-wider text-slate-500">
-              Active
-            </div>
-            <div id="kpi-active" class="text-3xl font-black text-sky-400 mt-2">
-              0
-            </div>
-          </div>
-
-          <div class="premium-card rounded-2xl p-5">
-            <div class="text-[10px] uppercase tracking-wider text-slate-500">
-              Delivered
-            </div>
-            <div id="kpi-delivered" class="text-3xl font-black text-emerald-400 mt-2">
-              0
-            </div>
-          </div>
-
-          <div class="premium-card rounded-2xl p-5">
-            <div class="text-[10px] uppercase tracking-wider text-slate-500">
-              Delayed
-            </div>
-            <div id="kpi-delayed" class="text-3xl font-black text-amber-400 mt-2">
-              0
-            </div>
-          </div>
-
-        </div>
-
-
-        <div class="grid lg:grid-cols-3 gap-5">
-
-          <div class="lg:col-span-2 premium-card rounded-2xl p-5">
-
-            <div class="flex items-center justify-between mb-5">
-              <h2 class="font-bold">
-                Shipment Distribution
-              </h2>
-
-              <span class="text-[10px] text-slate-500">
-                Live database
-              </span>
-            </div>
-
-            <div class="h-64">
-              <canvas id="status-chart"></canvas>
-            </div>
-
-          </div>
-
-
-          <div class="premium-card rounded-2xl p-5">
-
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="font-bold">
-                Quick Actions
-              </h2>
-            </div>
-
-            <div class="space-y-3">
-
-              <button onclick="openCreateModal()"
-                      class="w-full gold text-navy-950 font-bold py-3 rounded-xl">
-                + New Shipment
-              </button>
-
-              <button onclick="showAdminSection('shipments')"
-                      class="w-full bg-slate-800 hover:bg-slate-700 font-semibold py-3 rounded-xl">
-                View Shipments
-              </button>
-
-              <button onclick="exportCSV()"
-                      class="w-full bg-slate-800 hover:bg-slate-700 font-semibold py-3 rounded-xl">
-                Export CSV
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <div class="premium-card rounded-2xl p-5">
-
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="font-bold">
-              Recent Shipments
-            </h2>
-
-            <button onclick="showAdminSection('shipments')"
-                    class="text-xs text-gold-400">
-              View all
-            </button>
-          </div>
-
-          <div id="recent-shipments" class="space-y-2"></div>
-
-        </div>
-
-      </section>
-
-
-      <!-- SHIPMENTS -->
-      <section id="admin-shipments" class="admin-section hidden space-y-5">
-
-        <div class="flex items-center justify-between gap-3">
-
-          <div>
-            <h1 class="text-2xl font-black">
-              Shipments
-            </h1>
-
-            <p class="text-xs text-slate-500 mt-1">
-              Manage cloud-based consignment records.
-            </p>
-          </div>
-
-          <button onclick="openCreateModal()"
-                  class="gold text-navy-950 font-bold px-4 py-3 rounded-xl text-sm">
-            + New
-          </button>
-
-        </div>
-
-
-        <input
-          id="shipment-search"
-          type="search"
-          placeholder="Search tracking, recipient, origin or destination..."
-          oninput="renderShipments()"
-          class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3.5 outline-none focus:border-gold-500/60"
-        />
-
-
-        <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-
-          <button class="filter-btn active-filter" data-filter="all"
-                  onclick="setFilter('all')">
-            All
-          </button>
-
-          <button class="filter-btn" data-filter="pickup"
-                  onclick="setFilter('pickup')">
-            Pickup
-          </button>
-
-          <button class="filter-btn" data-filter="processing"
-                  onclick="setFilter('processing')">
-            Processing
-          </button>
-
-          <button class="filter-btn" data-filter="transit"
-                  onclick="setFilter('transit')">
-            In Transit
-          </button>
-
-          <button class="filter-btn" data-filter="destination"
-                  onclick="setFilter('destination')">
-            Destination
-          </button>
-
-          <button class="filter-btn" data-filter="delivered"
-                  onclick="setFilter('delivered')">
-            Delivered
-          </button>
-
-          <button class="filter-btn" data-filter="delayed"
-                  onclick="setFilter('delayed')">
-            Delayed
-          </button>
-
-        </div>
-
-
-        <div class="grid grid-cols-2 gap-3">
-
-          <button onclick="exportCSV()"
-                  class="bg-slate-800 border border-slate-700 rounded-xl py-3 text-xs font-bold">
-            Export CSV
-          </button>
-
-          <label class="bg-slate-800 border border-slate-700 rounded-xl py-3 text-xs font-bold text-center cursor-pointer">
-            Import CSV
-            <input type="file"
-                   accept=".csv"
-                   class="hidden"
-                   onchange="importCSV(event)" />
-          </label>
-
-        </div>
-
-
-        <div id="shipments-list" class="space-y-3"></div>
-
-      </section>
-
-
-      <!-- DETAIL -->
-      <section id="admin-detail" class="admin-section hidden">
-
-        <button onclick="showAdminSection('shipments')"
-                class="text-sm text-slate-400 hover:text-white mb-5">
-          ← Back to shipments
-        </button>
-
-        <div id="detail-container"></div>
-
-      </section>
-
-
-      <!-- AUDIT -->
-      <section id="admin-audit" class="admin-section hidden space-y-5">
-
-        <div>
-          <h1 class="text-2xl font-black">
-            Audit Activity
-          </h1>
-
-          <p class="text-xs text-slate-500 mt-1">
-            Administrative activity recorded in Supabase.
-          </p>
-        </div>
-
-        <div id="audit-list" class="space-y-2"></div>
-
-      </section>
-
-    </main>
-
-
-    <!-- BOTTOM NAV -->
-    <nav class="fixed bottom-0 left-0 right-0 z-40 glass border-t border-slate-800 safe-bottom">
-
-      <div class="max-w-xl mx-auto flex justify-around py-2">
-
-        <button onclick="showAdminSection('dashboard')"
-                class="nav-item flex flex-col items-center gap-1 text-gold-400 px-4 py-2">
-          <span>⌂</span>
-          <span class="text-[10px]">Dashboard</span>
-        </button>
-
-        <button onclick="showAdminSection('shipments')"
-                class="nav-item flex flex-col items-center gap-1 text-slate-500 px-4 py-2">
-          <span>▣</span>
-          <span class="text-[10px]">Shipments</span>
-        </button>
-
-        <button onclick="openCreateModal()"
-                class="flex flex-col items-center -mt-7">
-          <div class="w-14 h-14 rounded-full gold flex items-center justify-center shadow-xl glow text-2xl text-navy-950">
-            +
-          </div>
-          <span class="text-[10px] text-slate-500 mt-1">
-            New
-          </span>
-        </button>
-
-        <button onclick="showAdminSection('audit')"
-                class="nav-item flex flex-col items-center gap-1 text-slate-500 px-4 py-2">
-          <span>≡</span>
-          <span class="text-[10px]">Audit</span>
-        </button>
-
-        <button onclick="showPublic()"
-                class="nav-item flex flex-col items-center gap-1 text-slate-500 px-4 py-2">
-          <span>⌕</span>
-          <span class="text-[10px]">Public</span>
-        </button>
-
-      </div>
-
-    </nav>
-
-  </div>
-
-
-  <!-- =========================================================
-       CREATE / EDIT MODAL
-  ========================================================== -->
-  <div id="shipment-modal"
-       class="hidden fixed inset-0 z-[80] bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center">
-
-    <div class="w-full max-w-2xl max-h-[94vh] overflow-y-auto bg-navy-800 border border-slate-700 rounded-t-3xl sm:rounded-3xl">
-
-      <div class="sticky top-0 z-10 glass border-b border-slate-700 px-5 py-4 flex items-center justify-between">
-
-        <div>
-          <div class="text-[10px] uppercase tracking-widest text-slate-500">
-            Shipment Management
-          </div>
-
-          <h2 id="modal-title" class="font-bold text-lg mt-1">
-            New Shipment
-          </h2>
-        </div>
-
-        <button onclick="closeModal()"
-                class="w-9 h-9 rounded-lg bg-slate-800 text-slate-400">
-          ×
-        </button>
-
-      </div>
-
-
-      <form id="shipment-form"
-            onsubmit="saveShipment(event)"
-            class="p-5 space-y-4">
-
-        <input type="hidden" id="edit-shipment-id" />
-
-
-        <div class="grid sm:grid-cols-2 gap-3">
-
-          <div>
-            <label class="field-label">Tracking Number</label>
-            <input id="f-tracking"
-                   placeholder="Auto-generated if blank"
-                   class="field-input" />
-          </div>
-
-          <div>
-            <label class="field-label">Reference Number</label>
-            <input id="f-reference"
-                   placeholder="Optional reference"
-                   class="field-input" />
-          </div>
-
-        </div>
-
-
-        <div class="grid sm:grid-cols-2 gap-3">
-
-          <div>
-            <label class="field-label">Sender Name</label>
-            <input id="f-sender"
-                   class="field-input" />
-          </div>
-
-          <div>
-            <label class="field-label">Recipient Name</label>
-            <input id="f-recipient"
-                   required
-                   class="field-input" />
-          </div>
-
-        </div>
-
-
-        <div class="grid sm:grid-cols-2 gap-3">
-
-          <div>
-            <label class="field-label">Sender Phone</label>
-            <input id="f-sender-phone"
-                   type="tel"
-                   class="field-input" />
-          </div>
-
-          <div>
-            <label class="field-label">Recipient Phone</label>
-            <input id="f-recipient-phone"
-                   type="tel"
-                   class="field-input" />
-          </div>
-
-        </div>
-
-
-        <div class="grid sm:grid-cols-2 gap-3">
-
-          <div>
-            <label class="field-label">Origin</label>
-            <input id="f-origin"
-                   required
-                   placeholder="Lagos"
-                   class="field-input" />
-          </div>
-
-          <div>
-            <label class="field-label">Destination</label>
-            <input id="f-destination"
-                   required
-                   placeholder="Abuja"
-                   class="field-input" />
-          </div>
-
-        </div>
-
-
-        <div class="grid sm:grid-cols-2 gap-3">
-
-          <div>
-            <label class="field-label">Current Location</label>
-            <input id="f-location"
-                   placeholder="Current facility/location"
-                   class="field-input" />
-          </div>
-
-          <div>
-            <label class="field-label">Shipping Method</label>
-            <select id="f-method" class="field-input">
-              <option value="Standard">Standard</option>
-              <option value="Express">Express</option>
-              <option value="Air Freight">Air Freight</option>
-              <option value="Sea Freight">Sea Freight</option>
-              <option value="Road Freight">Road Freight</option>
-            </select>
-          </div>
-
-        </div>
-
-
-        <div class="grid sm:grid-cols-3 gap-3">
-
-          <div>
-            <label class="field-label">Weight</label>
-            <input id="f-weight"
-                   placeholder="e.g. 12.5 kg"
-                   class="field-input" />
-          </div>
-
-          <div>
-            <label class="field-label">Quantity</label>
-            <input id="f-quantity"
-                   type="number"
-                   min="1"
-                   value="1"
-                   class="field-input" />
-          </div>
-
-          <div>
-            <label class="field-label">Shipment Type</label>
-            <input id="f-type"
-                   placeholder="Parcel"
-                   class="field-input" />
-          </div>
-
-        </div>
-
-
-        <div>
-          <label class="field-label">Package Description</label>
-          <textarea id="f-description"
-                    rows="2"
-                    class="field-input"></textarea>
-        </div>
-
-
-        <div class="grid sm:grid-cols-2 gap-3">
-
-          <div>
-            <label class="field-label">Status</label>
-
-            <select id="f-status" class="field-input">
-              <option value="pickup">Pickup Scheduled</option>
-              <option value="processing">Processing</option>
-              <option value="transit">In Transit</option>
-              <option value="destination">At Destination</option>
-              <option value="delivered">Delivered</option>
-              <option value="delayed">Delayed</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="field-label">Estimated Delivery</label>
-            <input id="f-eta"
-                   type="date"
-                   class="field-input" />
-          </div>
-
-        </div>
-
-
-        <div class="grid sm:grid-cols-2 gap-3">
-
-          <div>
-            <label class="field-label">Pickup Date</label>
-            <input id="f-pickup-date"
-                   type="date"
-                   class="field-input" />
-          </div>
-
-          <div>
-            <label class="field-label">Actual Delivery Date</label>
-            <input id="f-delivery-date"
-                   type="date"
-                   class="field-input" />
-          </div>
-
-        </div>
-
-
-        <div>
-          <label class="field-label">Delivery Instructions</label>
-          <textarea id="f-instructions"
-                    rows="2"
-                    class="field-input"></textarea>
-        </div>
-
-
-        <div>
-          <label class="field-label">Internal Notes</label>
-          <textarea id="f-notes"
-                    rows="2"
-                    class="field-input"></textarea>
-        </div>
-
-
-        <div class="grid sm:grid-cols-2 gap-3">
-
-          <div>
-            <label class="field-label">Declared Value</label>
-            <input id="f-value"
-                   type="number"
-                   step="0.01"
-                   class="field-input" />
-          </div>
-
-          <div>
-            <label class="field-label">Currency</label>
-            <input id="f-currency"
-                   value="NGN"
-                   class="field-input" />
-          </div>
-
-        </div>
-
-
-        <div class="flex gap-3 pt-3">
-
-          <button type="button"
-                  onclick="closeModal()"
-                  class="flex-1 bg-slate-800 hover:bg-slate-700 py-3.5 rounded-xl font-semibold">
-            Cancel
-          </button>
-
-          <button id="save-shipment-btn"
-                  type="submit"
-                  class="flex-1 gold text-navy-950 py-3.5 rounded-xl font-extrabold">
-            Save Shipment
-          </button>
-
-        </div>
-
-      </form>
-
-    </div>
-
-  </div>
-
-
-  <!-- TOAST -->
-  <div id="toast"
-       class="hidden fixed top-5 left-1/2 -translate-x-1/2 z-[120] px-5 py-3 rounded-xl bg-navy-800 border border-slate-700 shadow-2xl text-sm font-semibold">
-  </div>
-
-
-  <!-- =========================================================
-       FIELD STYLES
-  ========================================================== -->
-  <style>
-    .field-label {
-      display:block;
-      font-size:10px;
-      font-weight:700;
-      color:#64748b;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-      margin-bottom:7px;
-    }
-
-    .field-input {
-      width:100%;
-      background:rgba(2,6,23,.72);
-      border:1px solid rgba(71,85,105,.8);
-      border-radius:12px;
-      padding:12px 14px;
-      color:#f8fafc;
-      outline:none;
-      transition:.2s;
-    }
-
-    .field-input:focus {
-      border-color:rgba(245,158,11,.65);
-      box-shadow:0 0 0 3px rgba(245,158,11,.08);
-    }
-
-    .filter-btn {
-      flex-shrink:0;
-      padding:7px 14px;
-      border-radius:999px;
-      background:#1e293b;
-      color:#cbd5e1;
-      font-size:11px;
-      font-weight:600;
-    }
-
-    .filter-btn.active-filter {
-      background:#f59e0b;
-      color:#07111f;
-    }
-  </style>
-
-
-  <!-- =========================================================
-       SUPABASE + APPLICATION
-  ========================================================== -->
-  <script type="module">
-
-    import {
-      createClient
-    } from "https://esm.sh/@supabase/supabase-js@2";
-
-
-    /* =========================================================
-       SUPABASE CONFIGURATION
-    ========================================================== */
-
-    const SUPABASE_URL =
-      "https://cpjbxllhabghsvpsdzrm.supabase.co";
-
-    const SUPABASE_KEY =
-      "sb_publishable_ZmrGlIzkRy4RKenj9s8HyQ_q-6t8GsW";
-
-    const supabase =
-      createClient(SUPABASE_URL, SUPABASE_KEY);
-
-
-    /* =========================================================
-       APPLICATION STATE
-    ========================================================== */
-
-    let shipments = [];
-    let eventsCache = {};
-    let auditEntries = [];
-
-    let currentFilter = "all";
-    let currentShipment = null;
-    let chart = null;
-
-    let currentUser = null;
-
-
-    const STATUS_LABELS = {
-      pickup: "Pickup Scheduled",
-      processing: "Processing",
-      transit: "In Transit",
-      destination: "At Destination",
-      delivered: "Delivered",
-      delayed: "Delayed"
-    };
-
-
-    const STATUS_BADGES = {
-      pickup: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-      processing: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-      transit: "bg-sky-500/10 text-sky-400 border-sky-500/20",
-      destination: "bg-violet-500/10 text-violet-400 border-violet-500/20",
-      delivered: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-      delayed: "bg-amber-500/10 text-amber-400 border-amber-500/20"
-    };
-
-
-    /* =========================================================
-       BASIC HELPERS
-    ========================================================== */
-
-    const $ = id => document.getElementById(id);
-
-
-    function escapeHTML(value) {
-
-      if (value === null || value === undefined) return "";
-
-      return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-
-    function showToast(message, type = "normal") {
-
-      const t = $("toast");
-
-      t.textContent = message;
-
-      t.className =
-        "fixed top-5 left-1/2 -translate-x-1/2 z-[120] px-5 py-3 rounded-xl border shadow-2xl text-sm font-semibold";
-
-      if (type === "error") {
-        t.classList.add(
-          "bg-red-950",
-          "border-red-800",
-          "text-red-300"
-        );
-      } else if (type === "success") {
-        t.classList.add(
-          "bg-emerald-950",
-          "border-emerald-800",
-          "text-emerald-300"
-        );
-      } else {
-        t.classList.add(
-          "bg-navy-800",
-          "border-slate-700",
-          "text-white"
-        );
-      }
-
-      setTimeout(() => {
-        t.classList.add("hidden");
-      }, 3000);
-    }
-
-
-    function formatDate(value) {
-
-      if (!value) return "—";
-
-      const d = new Date(value);
-
-      if (Number.isNaN(d.getTime())) return value;
-
-      return d.toLocaleString();
-    }
-
-
-    function formatDateOnly(value) {
-
-      if (!value) return "—";
-
-      const d = new Date(value);
-
-      if (Number.isNaN(d.getTime())) return value;
-
-      return d.toLocaleDateString();
-    }
-
-
-    function todayISO() {
-      return new Date().toISOString().slice(0,10);
-    }
-
-
-    function generateTrackingNumber() {
-
-      const d = new Date();
-
-      const date =
-        d.toISOString()
-          .slice(0,10)
-          .replaceAll("-","");
-
-      const random =
-        Math.floor(Math.random() * 9000) + 1000;
-
-      return `NKD-${date}-${random}`;
-    }
-
-
-    function normalizeStatus(status) {
-
-      if (!status) return "processing";
-
-      const s = String(status).toLowerCase().trim();
-
-      if (s.includes("deliver")) return "delivered";
-      if (s.includes("delay")) return "delayed";
-      if (s.includes("destination")) return "destination";
-      if (s.includes("transit")) return "transit";
-      if (s.includes("pickup")) return "pickup";
-
-      return "processing";
-    }
-
-
-    /* =========================================================
-       SCREEN CONTROL
-    ========================================================== */
-
-    function hideEverything() {
-
-      $("public-page").classList.add("hidden");
-      $("login-page").classList.add("hidden");
-      $("admin-page").classList.add("hidden");
-    }
-
-
-    window.showPublic = function() {
-
-      hideEverything();
-
-      $("public-page").classList.remove("hidden");
-
-      window.scrollTo(0,0);
-    };
-
-
-    window.showLogin = function() {
-
-      hideEverything();
-
-      $("login-page").classList.remove("hidden");
-
-      setTimeout(() => $("login-email")?.focus(), 100);
-    };
-
-
-    function showAdmin() {
-
-      hideEverything();
-
-      $("admin-page").classList.remove("hidden");
-
-      showAdminSection("dashboard");
-    }
-
-
-    window.showAdminSection = function(section) {
-
-      document.querySelectorAll(".admin-section")
-        .forEach(el => el.classList.add("hidden"));
-
-      const target =
-        $("admin-" + section);
-
-      if (target) target.classList.remove("hidden");
-
-      if (section === "dashboard") {
-        renderDashboard();
-      }
-
-      if (section === "shipments") {
-        renderShipments();
-      }
-
-      if (section === "audit") {
-        loadAudit();
-      }
-    };
-
-
-    /* =========================================================
-       AUTHENTICATION
-    ========================================================== */
-
-    async function checkSession() {
-
-      try {
-
-        const {
-          data,
-          error
-        } = await supabase.auth.getSession();
-
-        if (error) throw error;
-
-        if (data.session) {
-
-          currentUser =
-            data.session.user;
-
-          showAdmin();
-
-          await loadAllShipments();
-
-        } else {
-
-          showPublic();
-
-        }
-
-      } catch (error) {
-
-        console.error(error);
-
-        showPublic();
-
-      } finally {
-
-        $("global-loading")
-          .classList.add("hidden");
-
-      }
-    }
-
-
-    window.login = async function(event) {
-
-      event.preventDefault();
-
-      const email =
-        $("login-email").value.trim();
-
-      const password =
-        $("login-password").value;
-
-      const button =
-        $("login-btn");
-
-      button.disabled = true;
-
-      button.innerHTML =
-        '<span class="inline-flex items-center gap-2"><span class="loader"></span> Signing in...</span>';
-
-      try {
-
-        const {
-          data,
-          error
-        } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-
-        if (error) throw error;
-
-        currentUser =
-          data.user;
-
-        /*
-         * The existing RLS setup uses public.is_admin()
-         * for administrative access.
-         *
-         * A database-level RLS denial therefore remains
-         * the final authorization layer.
-         */
-
-        await loadAllShipments();
-
-        await logActivity(
-          "Staff signed in"
-        );
-
-        showAdmin();
-
-        showToast(
-          "Welcome back.",
-          "success"
-        );
-
-      } catch (error) {
-
-        console.error(error);
-
-        showToast(
-          error.message || "Unable to sign in.",
-          "error"
-        );
-
-      } finally {
-
-        button.disabled = false;
-
-        button.textContent =
-          "Sign In";
-
-      }
-    };
-
-
-    window.logout = async function() {
-
-      try {
-
-        await logActivity(
-          "Staff signed out"
-        );
-
-        await supabase.auth.signOut();
-
-      } catch (error) {
-
-        console.error(error);
-
-      }
-
-      currentUser = null;
-
-      showPublic();
-
-      showToast(
-        "Signed out."
-      );
-    };
-
-
-    supabase.auth.onAuthStateChange(
-      async (event, session) => {
-
-        if (event === "SIGNED_IN" && session) {
-
-          currentUser =
-            session.user;
-
-        }
-
-        if (event === "SIGNED_OUT") {
-
-          currentUser = null;
-
-          showPublic();
-
-        }
-
+    const { data, error } = await nkdonSupabase.rpc(
+      "track_shipment",
+      {
+        p_tracking_number: trackingNumber
       }
     );
 
-
-    /* =========================================================
-       LOAD SHIPMENTS
-    ========================================================== */
-
-    async function loadAllShipments() {
-
-      const {
-        data,
-        error
-      } = await supabase
-        .from("shipments")
-        .select("*")
-        .order("created_at", {
-          ascending:false
-        });
-
-      if (error) {
-
-        console.error(error);
-
-        showToast(
-          "Unable to load shipments. Check your Supabase RLS policies.",
-          "error"
-        );
-
-        shipments = [];
-
-        return;
-
-      }
-
-      shipments =
-        Array.isArray(data)
-          ? data
-          : [];
-
-      await loadEvents();
-
-      renderDashboard();
-      renderShipments();
+    if (error) {
+      console.error("NKDON Supabase tracking error:", error);
+      throw error;
     }
 
+    console.log("NKDON tracking response:", data);
 
-    async function loadEvents() {
+    /*
+      IMPORTANT:
 
-      eventsCache = {};
+      Supabase returns the result of the RPC as an array
+      containing one row.
 
-      if (!shipments.length) return;
+      The row contains a column named "track_shipment".
 
-      const ids =
-        shipments
-          .map(s => s.id)
-          .filter(Boolean);
+      Therefore we extract:
 
-      const {
-        data,
-        error
-      } = await supabase
-        .from("shipment_events")
-        .select("*")
-        .in("shipment_id", ids)
-        .order("event_time", {
-          ascending:true
-        });
+      data[0].track_shipment
+    */
 
-      if (error) {
+    let payload = null;
 
-        console.warn(
-          "Could not load shipment events:",
-          error
-        );
+    if (Array.isArray(data)) {
+      if (data.length > 0) {
+        const firstRow = data[0];
 
-        return;
-      }
-
-      (data || []).forEach(event => {
-
-        if (!eventsCache[event.shipment_id]) {
-          eventsCache[event.shipment_id] = [];
+        if (firstRow && firstRow.track_shipment) {
+          payload = firstRow.track_shipment;
+        } else {
+          payload = firstRow;
         }
-
-        eventsCache[event.shipment_id]
-          .push(event);
-
-      });
+      }
+    } else if (data && data.track_shipment) {
+      payload = data.track_shipment;
+    } else {
+      payload = data;
     }
 
+    console.log("NKDON tracking payload:", payload);
 
-    /* =========================================================
-       DASHBOARD
-    ========================================================== */
-
-    function renderDashboard() {
-
-      const total =
-        shipments.length;
-
-      const delivered =
-        shipments.filter(
-          s => normalizeStatus(s.status) === "delivered"
-        ).length;
-
-      const delayed =
-        shipments.filter(
-          s => normalizeStatus(s.status) === "delayed"
-        ).length;
-
-      const active =
-        total - delivered;
-
-      $("kpi-total").textContent =
-        total;
-
-      $("kpi-active").textContent =
-        active;
-
-      $("kpi-delivered").textContent =
-        delivered;
-
-      $("kpi-delayed").textContent =
-        delayed;
-
-
-      const statuses = [
-        "pickup",
-        "processing",
-        "transit",
-        "destination",
-        "delivered",
-        "delayed"
-      ];
-
-      const counts =
-        statuses.map(status =>
-          shipments.filter(
-            s => normalizeStatus(s.status) === status
-          ).length
-        );
-
-
-      const ctx =
-        $("status-chart").getContext("2d");
-
-      if (chart) chart.destroy();
-
-      chart =
-        new Chart(ctx, {
-          type:"doughnut",
-
-          data:{
-            labels:
-              statuses.map(
-                s => STATUS_LABELS[s]
-              ),
-
-            datasets:[{
-              data:counts,
-              backgroundColor:[
-                "#3b82f6",
-                "#6366f1",
-                "#0ea5e9",
-                "#8b5cf6",
-                "#10b981",
-                "#f59e0b"
-              ],
-              borderWidth:0
-            }]
-          },
-
-          options:{
-            responsive:true,
-            maintainAspectRatio:false,
-
-            plugins:{
-              legend:{
-                position:"right",
-
-                labels:{
-                  color:"#94a3b8",
-                  boxWidth:12,
-                  font:{
-                    size:10
-                  }
-                }
-              }
-            }
-          }
-        });
-
-
-      const recent =
-        [...shipments]
-          .sort(
-            (a,b) =>
-              new Date(b.created_at || 0) -
-              new Date(a.created_at || 0)
-          )
-          .slice(0,5);
-
-
-      $("recent-shipments").innerHTML =
-        recent.length
-          ? recent.map(shipmentCardHTML).join("")
-          : `
-            <div class="text-sm text-slate-500 py-8 text-center">
-              No shipments in the database.
-            </div>
-          `;
+    if (
+      !payload ||
+      !payload.shipment
+    ) {
+      showTrackingUnavailable(result, trackingNumber);
+      return;
     }
 
+    const shipment = payload.shipment;
+    const events = Array.isArray(payload.events)
+      ? payload.events
+      : [];
 
-    function shipmentCardHTML(c) {
+    renderShipment(result, shipment, events);
 
-      const status =
-        normalizeStatus(c.status);
+  } catch (error) {
+    console.error("NKDON public tracking failed:", error);
 
-      const tracking =
-        c.tracking_number ||
-        c.tracking ||
-        "No tracking number";
+    result.innerHTML = `
+      <div class="rounded-2xl border border-red-500/30 bg-red-500/10 p-6">
+        <div class="flex items-start gap-4">
+          <div class="text-3xl">⚠️</div>
+          <div>
+            <h3 class="text-white font-bold text-lg">
+              Tracking Temporarily Unavailable
+            </h3>
+            <p class="text-slate-400 mt-1">
+              We could not retrieve this shipment at the moment.
+              Please check the tracking number and try again.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.innerHTML = "Track Shipment";
+    }
+  }
+}
 
-      const recipient =
-        c.recipient_name ||
-        c.consignee ||
-        "—";
 
-      const origin =
-        c.origin ||
-        "—";
+/* =========================================================
+   RENDER SHIPMENT
+   ========================================================= */
 
-      const destination =
-        c.destination ||
-        "—";
+function renderShipment(container, shipment, events) {
 
-      return `
-        <div
-          onclick="openDetail('${escapeHTML(c.id)}')"
-          class="premium-card rounded-2xl p-4 cursor-pointer hover:border-slate-600 transition">
+  const status = normalizeStatus(
+    shipment.status || "Processing"
+  );
 
-          <div class="flex items-start justify-between gap-3">
+  const statusLabel = formatStatus(status);
 
-            <div class="min-w-0">
+  const statusClass = getStatusClass(status);
 
-              <div class="font-bold text-sm truncate">
-                ${escapeHTML(tracking)}
-              </div>
+  const trackingNumber =
+    shipment.tracking_number ||
+    "N/A";
 
-              <div class="text-xs text-slate-500 mt-1">
-                ${escapeHTML(origin)}
-                →
-                ${escapeHTML(destination)}
-              </div>
+  const origin =
+    shipment.origin ||
+    "Not available";
 
-              <div class="text-xs text-slate-600 mt-1 truncate">
-                ${escapeHTML(recipient)}
-              </div>
+  const destination =
+    shipment.destination ||
+    "Not available";
 
+  const currentLocation =
+    shipment.current_location ||
+    events[0]?.location ||
+    destination ||
+    "In transit";
+
+  const estimatedDelivery =
+    formatDate(
+      shipment.estimated_delivery
+    );
+
+  const createdDate =
+    formatDate(
+      shipment.created_at
+    );
+
+  const pickupDate =
+    formatDate(
+      shipment.pickup_date
+    );
+
+  const actualDeliveryDate =
+    formatDate(
+      shipment.actual_delivery_date
+    );
+
+  const shippingMethod =
+    shipment.shipping_method ||
+    "Standard Delivery";
+
+  const packageDescription =
+    shipment.package_description ||
+    "Shipment";
+
+  const weight =
+    shipment.package_weight ||
+    "Not specified";
+
+  const referenceNumber =
+    shipment.reference_number ||
+    "Not available";
+
+  const quantity =
+    shipment.quantity ||
+    "1";
+
+  const shipmentType =
+    shipment.shipment_type ||
+    "Parcel";
+
+
+  container.innerHTML = `
+    <div class="space-y-6">
+
+      <!-- STATUS HEADER -->
+      <div class="rounded-3xl border border-slate-700
+                  bg-slate-900/80 overflow-hidden shadow-2xl">
+
+        <div class="p-6 md:p-8">
+
+          <div class="flex flex-col md:flex-row
+                      md:items-center md:justify-between gap-5">
+
+            <div>
+              <p class="text-xs uppercase tracking-[0.25em]
+                        text-slate-500 mb-2">
+                NKDON SHIPMENT
+              </p>
+
+              <h2 class="text-2xl md:text-3xl
+                         font-bold text-white break-all">
+                ${escapeHtml(trackingNumber)}
+              </h2>
+
+              <p class="text-slate-400 mt-2">
+                Reference:
+                <span class="text-slate-300">
+                  ${escapeHtml(referenceNumber)}
+                </span>
+              </p>
             </div>
 
-            <span class="shrink-0 text-[10px] px-2.5 py-1 rounded-full border font-semibold ${STATUS_BADGES[status]}">
-              ${STATUS_LABELS[status]}
-            </span>
+            <div class="${statusClass}
+                        px-5 py-3 rounded-2xl
+                        font-bold text-center">
+              ${escapeHtml(statusLabel)}
+            </div>
 
           </div>
 
         </div>
-      `;
-    }
 
+        <!-- ROUTE -->
+        <div class="border-t border-slate-800
+                    p-6 md:p-8">
 
-    /* =========================================================
-       SHIPMENT LIST
-    ========================================================== */
+          <div class="grid md:grid-cols-3
+                      gap-6 items-center">
 
-    window.setFilter = function(filter) {
+            <div>
+              <p class="text-xs uppercase
+                        tracking-wider text-slate-500">
+                Origin
+              </p>
 
-      currentFilter = filter;
+              <p class="text-white font-semibold mt-1">
+                ${escapeHtml(origin)}
+              </p>
+            </div>
 
-      document.querySelectorAll(".filter-btn")
-        .forEach(btn => {
+            <div class="hidden md:flex
+                        items-center justify-center">
 
-          btn.classList.toggle(
-            "active-filter",
-            btn.dataset.filter === filter
-          );
+              <div class="w-full flex items-center">
 
-        });
+                <div class="h-px bg-slate-700 flex-1"></div>
 
-      renderShipments();
-    };
-
-
-    window.renderShipments = function() {
-
-      const container =
-        $("shipments-list");
-
-      if (!container) return;
-
-      const query =
-        ($("shipment-search")?.value || "")
-          .trim()
-          .toLowerCase();
-
-
-      let list =
-        [...shipments];
-
-
-      if (currentFilter !== "all") {
-
-        list =
-          list.filter(
-            s =>
-              normalizeStatus(s.status) === currentFilter
-          );
-
-      }
-
-
-      if (query) {
-
-        list =
-          list.filter(s => {
-
-            const text = [
-              s.tracking_number,
-              s.reference_number,
-              s.recipient_name,
-              s.sender_name,
-              s.origin,
-              s.destination,
-              s.current_location
-            ]
-              .filter(Boolean)
-              .join(" ")
-              .toLowerCase();
-
-            return text.includes(query);
-
-          });
-
-      }
-
-
-      list.sort(
-        (a,b) =>
-          new Date(b.created_at || 0) -
-          new Date(a.created_at || 0)
-      );
-
-
-      if (!list.length) {
-
-        container.innerHTML = `
-          <div class="premium-card rounded-2xl p-10 text-center">
-            <div class="text-3xl">📦</div>
-            <p class="text-sm text-slate-500 mt-3">
-              No shipments match your search.
-            </p>
-          </div>
-        `;
-
-        return;
-      }
-
-
-      container.innerHTML =
-        list.map(c => {
-
-          const status =
-            normalizeStatus(c.status);
-
-          const tracking =
-            c.tracking_number ||
-            "No tracking";
-
-          return `
-            <div class="premium-card rounded-2xl p-4">
-
-              <div class="flex items-start justify-between gap-3">
-
-                <div
-                  onclick="openDetail('${escapeHTML(c.id)}')"
-                  class="min-w-0 flex-1 cursor-pointer">
-
-                  <div class="font-bold text-sm truncate">
-                    ${escapeHTML(tracking)}
-                  </div>
-
-                  <div class="text-xs text-slate-500 mt-1">
-                    ${escapeHTML(c.origin || "—")}
-                    →
-                    ${escapeHTML(c.destination || "—")}
-                  </div>
-
-                  <div class="text-xs text-slate-600 mt-1 truncate">
-                    ${escapeHTML(c.recipient_name || "—")}
-                  </div>
-
+                <div class="mx-3 w-10 h-10
+                            rounded-full
+                            border border-slate-600
+                            bg-slate-800
+                            flex items-center
+                            justify-center">
+                  🚚
                 </div>
 
-                <span class="shrink-0 text-[10px] px-2.5 py-1 rounded-full border font-semibold ${STATUS_BADGES[status]}">
-                  ${STATUS_LABELS[status]}
-                </span>
+                <div class="h-px bg-slate-700 flex-1"></div>
 
               </div>
 
+            </div>
 
-              <div class="grid grid-cols-3 gap-2 mt-4">
+            <div class="md:text-right">
+              <p class="text-xs uppercase
+                        tracking-wider text-slate-500">
+                Destination
+              </p>
 
-                <button
-                  onclick="openDetail('${escapeHTML(c.id)}')"
-                  class="bg-slate-800 hover:bg-slate-700 rounded-xl py-2.5 text-xs font-semibold">
-                  View
-                </button>
+              <p class="text-white font-semibold mt-1">
+                ${escapeHtml(destination)}
+              </p>
+            </div>
 
-                <button
-                  onclick="openEditModal('${escapeHTML(c.id)}')"
-                  class="bg-slate-800 hover:bg-slate-700 rounded-xl py-2.5 text-xs font-semibold">
-                  Edit
-                </button>
+          </div>
 
-                <button
-                  onclick="deleteShipment('${escapeHTML(c.id)}')"
-                  class="bg-red-950/50 hover:bg-red-950 text-red-400 rounded-xl py-2.5 text-xs font-semibold">
-                  Delete
-                </button>
+        </div>
+
+      </div>
+
+
+      <!-- SHIPMENT DETAILS -->
+      <div class="grid md:grid-cols-2 gap-5">
+
+        <div class="rounded-2xl border border-slate-700
+                    bg-slate-900/70 p-6">
+
+          <h3 class="text-white font-bold text-lg mb-5">
+            Shipment Details
+          </h3>
+
+          <div class="space-y-4">
+
+            ${detailRow(
+              "Current Location",
+              currentLocation
+            )}
+
+            ${detailRow(
+              "Shipment Type",
+              shipmentType
+            )}
+
+            ${detailRow(
+              "Package",
+              packageDescription
+            )}
+
+            ${detailRow(
+              "Quantity",
+              quantity
+            )}
+
+            ${detailRow(
+              "Weight",
+              weight
+            )}
+
+            ${detailRow(
+              "Shipping Method",
+              shippingMethod
+            )}
+
+          </div>
+
+        </div>
+
+
+        <div class="rounded-2xl border border-slate-700
+                    bg-slate-900/70 p-6">
+
+          <h3 class="text-white font-bold text-lg mb-5">
+            Delivery Information
+          </h3>
+
+          <div class="space-y-4">
+
+            ${detailRow(
+              "Estimated Delivery",
+              estimatedDelivery
+            )}
+
+            ${detailRow(
+              "Pickup Date",
+              pickupDate
+            )}
+
+            ${detailRow(
+              "Shipment Created",
+              createdDate
+            )}
+
+            ${
+              actualDeliveryDate !== "—"
+              ? detailRow(
+                  "Delivered",
+                  actualDeliveryDate
+                )
+              : ""
+            }
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- TRACKING TIMELINE -->
+      <div class="rounded-2xl border border-slate-700
+                  bg-slate-900/70 p-6 md:p-8">
+
+        <div class="flex items-center
+                    justify-between mb-7">
+
+          <div>
+            <p class="text-xs uppercase
+                      tracking-[0.2em] text-slate-500">
+              Shipment History
+            </p>
+
+            <h3 class="text-white
+                       text-xl font-bold mt-1">
+              Tracking Updates
+            </h3>
+          </div>
+
+          <div class="text-2xl">
+            📍
+          </div>
+
+        </div>
+
+        ${
+          events.length
+            ? renderTimeline(events)
+            : `
+              <div class="text-slate-500
+                          text-center py-8">
+                No tracking events available yet.
+              </div>
+            `
+        }
+
+      </div>
+
+
+      <!-- SUPPORT -->
+      <div class="rounded-2xl border border-slate-700
+                  bg-slate-900/60 p-6 text-center">
+
+        <p class="text-slate-400 text-sm">
+          Need help with this shipment?
+        </p>
+
+        <p class="text-white font-semibold mt-1">
+          Contact NKDON Logistics Support
+        </p>
+
+      </div>
+
+    </div>
+  `;
+}
+
+
+/* =========================================================
+   TIMELINE
+   ========================================================= */
+
+function renderTimeline(events) {
+
+  const sortedEvents = [...events].sort(
+    (a, b) => {
+      const dateA =
+        new Date(
+          a.event_time ||
+          a.created_at ||
+          0
+        ).getTime();
+
+      const dateB =
+        new Date(
+          b.event_time ||
+          b.created_at ||
+          0
+        ).getTime();
+
+      return dateB - dateA;
+    }
+  );
+
+  return `
+    <div class="relative">
+
+      <div class="absolute left-[15px]
+                  top-3 bottom-3
+                  w-px bg-slate-700">
+      </div>
+
+      <div class="space-y-7">
+
+        ${sortedEvents.map((event, index) => {
+
+          const eventStatus =
+            event.status ||
+            "Update";
+
+          const eventLocation =
+            event.location ||
+            event.facility ||
+            "";
+
+          const eventDescription =
+            event.description ||
+            "";
+
+          const eventCode =
+            event.event_code ||
+            "";
+
+          const eventDate =
+            formatDateTime(
+              event.event_time ||
+              event.created_at
+            );
+
+          const isLatest = index === 0;
+
+          return `
+            <div class="relative flex gap-5">
+
+              <div class="relative z-10
+                          w-8 h-8 shrink-0
+                          rounded-full
+                          ${
+                            isLatest
+                              ? "bg-amber-500 text-slate-950"
+                              : "bg-slate-800 text-slate-300"
+                          }
+                          border
+                          ${
+                            isLatest
+                              ? "border-amber-400"
+                              : "border-slate-600"
+                          }
+                          flex items-center
+                          justify-center
+                          text-sm">
+
+                ${isLatest ? "✓" : "•"}
+
+              </div>
+
+              <div class="flex-1
+                          pb-1">
+
+                <div class="flex flex-col
+                            md:flex-row
+                            md:items-center
+                            md:justify-between gap-1">
+
+                  <h4 class="font-bold
+                             ${
+                               isLatest
+                                 ? "text-white"
+                                 : "text-slate-300"
+                             }">
+
+                    ${escapeHtml(
+                      formatStatus(eventStatus)
+                    )}
+
+                  </h4>
+
+                  <span class="text-xs
+                               text-slate-500">
+
+                    ${escapeHtml(eventDate)}
+
+                  </span>
+
+                </div>
+
+                ${
+                  eventLocation
+                    ? `
+                      <p class="text-sm
+                                text-slate-400
+                                mt-1">
+
+                        📍 ${escapeHtml(
+                          eventLocation
+                        )}
+
+                      </p>
+                    `
+                    : ""
+                }
+
+                ${
+                  eventDescription
+                    ? `
+                      <p class="text-sm
+                                text-slate-400
+                                mt-2 leading-relaxed">
+
+                        ${escapeHtml(
+                          eventDescription
+                        )}
+
+                      </p>
+                    `
+                    : ""
+                }
+
+                ${
+                  eventCode
+                    ? `
+                      <p class="text-[10px]
+                                uppercase
+                                tracking-wider
+                                text-slate-600
+                                mt-2">
+
+                        ${escapeHtml(eventCode)}
+
+                      </p>
+                    `
+                    : ""
+                }
 
               </div>
 
             </div>
           `;
+        }).join("")}
 
-        }).join("");
-    };
+      </div>
 
+    </div>
+  `;
+}
 
-    /* =========================================================
-       CREATE / EDIT MODAL
-    ========================================================== */
 
-    window.openCreateModal = function() {
+/* =========================================================
+   DETAIL ROW
+   ========================================================= */
 
-      $("shipment-form").reset();
+function detailRow(label, value) {
 
-      $("edit-shipment-id").value = "";
+  return `
+    <div class="flex items-start
+                justify-between gap-4
+                border-b border-slate-800
+                pb-3 last:border-0 last:pb-0">
 
-      $("modal-title").textContent =
-        "New Shipment";
+      <span class="text-sm text-slate-500">
+        ${escapeHtml(label)}
+      </span>
 
-      $("f-tracking").value =
-        generateTrackingNumber();
+      <span class="text-sm text-slate-200
+                   font-medium text-right">
+        ${escapeHtml(value || "—")}
+      </span>
 
-      $("f-quantity").value =
-        "1";
+    </div>
+  `;
+}
 
-      $("f-currency").value =
-        "NGN";
 
-      $("f-status").value =
-        "pickup";
+/* =========================================================
+   UNAVAILABLE
+   ========================================================= */
 
-      $("shipment-modal")
-        .classList.remove("hidden");
-    };
+function showTrackingUnavailable(
+  container,
+  trackingNumber
+) {
 
+  container.innerHTML = `
+    <div class="rounded-3xl
+                border border-slate-700
+                bg-slate-900/80
+                p-8 md:p-10 text-center">
 
-    window.openEditModal = function(id) {
+      <div class="text-5xl mb-4">
+        📦
+      </div>
 
-      const c =
-        shipments.find(
-          s => String(s.id) === String(id)
-        );
+      <h3 class="text-white
+                 text-xl md:text-2xl
+                 font-bold">
 
-      if (!c) return;
+        Shipment Not Found
 
-      $("modal-title").textContent =
-        "Edit Shipment";
+      </h3>
 
-      $("edit-shipment-id").value =
-        c.id;
+      <p class="text-slate-400
+                mt-2 max-w-md mx-auto">
 
-      $("f-tracking").value =
-        c.tracking_number || "";
+        We could not find a shipment associated
+        with tracking number
 
-      $("f-reference").value =
-        c.reference_number || "";
+        <span class="text-white font-semibold">
+          ${escapeHtml(trackingNumber)}
+        </span>.
 
-      $("f-sender").value =
-        c.sender_name || "";
+      </p>
 
-      $("f-recipient").value =
-        c.recipient_name || "";
+      <p class="text-slate-500 text-sm mt-4">
+        Please check the tracking number and try again.
+      </p>
 
-      $("f-sender-phone").value =
-        c.sender_phone || "";
+    </div>
+  `;
+}
 
-      $("f-recipient-phone").value =
-        c.recipient_phone || "";
 
-      $("f-origin").value =
-        c.origin || "";
+/* =========================================================
+   STATUS HELPERS
+   ========================================================= */
 
-      $("f-destination").value =
-        c.destination || "";
+function normalizeStatus(status) {
 
-      $("f-location").value =
-        c.current_location || "";
+  return String(status || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
+}
 
-      $("f-method").value =
-        c.shipping_method || "Standard";
 
-      $("f-weight").value =
-        c.package_weight || "";
+function formatStatus(status) {
 
-      $("f-quantity").value =
-        c.quantity || 1;
+  const value =
+    normalizeStatus(status);
 
-      $("f-type").value =
-        c.shipment_type || "";
+  const names = {
+    pickup_scheduled: "Pickup Scheduled",
+    picked_up: "Picked Up",
+    processing: "Processing",
+    in_transit: "In Transit",
+    arrived: "Arrived at Facility",
+    arrived_at_facility: "Arrived at Facility",
+    out_for_delivery: "Out for Delivery",
+    delivered: "Delivered",
+    cancelled: "Cancelled",
+    delayed: "Delayed"
+  };
 
-      $("f-description").value =
-        c.package_description || "";
+  if (names[value]) {
+    return names[value];
+  }
+
+  return String(status || "Processing")
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, char =>
+      char.toUpperCase()
+    );
+}
 
-      $("f-status").value =
-        normalizeStatus(c.status);
+
+function getStatusClass(status) {
 
-      $("f-eta").value =
-        c.estimated_delivery || "";
+  const value =
+    normalizeStatus(status);
 
-      $("f-pickup-date").value =
-        c.pickup_date || "";
+  if (value === "delivered") {
+    return "bg-green-500/15 text-green-400 border border-green-500/30";
+  }
 
-      $("f-delivery-date").value =
-        c.actual_delivery_date || "";
-
-      $("f-instructions").value =
-        c.delivery_instructions || "";
-
-      $("f-notes").value =
-        c.internal_notes || "";
-
-      $("f-value").value =
-        c.declared_value || "";
-
-      $("f-currency").value =
-        c.currency || "NGN";
-
-
-      $("shipment-modal")
-        .classList.remove("hidden");
-    };
-
-
-    window.closeModal = function() {
-
-      $("shipment-modal")
-        .classList.add("hidden");
-    };
-
-
-    /* =========================================================
-       SHIPMENT DATA BUILDER
-    ========================================================== */
-
-    function buildShipmentPayload() {
-
-      const tracking =
-        $("f-tracking").value.trim() ||
-        generateTrackingNumber();
-
-
-      /*
-       * This object contains both the original columns and
-       * the expanded fields from the NKDON Supabase setup.
-       */
-
-      return {
-
-        tracking_number: tracking,
-
-        reference_number:
-          $("f-reference").value.trim() || null,
-
-        sender_name:
-          $("f-sender").value.trim() || null,
-
-        recipient_name:
-          $("f-recipient").value.trim(),
-
-        sender_phone:
-          $("f-sender-phone").value.trim() || null,
-
-        recipient_phone:
-          $("f-recipient-phone").value.trim() || null,
-
-        origin:
-          $("f-origin").value.trim(),
-
-        destination:
-          $("f-destination").value.trim(),
-
-        current_location:
-          $("f-location").value.trim() || null,
-
-        package_description:
-          $("f-description").value.trim() || null,
-
-        package_weight:
-          $("f-weight").value.trim() || null,
-
-        quantity:
-          Number($("f-quantity").value) || 1,
-
-        shipment_type:
-          $("f-type").value.trim() || null,
-
-        shipping_method:
-          $("f-method").value || "Standard",
-
-        status:
-          $("f-status").value,
-
-        estimated_delivery:
-          $("f-eta").value || null,
-
-        pickup_date:
-          $("f-pickup-date").value || null,
-
-        actual_delivery_date:
-          $("f-delivery-date").value || null,
-
-        delivery_instructions:
-          $("f-instructions").value.trim() || null,
-
-        internal_notes:
-          $("f-notes").value.trim() || null,
-
-        declared_value:
-          $("f-value").value
-            ? Number($("f-value").value)
-            : null,
-
-        currency:
-          $("f-currency").value.trim() || "NGN",
-
-        updated_at:
-          new Date().toISOString()
-
-      };
-
+  if (value === "out_for_delivery") {
+    return "bg-blue-500/15 text-blue-400 border border-blue-500/30";
+  }
+
+  if (value === "in_transit") {
+    return "bg-amber-500/15 text-amber-400 border border-amber-500/30";
+  }
+
+  if (value === "delayed") {
+    return "bg-red-500/15 text-red-400 border border-red-500/30";
+  }
+
+  if (value === "cancelled") {
+    return "bg-red-500/15 text-red-400 border border-red-500/30";
+  }
+
+  return "bg-slate-700/60 text-slate-200 border border-slate-600";
+}
+
+
+/* =========================================================
+   DATE HELPERS
+   ========================================================= */
+
+function formatDate(value) {
+
+  if (!value) {
+    return "—";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return date.toLocaleDateString(
+    "en-NG",
+    {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
+    }
+  );
+}
+
+
+function formatDateTime(value) {
+
+  if (!value) {
+    return "—";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return date.toLocaleString(
+    "en-NG",
+    {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    }
+  );
+}
+
+
+/* =========================================================
+   SECURITY / HTML ESCAPING
+   ========================================================= */
+
+function escapeHtml(value) {
+
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+/* =========================================================
+   AUTO-TRACK FROM URL
+   Example:
+
+   https://nkdon2231.github.io/nk-don-tracking/
+   ?tracking=NKD-20260924-4034
+   ========================================================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    const input =
+      document.getElementById(
+        "public-tracking-input"
+      );
+
+    if (!input) {
+      return;
     }
 
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
 
-    /*
-     * If the project is still on the original schema and one
-     * of the newer optional columns does not exist, retry with
-     * the original compatible fields.
-     */
+    const tracking =
+      params.get("tracking") ||
+      params.get("track") ||
+      params.get("tracking_number");
 
-    function originalSchemaPayload(payload) {
+    if (tracking) {
 
-      return {
+      input.value =
+        tracking.toUpperCase();
 
-        tracking_number:
-          payload.tracking_number,
-
-        sender_name:
-          payload.sender_name,
-
-        recipient_name:
-          payload.recipient_name,
-
-        sender_phone:
-          payload.sender_phone,
-
-        recipient_phone:
-          payload.recipient_phone,
-
-        origin:
-          payload.origin,
-
-        destination:
-          payload.destination,
-
-        package_description:
-          payload.package_description,
-
-        package_weight:
-          payload.package_weight,
-
-        shipping_method:
-          payload.shipping_method,
-
-        status:
-          payload.status,
-
-        estimated_delivery:
-          payload.estimated_delivery,
-
-        updated_at:
-          payload.updated_at
-
-      };
-
+      setTimeout(
+        () => publicTrack(),
+        300
+      );
     }
 
+  }
+);
 
-    /* =========================================================
-       SAVE SHIPMENT
-    ========================================================== */
 
-    window.saveShipment = async function(event) {
+/* =========================================================
+   ENTER KEY SUPPORT
+   ========================================================= */
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Enter" &&
+      document.activeElement?.id ===
+        "public-tracking-input"
+    ) {
 
       event.preventDefault();
 
-      const button =
-        $("save-shipment-btn");
-
-      button.disabled = true;
-
-      button.innerHTML =
-        '<span class="inline-flex items-center gap-2"><span class="loader"></span> Saving...</span>';
-
-
-      const id =
-        $("edit-shipment-id").value;
-
-      const payload =
-        buildShipmentPayload();
-
-
-      try {
-
-        let result;
-
-
-        if (id) {
-
-          result =
-            await supabase
-              .from("shipments")
-              .update(payload)
-              .eq("id", id)
-              .select()
-              .single();
-
-
-          /*
-           * Compatibility retry for original schema.
-           */
-          if (
-            result.error &&
-            /column|schema|does not exist/i.test(
-              result.error.message || ""
-            )
-          ) {
-
-            result =
-              await supabase
-                .from("shipments")
-                .update(
-                  originalSchemaPayload(payload)
-                )
-                .eq("id", id)
-                .select()
-                .single();
-
-          }
-
-        } else {
-
-          result =
-            await supabase
-              .from("shipments")
-              .insert(payload)
-              .select()
-              .single();
-
-
-          if (
-            result.error &&
-            /column|schema|does not exist/i.test(
-              result.error.message || ""
-            )
-          ) {
-
-            result =
-              await supabase
-                .from("shipments")
-                .insert(
-                  originalSchemaPayload(payload)
-                )
-                .select()
-                .single();
-
-          }
-
-        }
-
-
-        if (result.error)
-          throw result.error;
-
-
-        const saved =
-          result.data;
-
-
-        if (!id && saved?.id) {
-
-          await createInitialEvent(
-            saved.id,
-            payload.status,
-            payload.current_location ||
-              payload.origin,
-            "Shipment created"
-          );
-
-        }
-
-
-        await logActivity(
-          id
-            ? `Updated shipment ${payload.tracking_number}`
-            : `Created shipment ${payload.tracking_number}`
-        );
-
-
-        closeModal();
-
-        await loadAllShipments();
-
-        showToast(
-          id
-            ? "Shipment updated."
-            : `Shipment created: ${payload.tracking_number}`,
-          "success"
-        );
-
-
-      } catch (error) {
-
-        console.error(error);
-
-        showToast(
-          error.message ||
-          "Could not save shipment.",
-          "error"
-        );
-
-      } finally {
-
-        button.disabled = false;
-
-        button.textContent =
-          "Save Shipment";
-
-      }
-
-    };
-
-
-    /* =========================================================
-       INITIAL EVENT
-    ========================================================== */
-
-    async function createInitialEvent(
-      shipmentId,
-      status,
-      location,
-      description
-    ) {
-
-      const payload = {
-
-        shipment_id:
-          shipmentId,
-
-        status:
-          status,
-
-        location:
-          location || null,
-
-        description:
-          description,
-
-        event_time:
-          new Date().toISOString(),
-
-        facility:
-          location || null,
-
-        event_code:
-          "CRT",
-
-        created_by:
-          currentUser?.id || null
-
-      };
-
-
-      let result =
-        await supabase
-          .from("shipment_events")
-          .insert(payload);
-
-
-      if (
-        result.error &&
-        /column|schema|does not exist/i.test(
-          result.error.message || ""
-        )
-      ) {
-
-        result =
-          await supabase
-            .from("shipment_events")
-            .insert({
-              shipment_id:shipmentId,
-              status:status,
-              location:location || null,
-              description:description,
-              event_time:new Date().toISOString()
-            });
-
-      }
-
-
-      if (result.error) {
-
-        console.warn(
-          "Event creation failed:",
-          result.error
-        );
-
-      }
-
+      publicTrack();
     }
 
+  }
+);
 
-    /* =========================================================
-       DELETE SHIPMENT
-    ========================================================== */
-
-    window.deleteShipment = async function(id) {
-
-      const c =
-        shipments.find(
-          s => String(s.id) === String(id)
-        );
-
-      if (!c) return;
-
-
-      const tracking =
-        c.tracking_number || id;
-
-
-      if (
-        !confirm(
-          `Delete shipment ${tracking} permanently?`
-        )
-      ) return;
-
-
-      try {
-
-        /*
-         * Delete events first in case the database does not
-         * have ON DELETE CASCADE configured.
-         */
-
-        await supabase
-          .from("shipment_events")
-          .delete()
-          .eq("shipment_id", id);
-
-
-        const {
-          error
-        } =
-          await supabase
-            .from("shipments")
-            .delete()
-            .eq("id", id);
-
-
-        if (error)
-          throw error;
-
-
-        await logActivity(
-          `Deleted shipment ${tracking}`
-        );
-
-
-        await loadAllShipments();
-
-        showToast(
-          "Shipment deleted.",
-          "success"
-        );
-
-
-      } catch (error) {
-
-        console.error(error);
-
-        showToast(
-          error.message ||
-          "Unable to delete shipment.",
-          "error"
-        );
-
-      }
-
-    };
-
-
-    /* =========================================================
-       DETAIL
-    ========================================================== */
-
-    window.openDetail = async function(id) {
-
-      const c =
-        shipments.find(
-          s => String(s.id) === String(id)
-        );
-
-      if (!c) return;
-
-      currentShipment = c;
-
-      showAdminSection("detail");
-
-      const events =
-        await getShipmentEvents(id);
-
-
-      const status =
-        normalizeStatus(c.status);
-
-
-      const tracking =
-        c.tracking_number ||
-        "—";
-
-
-      const recipient =
-        c.recipient_name ||
-        "—";
-
-
-      $("detail-container").innerHTML = `
-
-        <div class="space-y-5 fade-in">
-
-
-          <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-
-            <div>
-
-              <div class="text-[10px] uppercase tracking-[.2em] text-gold-400 font-bold">
-                Shipment Record
-              </div>
-
-              <h1 class="text-2xl sm:text-3xl font-black mt-2">
-                ${escapeHTML(tracking)}
-              </h1>
-
-              <div class="text-sm text-slate-500 mt-1">
-                ${escapeHTML(c.origin || "—")}
-                →
-                ${escapeHTML(c.destination || "—")}
-              </div>
-
-            </div>
-
-            <span class="self-start text-xs px-3 py-1.5 rounded-full border font-bold ${STATUS_BADGES[status]}">
-              ${STATUS_LABELS[status]}
-            </span>
-
-          </div>
-
-
-          <!-- ACTIONS -->
-
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-
-            <button
-              onclick="openEditModal('${escapeHTML(c.id)}')"
-              class="bg-slate-800 hover:bg-slate-700 py-3 rounded-xl text-xs font-bold">
-              Edit
-            </button>
-
-            <button
-              onclick="addEvent('${escapeHTML(c.id)}')"
-              class="bg-slate-800 hover:bg-slate-700 py-3 rounded-xl text-xs font-bold">
-              + Event
-            </button>
-
-            <button
-              onclick="printNote('${escapeHTML(c.id)}')"
-              class="bg-slate-800 hover:bg-slate-700 py-3 rounded-xl text-xs font-bold">
-              PDF Note
-            </button>
-
-            <button
-              onclick="printHistory('${escapeHTML(c.id)}')"
-              class="gold text-navy-950 py-3 rounded-xl text-xs font-bold">
-              PDF History
-            </button>
-
-          </div>
-
-
-          <!-- SUMMARY -->
-
-          <div class="grid sm:grid-cols-3 gap-3">
-
-            <div class="premium-card rounded-2xl p-5">
-              <div class="text-[10px] uppercase tracking-wider text-slate-500">
-                Origin
-              </div>
-              <div class="font-bold mt-2">
-                ${escapeHTML(c.origin || "—")}
-              </div>
-            </div>
-
-            <div class="premium-card rounded-2xl p-5">
-              <div class="text-[10px] uppercase tracking-wider text-slate-500">
-                Destination
-              </div>
-              <div class="font-bold mt-2">
-                ${escapeHTML(c.destination || "—")}
-              </div>
-            </div>
-
-            <div class="premium-card rounded-2xl p-5">
-              <div class="text-[10px] uppercase tracking-wider text-slate-500">
-                Current Location
-              </div>
-              <div class="font-bold mt-2">
-                ${escapeHTML(c.current_location || "—")}
-              </div>
-            </div>
-
-          </div>
-
-
-          <!-- CUSTOMER -->
-
-          <div class="premium-card rounded-2xl p-5">
-
-            <h2 class="font-bold mb-5">
-              Shipment Information
-            </h2>
-
-            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 text-sm">
-
-              <div>
-                <div class="text-xs text-slate-600">
-                  Recipient
-                </div>
-                <div class="font-semibold mt-1">
-                  ${escapeHTML(recipient)}
-                </div>
-              </div>
-
-              <div>
-                <div class="text-xs text-slate-600">
-                  Recipient Phone
-                </div>
-                <div class="font-semibold mt-1">
-                  ${escapeHTML(c.recipient_phone || "—")}
-                </div>
-              </div>
-
-              <div>
-                <div class="text-xs text-slate-600">
-                  Sender
-                </div>
-                <div class="font-semibold mt-1">
-                  ${escapeHTML(c.sender_name || "—")}
-                </div>
-              </div>
-
-              <div>
-                <div class="text-xs text-slate-600">
-                  Weight
-                </div>
-                <div class="font-semibold mt-1">
-                  ${escapeHTML(c.package_weight || "—")}
-                </div>
-              </div>
-
-              <div>
-                <div class="text-xs text-slate-600">
-                  Quantity
-                </div>
-                <div class="font-semibold mt-1">
-                  ${escapeHTML(c.quantity || "1")}
-                </div>
-              </div>
-
-              <div>
-                <div class="text-xs text-slate-600">
-                  Shipping Method
-                </div>
-                <div class="font-semibold mt-1">
-                  ${escapeHTML(c.shipping_method || "—")}
-                </div>
-              </div>
-
-              <div>
-                <div class="text-xs text-slate-600">
-                  Estimated Delivery
-                </div>
-                <div class="font-semibold mt-1">
-                  ${formatDateOnly(c.estimated_delivery)}
-                </div>
-              </div>
-
-              <div>
-                <div class="text-xs text-slate-600">
-                  Created
-                </div>
-                <div class="font-semibold mt-1">
-                  ${formatDate(c.created_at)}
-                </div>
-              </div>
-
-              <div>
-                <div class="text-xs text-slate-600">
-                  Last Updated
-                </div>
-                <div class="font-semibold mt-1">
-                  ${formatDate(c.updated_at)}
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-
-
-          <!-- DESCRIPTION -->
-
-          <div class="premium-card rounded-2xl p-5">
-
-            <h2 class="font-bold mb-3">
-              Package Description
-            </h2>
-
-            <p class="text-sm text-slate-400 leading-relaxed">
-              ${escapeHTML(c.package_description || "No description provided.")}
-            </p>
-
-          </div>
-
-
-          <!-- TIMELINE -->
-
-          <div class="premium-card rounded-2xl p-5">
-
-            <div class="flex items-center justify-between mb-6">
-
-              <h2 class="font-bold">
-                Tracking Timeline
-              </h2>
-
-              <span class="text-xs text-slate-600">
-                ${events.length} event(s)
-              </span>
-
-            </div>
-
-
-            ${
-              events.length
-              ?
-              events.slice().reverse().map((event,index,array) => `
-
-                <div class="relative pl-9 pb-7">
-
-                  ${
-                    index < array.length - 1
-                    ?
-                    `<div class="timeline-line"></div>`
-                    :
-                    ""
-                  }
-
-                  <div class="absolute left-1 top-1 w-5 h-5 rounded-full bg-gold-500 border-4 border-navy-800"></div>
-
-                  <div class="font-semibold text-sm">
-                    ${escapeHTML(event.description || event.status || "Shipment update")}
-                  </div>
-
-                  <div class="text-xs text-slate-500 mt-1">
-                    ${escapeHTML(event.location || event.facility || "—")}
-                  </div>
-
-                  <div class="text-[10px] text-slate-600 mt-1">
-                    ${formatDate(event.event_time || event.created_at)}
-                    ${event.event_code ? " · " + escapeHTML(event.event_code) : ""}
-                  </div>
-
-                </div>
-
-              `).join("")
-              :
-              `
-                <div class="text-sm text-slate-600">
-                  No tracking events recorded yet.
-                </div>
-              `
-            }
-
-          </div>
-
-
-          <!-- QR -->
-
-          <div class="premium-card rounded-2xl p-5">
-
-            <h2 class="font-bold mb-5">
-              Tracking QR Code
-            </h2>
-
-            <div class="flex justify-center">
-
-              <canvas
-                id="detail-qr"
-                class="bg-white rounded-xl p-3">
-              </canvas>
-
-            </div>
-
-            <p class="text-center text-xs text-slate-600 mt-4">
-              ${escapeHTML(tracking)}
-            </p>
-
-          </div>
-
-
-          <!-- PRIVATE NOTES -->
-
-          <div class="premium-card rounded-2xl p-5">
-
-            <h2 class="font-bold mb-4">
-              Internal Information
-            </h2>
-
-            <div class="text-sm text-slate-400 leading-relaxed">
-              ${escapeHTML(c.internal_notes || "No internal notes.")}
-            </div>
-
-          </div>
-
-
-        </div>
-      `;
-
-
-      setTimeout(() => {
-
-        const canvas =
-          $("detail-qr");
-
-        if (
-          canvas &&
-          window.QRCode
-        ) {
-
-          QRCode.toCanvas(
-            canvas,
-            tracking,
-            {
-              width:180,
-              margin:1
-            },
-            () => {}
-          );
-
-        }
-
-      },100);
-
-    };
-
-
-    async function getShipmentEvents(id) {
-
-      const {
-        data,
-        error
-      } =
-        await supabase
-          .from("shipment_events")
-          .select("*")
-          .eq("shipment_id", id)
-          .order("event_time", {
-            ascending:true
-          });
-
-
-      if (error) {
-
-        console.error(error);
-
-        return [];
-
-      }
-
-
-      return data || [];
-    }
-
-
-    /* =========================================================
-       ADD EVENT
-    ========================================================== */
-
-    window.addEvent = async function(id) {
-
-      const c =
-        shipments.find(
-          s => String(s.id) === String(id)
-        );
-
-      if (!c) return;
-
-
-      const description =
-        prompt(
-          "Event description:",
-          "Shipment update"
-        );
-
-      if (!description) return;
-
-
-      const location =
-        prompt(
-          "Current location/facility:",
-          c.current_location ||
-          c.destination ||
-          ""
-        );
-
-
-      const code =
-        prompt(
-          "Event code:",
-          "UPD"
-        ) || "UPD";
-
-
-      try {
-
-        let result =
-          await supabase
-            .from("shipment_events")
-            .insert({
-              shipment_id:id,
-              status:c.status,
-              location:location || null,
-              description,
-              event_time:new Date().toISOString(),
-              facility:location || null,
-              event_code:code,
-              created_by:currentUser?.id || null
-            });
-
-
-        if (
-          result.error &&
-          /column|schema|does not exist/i.test(
-            result.error.message || ""
-          )
-        ) {
-
-          result =
-            await supabase
-              .from("shipment_events")
-              .insert({
-                shipment_id:id,
-                status:c.status,
-                location:location || null,
-                description,
-                event_time:new Date().toISOString()
-              });
-
-        }
-
-
-        if (result.error)
-          throw result.error;
-
-
-        let newStatus = null;
-
-        if (code.toUpperCase() === "DLV")
-          newStatus = "delivered";
-
-        if (code.toUpperCase() === "DLY")
-          newStatus = "delayed";
-
-        if (code.toUpperCase() === "TRN")
-          newStatus = "transit";
-
-        if (code.toUpperCase() === "DST")
-          newStatus = "destination";
-
-
-        if (newStatus) {
-
-          const updateData = {
-            status:newStatus,
-            current_location:
-              location || c.current_location || null,
-            updated_at:
-              new Date().toISOString()
-          };
-
-
-          let update =
-            await supabase
-              .from("shipments")
-              .update(updateData)
-              .eq("id",id);
-
-
-          if (
-            update.error &&
-            /column|schema|does not exist/i.test(
-              update.error.message || ""
-            )
-          ) {
-
-            update =
-              await supabase
-                .from("shipments")
-                .update({
-                  status:newStatus,
-                  updated_at:new Date().toISOString()
-                })
-                .eq("id",id);
-
-          }
-
-
-          if (update.error)
-            throw update.error;
-
-        }
-
-
-        await logActivity(
-          `Added event to ${c.tracking_number || id}: ${description}`
-        );
-
-
-        await loadAllShipments();
-
-        await openDetail(id);
-
-        showToast(
-          "Tracking event added.",
-          "success"
-        );
-
-
-      } catch (error) {
-
-        console.error(error);
-
-        showToast(
-          error.message ||
-          "Could not add event.",
-          "error"
-        );
-
-      }
-
-    };
-
-
-    /* =========================================================
-       AUDIT
-    ========================================================== */
-
-    async function logActivity(action) {
-
-      if (!currentUser) return;
-
-
-      try {
-
-        /*
-         * The expanded setup uses admin_activity.
-         * The function first attempts common column names.
-         */
-
-        const result =
-          await supabase
-            .from("admin_activity")
-            .insert({
-              action:action,
-              user_id:currentUser.id,
-              user_email:currentUser.email,
-              created_at:new Date().toISOString()
-            });
-
-
-        if (result.error) {
-
-          console.warn(
-            "Audit insert:",
-            result.error.message
-          );
-
-        }
-
-      } catch (error) {
-
-        console.warn(
-          "Audit logging failed:",
-          error
-        );
-
-      }
-
-    }
-
-
-    async function loadAudit() {
-
-      const container =
-        $("audit-list");
-
-
-      const {
-        data,
-        error
-      } =
-        await supabase
-          .from("admin_activity")
-          .select("*")
-          .order("created_at", {
-            ascending:false
-          })
-          .limit(100);
-
-
-      if (error) {
-
-        container.innerHTML = `
-          <div class="premium-card rounded-2xl p-6 text-sm text-slate-500">
-            Audit records could not be loaded.
-          </div>
-        `;
-
-        return;
-      }
-
-
-      auditEntries =
-        data || [];
-
-
-      if (!auditEntries.length) {
-
-        container.innerHTML = `
-          <div class="premium-card rounded-2xl p-8 text-center text-sm text-slate-600">
-            No activity recorded.
-          </div>
-        `;
-
-        return;
-      }
-
-
-      container.innerHTML =
-        auditEntries.map(entry => {
-
-          const action =
-            entry.action ||
-            entry.activity ||
-            entry.description ||
-            "Administrative action";
-
-
-          const timestamp =
-            entry.created_at ||
-            entry.timestamp ||
-            entry.ts;
-
-
-          const user =
-            entry.user_email ||
-            entry.email ||
-            entry.user_id ||
-            "staff";
-
-
-          return `
-            <div class="premium-card rounded-xl p-4">
-
-              <div class="text-sm font-semibold">
-                ${escapeHTML(action)}
-              </div>
-
-              <div class="text-[10px] text-slate-600 mt-1">
-                ${escapeHTML(user)}
-                ·
-                ${formatDate(timestamp)}
-              </div>
-
-            </div>
-          `;
-
-        }).join("");
-
-    }
-
-
-    /* =========================================================
-       PUBLIC TRACKING
-    ========================================================== */
-
-    window.publicTrack = async function() {
-
-      const input =
-        $("public-tracking-input");
-
-      const button =
-        $("public-track-btn");
-
-      const result =
-        $("public-result");
-
-
-      const tracking =
-        input.value
-          .trim()
-          .toUpperCase();
-
-
-      if (!tracking) {
-
-        showToast(
-          "Enter a tracking number.",
-          "error"
-        );
-
-        return;
-      }
-
-
-      button.disabled = true;
-
-      button.innerHTML =
-        '<span class="inline-flex items-center gap-2"><span class="loader"></span> Searching...</span>';
-
-
-      result.innerHTML = "";
-
-
-      try {
-
-        /*
-         * Public tracking deliberately uses the
-         * security-definer RPC created for NKDON.
-         *
-         * This prevents the public portal from directly
-         * querying private shipment/customer columns.
-         */
-
-        const {
-          data,
-          error
-        } =
-          await supabase.rpc(
-            "track_shipment",
-            {
-              tracking_input:tracking
-            }
-          );
-
-
-        if (error)
-          throw error;
-
-
-        let record = null;
-
-
-        if (Array.isArray(data)) {
-
-          record =
-            data.length
-              ? data[0]
-              : null;
-
-        } else if (data) {
-
-          record = data;
-
-        }
-
-
-        if (!record) {
-
-          result.innerHTML = `
-            <div class="premium-card rounded-2xl p-7 text-center">
-
-              <div class="text-3xl">
-                🔎
-              </div>
-
-              <h3 class="font-bold mt-3">
-                Shipment not found
-              </h3>
-
-              <p class="text-sm text-slate-500 mt-2">
-                We could not find a public tracking record for
-                <strong class="text-white">
-                  ${escapeHTML(tracking)}
-                </strong>.
-              </p>
-
-            </div>
-          `;
-
-          return;
-        }
-
-
-        renderPublicResult(
-          record,
-          tracking
-        );
-
-
-      } catch (error) {
-
-        console.error(error);
-
-        /*
-         * Do not silently expose the shipments table publicly.
-         * If the RPC is unavailable, tell the administrator to
-         * repair the RPC rather than bypassing the security model.
-         */
-
-        result.innerHTML = `
-          <div class="premium-card rounded-2xl p-7 text-center border-red-900/50">
-
-            <div class="text-red-400 text-2xl">
-              ⚠
-            </div>
-
-            <h3 class="font-bold mt-3">
-              Tracking temporarily unavailable
-            </h3>
-
-            <p class="text-sm text-slate-500 mt-2">
-              Please try again shortly.
-            </p>
-
-          </div>
-        `;
-
-      } finally {
-
-        button.disabled = false;
-
-        button.textContent =
-          "Track Shipment";
-
-      }
-
-    };
-
-
-    function renderPublicResult(
-      record,
-      tracking
-    ) {
-
-      /*
-       * The RPC may return shipment fields with different
-       * aliases depending on the final SQL function.
-       */
-
-      const status =
-        normalizeStatus(
-          record.status
-        );
-
-
-      const origin =
-        record.origin ||
-        "—";
-
-      const destination =
-        record.destination ||
-        "—";
-
-      const currentLocation =
-        record.current_location ||
-        record.location ||
-        origin;
-
-
-      const events =
-        Array.isArray(record.events)
-          ? record.events
-          : Array.isArray(record.shipment_events)
-            ? record.shipment_events
-            : [];
-
-
-      const sortedEvents =
-        [...events].sort(
-          (a,b) =>
-            new Date(
-              b.event_time ||
-              b.created_at ||
-              0
-            ) -
-            new Date(
-              a.event_time ||
-              a.created_at ||
-              0
-            )
-        );
-
-
-      $("public-result").innerHTML = `
-
-        <div class="premium-card rounded-3xl overflow-hidden fade-in">
-
-          <div class="p-5 sm:p-7 border-b border-slate-800">
-
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-
-              <div>
-
-                <div class="text-[10px] uppercase tracking-[.2em] text-slate-500">
-                  Tracking Number
-                </div>
-
-                <div class="text-xl sm:text-2xl font-black mt-1">
-                  ${escapeHTML(
-                    record.tracking_number ||
-                    record.tracking ||
-                    tracking
-                  )}
-                </div>
-
-              </div>
-
-              <span class="self-start text-xs px-3 py-1.5 rounded-full border font-bold ${STATUS_BADGES[status]}">
-                ${STATUS_LABELS[status]}
-              </span>
-
-            </div>
-
-          </div>
-
-
-          <div class="grid sm:grid-cols-2 gap-5 p-5 sm:p-7 border-b border-slate-800">
-
-            <div>
-              <div class="text-[10px] uppercase tracking-widest text-slate-600">
-                Origin
-              </div>
-              <div class="font-bold mt-1">
-                ${escapeHTML(origin)}
-              </div>
-            </div>
-
-            <div>
-              <div class="text-[10px] uppercase tracking-widest text-slate-600">
-                Destination
-              </div>
-              <div class="font-bold mt-1">
-                ${escapeHTML(destination)}
-              </div>
-            </div>
-
-            <div>
-              <div class="text-[10px] uppercase tracking-widest text-slate-600">
-                Current Location
-              </div>
-              <div class="font-bold mt-1">
-                ${escapeHTML(currentLocation)}
-              </div>
-            </div>
-
-            <div>
-              <div class="text-[10px] uppercase tracking-widest text-slate-600">
-                Estimated Delivery
-              </div>
-              <div class="font-bold mt-1">
-                ${formatDateOnly(
-                  record.estimated_delivery
-                )}
-              </div>
-            </div>
-
-          </div>
-
-
-          <div class="p-5 sm:p-7">
-
-            <div class="flex items-center justify-between mb-6">
-
-              <h3 class="font-bold">
-                Shipment Progress
-              </h3>
-
-              <span class="text-[10px] text-slate-600 uppercase tracking-wider">
-                NKDON
-              </span>
-
-            </div>
-
-
-            ${
-              sortedEvents.length
-              ?
-              sortedEvents.map((event,index,array) => `
-
-                <div class="relative pl-8 pb-6">
-
-                  ${
-                    index < array.length - 1
-                    ?
-                    `<div class="absolute left-[7px] top-5 bottom-0 w-0.5 bg-slate-700"></div>`
-                    :
-                    ""
-                  }
-
-                  <div class="absolute left-0 top-1.5 w-4 h-4 rounded-full ${
-                    index === 0
-                      ? "bg-gold-500"
-                      : "bg-slate-600"
-                  } border-2 border-navy-800"></div>
-
-                  <div class="text-sm font-semibold">
-                    ${escapeHTML(
-                      event.description ||
-                      event.status ||
-                      "Shipment update"
-                    )}
-                  </div>
-
-                  <div class="text-xs text-slate-500 mt-1">
-                    ${escapeHTML(
-                      event.location ||
-                      event.facility ||
-                      "—"
-                    )}
-                  </div>
-
-                  <div class="text-[10px] text-slate-600 mt-1">
-                    ${formatDate(
-                      event.event_time ||
-                      event.created_at
-                    )}
-                  </div>
-
-                </div>
-
-              `).join("")
-              :
-              `
-                <div class="text-sm text-slate-600">
-                  Shipment history is not currently available.
-                </div>
-              `
-            }
-
-          </div>
-
-
-          <div class="px-5 sm:px-7 py-4 border-t border-slate-800 bg-slate-950/30">
-
-            <p class="text-[10px] text-slate-600 leading-relaxed">
-              Public tracking displays shipment progress only.
-              Private customer contact information is not displayed.
-            </p>
-
-          </div>
-
-        </div>
-
-      `;
-
-    }
-
-
-    /* =========================================================
-       CSV EXPORT
-    ========================================================== */
-
-    window.exportCSV = function() {
-
-      if (!shipments.length) {
-
-        showToast(
-          "There are no shipments to export.",
-          "error"
-        );
-
-        return;
-      }
-
-
-      const rows =
-        shipments.map(c => ({
-
-          Tracking_Number:
-            c.tracking_number || "",
-
-          Reference_Number:
-            c.reference_number || "",
-
-          Sender:
-            c.sender_name || "",
-
-          Recipient:
-            c.recipient_name || "",
-
-          Origin:
-            c.origin || "",
-
-          Destination:
-            c.destination || "",
-
-          Current_Location:
-            c.current_location || "",
-
-          Weight:
-            c.package_weight || "",
-
-          Quantity:
-            c.quantity || "",
-
-          Shipping_Method:
-            c.shipping_method || "",
-
-          Status:
-            STATUS_LABELS[
-              normalizeStatus(c.status)
-            ],
-
-          Estimated_Delivery:
-            c.estimated_delivery || "",
-
-          Created:
-            c.created_at || ""
-
-        }));
-
-
-      const csv =
-        Papa.unparse(rows);
-
-
-      const blob =
-        new Blob(
-          [csv],
-          {type:"text/csv;charset=utf-8;"}
-        );
-
-
-      const url =
-        URL.createObjectURL(blob);
-
-
-      const a =
-        document.createElement("a");
-
-      a.href = url;
-
-      a.download =
-        `nkdon-shipments-${todayISO()}.csv`;
-
-      a.click();
-
-      URL.revokeObjectURL(url);
-
-
-      logActivity(
-        "Exported shipment CSV"
-      );
-
-
-      showToast(
-        "CSV exported.",
-        "success"
-      );
-    };
-
-
-    /* =========================================================
-       CSV IMPORT
-    ========================================================== */
-
-    window.importCSV = function(event) {
-
-      const file =
-        event.target.files?.[0];
-
-      if (!file) return;
-
-
-      Papa.parse(
-        file,
-        {
-          header:true,
-          skipEmptyLines:true,
-
-          complete: async results => {
-
-            let imported = 0;
-
-            let skipped = 0;
-
-
-            for (
-              const row of results.data
-            ) {
-
-              const tracking =
-                row.Tracking_Number ||
-                row.Tracking ||
-                generateTrackingNumber();
-
-
-              if (
-                shipments.some(
-                  s =>
-                    String(
-                      s.tracking_number || ""
-                    ).toUpperCase()
-                    ===
-                    tracking.toUpperCase()
-                )
-              ) {
-
-                skipped++;
-
-                continue;
-
-              }
-
-
-              const payload = {
-
-                tracking_number:
-                  tracking,
-
-                sender_name:
-                  row.Sender || null,
-
-                recipient_name:
-                  row.Recipient || "",
-
-                origin:
-                  row.Origin || "",
-
-                destination:
-                  row.Destination || "",
-
-                current_location:
-                  row.Current_Location || null,
-
-                package_weight:
-                  row.Weight || null,
-
-                quantity:
-                  Number(row.Quantity) || 1,
-
-                shipping_method:
-                  row.Shipping_Method || "Standard",
-
-                status:
-                  Object.keys(STATUS_LABELS)
-                    .find(
-                      key =>
-                        STATUS_LABELS[key]
-                          .toLowerCase()
-                          ===
-                        String(
-                          row.Status || ""
-                        ).toLowerCase()
-                    )
-                  || "pickup",
-
-                estimated_delivery:
-                  row.Estimated_Delivery || null
-
-              };
-
-
-              let result =
-                await supabase
-                  .from("shipments")
-                  .insert(payload)
-                  .select()
-                  .single();
-
-
-              if (
-                result.error &&
-                /column|schema|does not exist/i.test(
-                  result.error.message || ""
-                )
-              ) {
-
-                result =
-                  await supabase
-                    .from("shipments")
-                    .insert(
-                      originalSchemaPayload({
-                        ...payload,
-                        updated_at:
-                          new Date().toISOString()
-                      })
-                    )
-                    .select()
-                    .single();
-
-              }
-
-
-              if (result.error) {
-
-                console.error(
-                  result.error
-                );
-
-                skipped++;
-
-                continue;
-
-              }
-
-
-              imported++;
-
-            }
-
-
-            await logActivity(
-              `Imported ${imported} shipment(s) from CSV`
-            );
-
-
-            await loadAllShipments();
-
-
-            showToast(
-              `Imported ${imported}; skipped ${skipped}.`,
-              "success"
-            );
-
-
-            event.target.value = "";
-
-          }
-        }
-      );
-
-    };
-
-
-    /* =========================================================
-       PDF CONSIGNMENT NOTE
-    ========================================================== */
-
-    window.printNote = function(id) {
-
-      const c =
-        shipments.find(
-          s => String(s.id) === String(id)
-        );
-
-      if (!c) return;
-
-
-      const {
-        jsPDF
-      } = window.jspdf;
-
-
-      const doc =
-        new jsPDF();
-
-
-      const tracking =
-        c.tracking_number || "—";
-
-
-      doc.setFontSize(20);
-
-      doc.text(
-        "NKDON LOGISTICS",
-        20,
-        22
-      );
-
-
-      doc.setFontSize(10);
-
-      doc.text(
-        "CONSIGNMENT NOTE",
-        20,
-        30
-      );
-
-
-      doc.line(
-        20,
-        35,
-        190,
-        35
-      );
-
-
-      doc.setFontSize(12);
-
-      let y = 50;
-
-
-      const fields = [
-
-        ["Tracking Number",tracking],
-
-        ["Reference",c.reference_number || "—"],
-
-        ["Sender",c.sender_name || "—"],
-
-        ["Recipient",c.recipient_name || "—"],
-
-        ["Origin",c.origin || "—"],
-
-        ["Destination",c.destination || "—"],
-
-        ["Current Location",c.current_location || "—"],
-
-        ["Weight",c.package_weight || "—"],
-
-        ["Quantity",String(c.quantity || 1)],
-
-        ["Shipping Method",c.shipping_method || "—"],
-
-        ["Status",STATUS_LABELS[
-          normalizeStatus(c.status)
-        ]],
-
-        ["Estimated Delivery",formatDateOnly(
-          c.estimated_delivery
-        )]
-
-      ];
-
-
-      fields.forEach(
-        ([label,value]) => {
-
-          doc.setFont(undefined,"bold");
-
-          doc.text(
-            `${label}:`,
-            20,
-            y
-          );
-
-          doc.setFont(undefined,"normal");
-
-          doc.text(
-            String(value),
-            70,
-            y
-          );
-
-          y += 9;
-
-        }
-      );
-
-
-      y += 8;
-
-      doc.setFont(undefined,"bold");
-
-      doc.text(
-        "Package Description",
-        20,
-        y
-      );
-
-      y += 7;
-
-      doc.setFont(undefined,"normal");
-
-      const description =
-        doc.splitTextToSize(
-          c.package_description || "—",
-          160
-        );
-
-      doc.text(
-        description,
-        20,
-        y
-      );
-
-
-      doc.setFontSize(8);
-
-      doc.text(
-        "NKDON Logistics · Shipment Management Platform",
-        20,
-        280
-      );
-
-
-      doc.save(
-        `${tracking}-consignment-note.pdf`
-      );
-
-
-      logActivity(
-        `Generated consignment note for ${tracking}`
-      );
-
-    };
-
-
-    /* =========================================================
-       PDF HISTORY
-    ========================================================== */
-
-    window.printHistory = async function(id) {
-
-      const c =
-        shipments.find(
-          s => String(s.id) === String(id)
-        );
-
-      if (!c) return;
-
-
-      const events =
-        await getShipmentEvents(id);
-
-
-      const {
-        jsPDF
-      } = window.jspdf;
-
-
-      const doc =
-        new jsPDF();
-
-
-      const tracking =
-        c.tracking_number || "—";
-
-
-      doc.setFontSize(18);
-
-      doc.text(
-        "NKDON LOGISTICS",
-        20,
-        20
-      );
-
-
-      doc.setFontSize(11);
-
-      doc.text(
-        `Tracking History: ${tracking}`,
-        20,
-        30
-      );
-
-
-      doc.text(
-        `${c.origin || "—"} → ${c.destination || "—"}`,
-        20,
-        38
-      );
-
-
-      let y = 52;
-
-
-      events.forEach(
-        event => {
-
-          if (y > 260) {
-
-            doc.addPage();
-
-            y = 20;
-
-          }
-
-
-          doc.setFontSize(10);
-
-          doc.setFont(
-            undefined,
-            "bold"
-          );
-
-          doc.text(
-            formatDate(
-              event.event_time ||
-              event.created_at
-            ),
-            20,
-            y
-          );
-
-
-          y += 6;
-
-
-          doc.setFont(
-            undefined,
-            "normal"
-          );
-
-
-          const description =
-            event.description ||
-            event.status ||
-            "Shipment update";
-
-
-          const lines =
-            doc.splitTextToSize(
-              String(description),
-              155
-            );
-
-
-          doc.text(
-            lines,
-            25,
-            y
-          );
-
-
-          y +=
-            lines.length * 5 +
-            4;
-
-
-          doc.setTextColor(
-            100
-          );
-
-
-          doc.text(
-            `${event.location || event.facility || "—"}`,
-            25,
-            y
-          );
-
-
-          doc.setTextColor(
-            0
-          );
-
-
-          y += 10;
-
-        }
-      );
-
-
-      doc.save(
-        `${tracking}-tracking-history.pdf`
-      );
-
-
-      logActivity(
-        `Generated tracking history for ${tracking}`
-      );
-
-    };
-
-
-    /* =========================================================
-       INITIALIZE
-    ========================================================== */
-
-    checkSession();
-
-  </script>
-
-</body>
-</html>
+</script>
