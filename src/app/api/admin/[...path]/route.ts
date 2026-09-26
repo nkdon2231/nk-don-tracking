@@ -69,10 +69,6 @@ async function actor(request: Request, action?: Action) {
   return user;
 }
 
-function jsonAuth() {
-  return new HttpError(401, "unauthorized", "Sign in to continue.");
-}
-
 async function body(request: Request) {
   try {
     return await request.json();
