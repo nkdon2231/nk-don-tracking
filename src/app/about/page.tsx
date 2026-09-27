@@ -5,7 +5,7 @@ import { STEPS } from "@/lib/site-content";
 
 export const metadata = {
   title: "About",
-  description: "NKDON Tracking Logistics books courier, freight, and consignment movements, and publishes only what the customer should see.",
+  description: "NKDON Global Logistics books courier, freight, and consignment movements, and publishes only what the customer should see.",
 };
 
 export default function AboutPage() {
@@ -16,7 +16,7 @@ export default function AboutPage() {
           <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-copper)]">About {BRAND.short}</p>
           <h1 className="serif mt-3 text-5xl leading-[0.95] sm:text-6xl">A logistics desk with a public tracking window.</h1>
           <p className="mt-5 max-w-xl text-lg leading-8 text-[var(--color-muted)]">
-            NKDON Tracking Logistics moves parcels, documents, freight, and consignments. The public site is where a customer follows the number they were given. Booking, notes, and private files stay with staff.
+            NKDON Global Logistics moves parcels, documents, freight, and consignments. The public site is where a customer follows the number they were given. Booking, notes, and private files stay with staff.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link className="btn btn-primary" href="/services">

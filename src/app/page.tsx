@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HeroAircraft } from "@/components/hero-aircraft";
 import { PublicFrame } from "@/components/site-chrome";
 import { TrackPanel } from "@/components/track-panel";
 import { BRAND } from "@/lib/constants";
@@ -10,21 +11,24 @@ export default function HomePage() {
   const spotlight = SERVICES.filter((service) => featured.includes(service.value));
   return (
     <PublicFrame hero>
-      <section className="relative min-h-[92vh] overflow-hidden">
-        <img src="/images/hero.jpg" alt="" className="nk-hero-image absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#071018] via-[#071018]/82 to-[#071018]/20" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#071018] via-[#071018]/15 to-[#071018]/55" />
-        <div className="relative mx-auto flex min-h-[92vh] max-w-6xl flex-col justify-end px-4 pb-16 pt-32">
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[#071018]" />
+        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#071018] to-transparent" />
+        <div className="relative mx-auto max-w-6xl px-4 pb-8 pt-28">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--color-lane)]">{BRAND.positioning}</p>
-          <h1 className="mt-5">
+          <h1 className="mt-4">
             <span className="brand-hero-name">NKDON</span>
-            <span className="brand-hero-sub">Tracking Logistics</span>
+            <span className="brand-hero-sub">Global Logistics</span>
           </h1>
-          <p className="mt-6 max-w-xl text-lg leading-8 text-white/80">{BRAND.tagline}</p>
+          <p className="mt-6 max-w-xl text-lg leading-8 text-white/85">{BRAND.tagline}</p>
           <p className="mt-3 max-w-xl text-sm leading-6 text-white/65">
             Parcels, documents, freight, and consignments stay on one record. Customers follow the tracking number. The operational file stays with staff.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+        </div>
+        <div className="relative mx-auto mt-8 max-w-6xl px-3 sm:px-4">
+          <HeroAircraft />
+        </div>
+        <div className="relative mx-auto mt-6 flex max-w-6xl flex-wrap gap-3 px-4">
             <Link className="btn btn-primary" href="/track">
               Track a shipment
             </Link>
@@ -32,9 +36,8 @@ export default function HomePage() {
               View services
             </Link>
           </div>
-        </div>
       </section>
-      <section className="relative z-10 mx-auto -mt-10 max-w-6xl px-4">
+      <section className="relative z-10 mx-auto max-w-6xl px-4 pb-4">
         <TrackPanel />
       </section>
       <section className="mx-auto grid max-w-6xl gap-4 px-4 py-10 md:grid-cols-3">

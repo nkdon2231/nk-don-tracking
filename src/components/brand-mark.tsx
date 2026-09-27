@@ -10,7 +10,7 @@ export function BrandMark({ className = "h-9 w-9" }: { className?: string }) {
 }
 
 export function BrandLockup({
-  subtitle = "Tracking Logistics",
+  subtitle = "Global Logistics",
   compact = false,
 }: {
   subtitle?: string;

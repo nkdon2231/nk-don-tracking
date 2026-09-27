@@ -9,7 +9,7 @@ const display = Sora({ subsets: ["latin"], variable: "--font-sora", weight: ["50
 
 export const metadata: Metadata = {
   title: { default: BRAND.name, template: `%s · ${BRAND.short}` },
-  description: "Courier, freight, and consignment tracking from NKDON Tracking Logistics.",
+  description: "Courier, freight, and consignment tracking from NKDON Global Logistics.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

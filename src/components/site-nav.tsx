@@ -31,7 +31,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
   return (
     <header className={`site-header fixed inset-x-0 top-0 z-40 border-b border-transparent ${solid ? "is-solid" : ""}`}>
       <div className="mx-auto flex h-[4.5rem] max-w-6xl items-center justify-between gap-4 px-4">
-        <Link href="/" className="no-underline" aria-label="NKDON Tracking Logistics">
+        <Link href="/" className="no-underline" aria-label="NKDON Global Logistics">
           <BrandLockup />
         </Link>
         <nav className="hidden items-center gap-6 text-sm md:flex" aria-label="Primary">

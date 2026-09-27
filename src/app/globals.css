@@ -112,7 +112,7 @@ summary::-webkit-details-marker {
   color: var(--color-lane);
   font-size: 0.62rem;
   font-weight: 650;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.16em;
   line-height: 1;
   text-transform: uppercase;
 }
@@ -180,6 +180,48 @@ summary::-webkit-details-marker {
   .nk-hero-image {
     animation: none;
     transform: none;
+  }
+}
+
+.hero-stage {
+  position: relative;
+  height: 268px;
+  overflow: hidden;
+  border-radius: 1.6rem;
+  background:
+    radial-gradient(ellipse 48% 42% at 58% 42%, rgba(176, 206, 226, 0.16), transparent 68%),
+    radial-gradient(ellipse 80% 46% at 50% 86%, rgba(28, 92, 104, 0.28), transparent 62%),
+    linear-gradient(180deg, #071018 0%, #0c1c2c 46%, #143044 70%, #0a1a24 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 24px 50px rgba(0, 0, 0, 0.28);
+}
+
+.hero-harbor {
+  position: absolute;
+  right: 8%;
+  bottom: 8%;
+  left: 8%;
+  height: 22%;
+  background: linear-gradient(90deg, transparent, rgba(62, 198, 192, 0.28), rgba(255, 183, 3, 0.32), rgba(62, 198, 192, 0.2), transparent);
+  filter: blur(10px);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.hero-photo-mask {
+  mask-image: radial-gradient(ellipse at center, transparent 18%, #000 72%);
+}
+
+@media (min-width: 640px) {
+  .hero-stage {
+    height: 400px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-stage {
+    height: 480px;
   }
 }
 

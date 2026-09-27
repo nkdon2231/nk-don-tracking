@@ -320,7 +320,7 @@ export async function getSettings() {
   const row = rows[0];
   if (!row) {
     return {
-      companyName: "NKDON Tracking Logistics",
+      companyName: "NKDON Global Logistics",
       tagline: "Moving what matters. Across borders. With confidence.",
       phone: "",
       email: "",

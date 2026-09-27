@@ -33,7 +33,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-white/10">
-        <p className="mx-auto max-w-6xl px-4 py-4 text-xs tracking-[0.14em] text-white/45 uppercase">NKDON Tracking Logistics</p>
+        <p className="mx-auto max-w-6xl px-4 py-4 text-xs tracking-[0.14em] text-white/45 uppercase">NKDON Global Logistics</p>
       </div>
     </footer>
   );

@@ -1,5 +1,5 @@
 export const BRAND = {
-  name: "NKDON Tracking Logistics",
+  name: "NKDON Global Logistics",
   short: "NKDON",
   tagline: "Moving what matters. Across borders. With confidence.",
   positioning: "Courier · Freight · Consignment",
