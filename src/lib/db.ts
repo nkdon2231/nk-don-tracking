@@ -1,6 +1,7 @@
 import { mkdir, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import pg from "pg";
+import { databaseUrl as resolveDatabaseUrl, isSupabaseHost, supabaseAnonKey, supabaseServiceRoleKey, supabaseUrl } from "./env";
 import { HttpError } from "./http";
 
 const { Pool, types } = pg;
@@ -27,8 +28,7 @@ const globalRef = globalThis as typeof globalThis & {
 };
 
 function databaseUrl() {
-  const value = process.env.DATABASE_URL?.trim();
-  return value || "";
+  return resolveDatabaseUrl();
 }
 
 export function databaseMode(): DbMode {
@@ -37,18 +37,18 @@ export function databaseMode(): DbMode {
     if (process.env.NODE_ENV === "production") return "unconfigured";
     return "preview";
   }
-  if (/supabase\.(co|com)/i.test(url)) return "supabase";
+  if (isSupabaseHost(url)) return "supabase";
   return "postgres";
 }
 
 export function storageMode(): "supabase" | "local-preview" | "unconfigured" {
-  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) return "supabase";
+  if (supabaseUrl() && supabaseServiceRoleKey()) return "supabase";
   if (process.env.NODE_ENV === "production") return "unconfigured";
   return "local-preview";
 }
 
 export function supabaseAuthConfigured() {
-  return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  return Boolean(supabaseUrl() && supabaseAnonKey());
 }
 
 function enqueue<T>(fn: () => Promise<T>): Promise<T> {
@@ -91,10 +91,11 @@ async function checkout(): Promise<Runner> {
     };
   }
   if (!globalRef.__nkdonPool) {
+    const url = databaseUrl();
     globalRef.__nkdonPool = new Pool({
-      connectionString: databaseUrl(),
+      connectionString: url,
       max: 8,
-      ssl: /supabase\.(co|com)/i.test(databaseUrl()) ? { rejectUnauthorized: false } : undefined,
+      ssl: isSupabaseHost(url) ? { rejectUnauthorized: false } : undefined,
     });
   }
   const client = await globalRef.__nkdonPool.connect();
