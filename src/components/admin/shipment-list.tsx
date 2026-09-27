@@ -105,6 +105,7 @@ function ListBody() {
         </div>
       </form>
       {error ? <Banner>{error}</Banner> : null}
+      {!data && !error ? <p className="text-sm text-[var(--color-muted)]">Loading shipments…</p> : null}
       {data && data.items.length === 0 ? <Empty title="Nothing matches">Adjust the filter, or book a shipment when there is a real movement.</Empty> : null}
       <div className="grid gap-3">
         {data?.items.map((item) => (

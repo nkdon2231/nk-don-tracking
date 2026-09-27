@@ -87,6 +87,9 @@ export function TrackPanel({ initialNumber = "" }: { initialNumber?: string }) {
         </button>
       </form>
       {error ? <p className="rounded-xl bg-[#f8e7dc] px-4 py-3 text-sm text-[#7a3e22]">{error}</p> : null}
+      {!result && !error && !pending ? (
+        <p className="text-sm text-[var(--color-muted)]">Use the number issued by NKDON. It looks like NKD-YYYYMMDD-XXXX.</p>
+      ) : null}
       {result ? (
         <article className="grid gap-5">
           <header className="card p-5">
@@ -145,8 +148,12 @@ export function TrackPanel({ initialNumber = "" }: { initialNumber?: string }) {
               </p>
             ) : null}
           </header>
-          {result.status !== "exception" && result.status !== "cancelled" ? (
-            <ol className="grid gap-2 sm:grid-cols-4 lg:grid-cols-8">
+          {result.status === "exception" || result.status === "cancelled" ? (
+            <p className="rounded-xl bg-[#f8e7dc] px-4 py-3 text-sm text-[#7a3e22]">
+              This shipment is {result.statusLabel.toLowerCase()}. It is off the usual path. The events below are the record.
+            </p>
+          ) : (
+            <ol className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8">
               {result.progress
                 .filter((step) => HAPPY_PATH.includes(step.status as (typeof HAPPY_PATH)[number]))
                 .map((step) => (
@@ -164,7 +171,7 @@ export function TrackPanel({ initialNumber = "" }: { initialNumber?: string }) {
                   </li>
                 ))}
             </ol>
-          ) : null}
+          )}
           <section className="card p-5">
             <h3 className="serif text-2xl">Movement</h3>
             <ol className="mt-4 grid gap-4">

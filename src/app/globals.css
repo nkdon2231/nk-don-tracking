@@ -40,6 +40,14 @@ button:disabled {
   background: #e7c7ae;
 }
 
+[id] {
+  scroll-margin-top: 5.5rem;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
 .serif {
   font-family: var(--font-serif);
 }
