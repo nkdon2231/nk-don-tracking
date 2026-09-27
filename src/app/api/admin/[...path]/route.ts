@@ -23,7 +23,7 @@ import {
 } from "@/lib/auth";
 import { barcodeSvg, qrSvg } from "@/lib/codes";
 import { audit } from "@/lib/audit";
-import { databaseMode, ensureReady, query, storageMode } from "@/lib/db";
+import { databaseConnection, databaseMode, ensureReady, query, storageMode } from "@/lib/db";
 import { deleteEvidenceFile, detectFileType, readEvidenceFile, readUpload, saveCourierPhoto, saveEvidenceFile } from "@/lib/files";
 import { assertCsrf, assertSameOrigin, clientIp, handle, HttpError, jsonError, jsonOk, readCookie, siteBase, userAgent } from "@/lib/http";
 import { enforceRateLimit } from "@/lib/rate-limit";
@@ -118,7 +118,15 @@ export async function GET(request: Request, context: { params: Promise<{ path: s
     if (key === "auth/session") {
       const token = readCookie(request, "nkdon_session");
       const user = await currentUser();
-      const response = jsonOk({ user, database: databaseMode(), storage: storageMode(), notifications: notificationChannels() });
+      const connection = databaseConnection();
+      const response = jsonOk({
+        user,
+        database: databaseMode(),
+        databaseSource: connection.source,
+        databaseSkipped: connection.skipped,
+        storage: storageMode(),
+        notifications: notificationChannels(),
+      });
       if (token && !user) {
         const cookie = clearSessionCookie();
         response.cookies.set(cookie.name, cookie.value, cookie.options);
