@@ -1,6 +1,7 @@
 import { mkdir, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import pg from "pg";
+import { parse } from "pg-connection-string";
 import { databaseCandidates, databaseUrl, supabaseAuthConfigured as authReady, supabaseStorageConfigured } from "./env";
 import { HttpError } from "./http";
 
@@ -105,10 +106,25 @@ async function checkout(): Promise<Runner> {
   if (!globalRef.__nkdonPool) {
     const failures: string[] = [];
     for (const candidate of databaseCandidates()) {
+      let parsed: ReturnType<typeof parse>;
+      try {
+        parsed = parse(candidate.url);
+      } catch {
+        failures.push(`${candidate.source} ${candidate.hostKind}:${candidate.port} invalid_url`);
+        continue;
+      }
+      if (!parsed.host || !parsed.user || !parsed.database) {
+        failures.push(`${candidate.source} ${candidate.hostKind}:${candidate.port} invalid_url`);
+        continue;
+      }
       const pool = new Pool({
-        connectionString: candidate.url,
+        host: parsed.host,
+        port: parsed.port ? Number(parsed.port) : undefined,
+        user: parsed.user,
+        password: parsed.password ?? undefined,
+        database: parsed.database,
         max: process.env.VERCEL ? 1 : 8,
-        connectionTimeoutMillis: 5000,
+        connectionTimeoutMillis: 8000,
         ssl: needsSsl(candidate.url) ? { rejectUnauthorized: false } : undefined,
       });
       try {
@@ -232,12 +248,19 @@ export async function migrate() {
     if (applied.has(name)) continue;
     const sql = await readFile(path.join(dir, name), "utf8");
     const statements = splitSql(sql);
-    await withTransaction(async (q) => {
-      for (const statement of statements) {
-        await q(statement);
+    try {
+      await withTransaction(async (q) => {
+        for (const statement of statements) {
+          await q(statement);
+        }
+        await q("insert into schema_migrations (name) values ($1)", [name]);
+      });
+    } catch (error) {
+      if (error instanceof HttpError) {
+        throw new HttpError(503, "migration_failed", `Migration ${name} failed (${error.message}).`);
       }
-      await q("insert into schema_migrations (name) values ($1)", [name]);
-    });
+      throw error;
+    }
     console.log(`[nkdon] applied migration ${name}`);
   }
 }
