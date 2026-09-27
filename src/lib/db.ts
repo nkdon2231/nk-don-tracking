@@ -230,6 +230,91 @@ function splitSql(sql: string) {
   return statements;
 }
 
+const BASELINE_COLUMNS: Record<string, Array<[string, string]>> = {
+  "0001_init.sql": [
+    ["admin_users", "password_hash"],
+    ["admin_sessions", "token_hash"],
+    ["login_attempts", "success"],
+    ["facilities", "facility_code"],
+    ["shipments", "tracking_number"],
+    ["shipments", "public_description"],
+    ["shipments", "internal_notes"],
+    ["shipment_events", "event_time"],
+    ["shipment_evidence", "public_token"],
+    ["shipment_evidence", "is_public"],
+    ["admin_activity", "action"],
+    ["company_settings", "company_name"],
+    ["inquiries", "message"],
+    ["rate_limits", "bucket_key"],
+    ["tracking_counters", "last_value"],
+  ],
+  "0003_couriers_and_recorded_positions.sql": [
+    ["couriers", "courier_code"],
+    ["couriers", "photo_path"],
+    ["shipments", "courier_id"],
+    ["shipment_events", "latitude"],
+    ["shipment_events", "longitude"],
+    ["shipment_events", "coordinate_source"],
+  ],
+  "0005_customer_requests.sql": [
+    ["customer_requests", "kind"],
+    ["customer_requests", "staff_note"],
+    ["customer_requests", "shipment_id"],
+    ["service_lanes", "transit_min_days"],
+    ["service_lanes", "transit_max_days"],
+    ["service_lanes", "is_active"],
+  ],
+};
+
+async function baselineState(name: string): Promise<"present" | "absent" | "partial" | "run"> {
+  const markers = BASELINE_COLUMNS[name];
+  if (!markers) return "run";
+  const rows = await query<{ table_name: string; column_name: string }>(
+    `select table_name, column_name
+     from information_schema.columns
+     where table_schema = 'public'
+       and (table_name, column_name) in (select * from unnest($1::text[], $2::text[]))`,
+    [markers.map(([table]) => table), markers.map(([, column]) => column)],
+  );
+  const found = new Set(rows.map((row) => `${row.table_name}.${row.column_name}`));
+  const hits = markers.filter(([table, column]) => found.has(`${table}.${column}`)).length;
+  if (hits === 0) return "absent";
+  if (hits !== markers.length) return "partial";
+  if (name === "0001_init.sql") {
+    const functions = await query<{ proname: string }>(
+      `select p.proname
+       from pg_proc p
+       join pg_namespace n on n.oid = p.pronamespace
+       where n.nspname = 'public' and p.proname = any($1::text[])`,
+      [["set_updated_at", "prevent_event_mutation"]],
+    );
+    const names = new Set(functions.map((row) => row.proname));
+    if (!names.has("set_updated_at") || !names.has("prevent_event_mutation")) return "partial";
+  }
+  return "present";
+}
+
+async function recordExistingMigration(name: string) {
+  if (name === "0001_init.sql") {
+    await query(
+      `insert into company_settings (id, company_name, tagline)
+       values (1, 'NKDON Global Logistics', 'Moving what matters. Across borders. With confidence.')
+       on conflict (id) do nothing`,
+    );
+  }
+  if (name === "0003_couriers_and_recorded_positions.sql") {
+    await query("alter table couriers enable row level security");
+    await query("revoke all on table couriers from anon, authenticated");
+  }
+  if (name === "0005_customer_requests.sql") {
+    await query("alter table customer_requests enable row level security");
+    await query("alter table service_lanes enable row level security");
+    await query("revoke all on table customer_requests from anon, authenticated");
+    await query("revoke all on table service_lanes from anon, authenticated");
+  }
+  await query("insert into schema_migrations (name) values ($1) on conflict (name) do nothing", [name]);
+}
+
 export async function migrate() {
   await query(
     "create table if not exists schema_migrations (name text primary key, applied_at timestamptz not null default now())",
@@ -246,6 +331,15 @@ export async function migrate() {
   const applied = new Set(appliedRows.map((row) => row.name));
   for (const name of files) {
     if (applied.has(name)) continue;
+    const state = await baselineState(name);
+    if (state === "partial") {
+      throw new HttpError(503, "migration_failed", `Migration ${name} is only partly present. Nothing was dropped or rewritten.`);
+    }
+    if (state === "present") {
+      await recordExistingMigration(name);
+      console.log(`[nkdon] recorded existing migration ${name}`);
+      continue;
+    }
     const sql = await readFile(path.join(dir, name), "utf8");
     const statements = splitSql(sql);
     try {
