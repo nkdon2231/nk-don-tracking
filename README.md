@@ -51,9 +51,13 @@ The first account is created at `/admin/setup` and only while `admin_users` is e
 
 If Supabase Auth is not configured, a local password hash can be used for development only. That path is not the production design.
 
-## What is in this branch so far
+## Application routes
 
-Foundation, schema, auth, and the server API for shipments, events, evidence, facilities, settings, and users. The public site and operations screens are the next stage. Legacy files `index.html`, `tracking.html`, and `text.txt` are still in the tree so the previous site is not removed.
+Public pages: `/`, `/tracking`, `/services`, `/rates`, `/book`, `/about`, `/contact`, `/faq`.
+
+Operations desk: `/admin/login`, `/admin/setup`, `/admin/dashboard`, `/admin/shipments`, `/admin/evidence`, `/admin/facilities`, `/admin/users`, `/admin/settings`, `/admin/activity`.
+
+Public tracking reads `/api/tracking`. Admin screens use `/api/admin/*` with the `nkdon_session` cookie and CSRF header. Legacy files `index.html`, `tracking.html`, and `text.txt` remain in the tree and are not the production app.
 
 ## Scripts
 
