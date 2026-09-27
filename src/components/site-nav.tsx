@@ -6,6 +6,12 @@ import { useEffect, useState } from "react";
 import { BrandLockup } from "./brand-mark";
 import { PUBLIC_LINKS } from "@/lib/site-content";
 
+const MORE_LINKS = [
+  { href: "/book", label: "Request pickup" },
+  { href: "/estimate", label: "Delivery window" },
+  { href: "/faq", label: "FAQ" },
+] as const;
+
 function active(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -78,6 +84,11 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
                 href={link.href}
                 className={`rounded-xl px-3 py-3 no-underline ${active(pathname, link.href) ? "bg-white/10 font-semibold text-[var(--color-copper)]" : ""}`}
               >
+                {link.label}
+              </Link>
+            ))}
+            {MORE_LINKS.map((link) => (
+              <Link key={link.href} href={link.href} className="rounded-xl px-3 py-3 no-underline">
                 {link.label}
               </Link>
             ))}

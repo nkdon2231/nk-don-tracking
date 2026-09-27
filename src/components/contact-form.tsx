@@ -2,8 +2,12 @@
 
 import { FormEvent, useState } from "react";
 import { ApiError, api } from "@/lib/client-api";
+import { TRACKING_RE } from "@/lib/constants";
+import { SUPPORT_TOPICS } from "@/lib/site-content";
 
-export function ContactForm() {
+export function ContactForm({ initialTopic = "", initialNumber = "" }: { initialTopic?: string; initialNumber?: string }) {
+  const topic = SUPPORT_TOPICS.includes(initialTopic as (typeof SUPPORT_TOPICS)[number]) ? initialTopic : SUPPORT_TOPICS[0];
+  const number = TRACKING_RE.test(initialNumber.trim().toUpperCase()) ? initialNumber.trim().toUpperCase() : "";
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
@@ -52,13 +56,17 @@ export function ContactForm() {
       </div>
       <label className="field">
         <span>Topic</span>
-        <input name="topic" maxLength={80} placeholder="Quote, tracking, or documents" />
+        <select name="topic" defaultValue={topic}>
+          {SUPPORT_TOPICS.map((item) => (
+            <option key={item}>{item}</option>
+          ))}
+        </select>
       </label>
       <label className="field">
         <span>Message</span>
-        <textarea name="message" required minLength={10} maxLength={4000} />
+        <textarea name="message" required minLength={10} maxLength={4000} defaultValue={number ? `Tracking number: ${number}\n` : undefined} />
       </label>
-      {error ? <p className="text-sm text-[#7a3e22]">{error}</p> : null}
+      {error ? <p className="rounded-xl border border-[#8a4a32] bg-[#2a1814] px-4 py-3 text-sm text-[#ffd0c2]">{error}</p> : null}
       {message ? <p className="text-sm text-[var(--color-lane)]">{message}</p> : null}
       <button className="btn btn-primary" disabled={pending} type="submit">
         {pending ? "Sending…" : "Send to operations"}

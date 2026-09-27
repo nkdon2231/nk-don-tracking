@@ -17,8 +17,11 @@ export default function ServicesPage() {
           Courier, freight, air, road, storage, and papers are not the same job. Staff book the one that fits. Each booking receives its own tracking number, and the timeline is a list of events.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link className="btn btn-primary" href="/contact">
-            Request a movement
+          <Link className="btn btn-primary" href="/quote">
+            Get a quote
+          </Link>
+          <Link className="btn btn-ghost" href="/book">
+            Request a pickup
           </Link>
           <Link className="btn btn-ghost" href="/track">
             Track a shipment
@@ -31,7 +34,11 @@ export default function ServicesPage() {
             <img src={service.image} alt={service.alt} className={`h-56 w-full object-cover md:h-full md:min-h-72 ${index % 2 ? "md:order-2" : ""}`} />
             <div className="flex flex-col justify-center p-6 sm:p-8">
               <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-copper)]">{String(index + 1).padStart(2, "0")}</p>
-              <h2 className="serif mt-2 text-3xl">{service.label}</h2>
+              <h2 className="serif mt-2 text-3xl">
+                <Link href={`/services/${service.value}`} className="no-underline">
+                  {service.label}
+                </Link>
+              </h2>
               <p className="mt-3 max-w-xl leading-7 text-[var(--color-ink)]">{service.summary}</p>
               <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--color-muted)]">{service.detail}</p>
               <ul className="mt-4 grid list-disc gap-1 pl-4 text-sm">
@@ -51,11 +58,11 @@ export default function ServicesPage() {
             Tell the desk the cities, what is moving, and any timing you already know. This page does not book the cargo by itself.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link className="btn btn-copper" href="/contact">
-              Contact operations
+            <Link className="btn btn-copper" href="/quote">
+              Get a quote
             </Link>
-            <Link className="btn border border-white/30 text-white" href="/faq">
-              Read the FAQ
+            <Link className="btn border border-white/30 text-white" href="/book">
+              Request a pickup
             </Link>
           </div>
         </div>

@@ -105,6 +105,14 @@ export const ROLE_LABEL: Record<Role, string> = {
   viewer: "Viewer",
 };
 
+export const SPEEDS = [
+  { value: "standard", label: "Standard handling" },
+  { value: "express", label: "Faster handling, if the service allows it" },
+  { value: "freight", label: "Freight timing" },
+] as const;
+
+export const DOCUMENT_EVIDENCE = ["Documents", "Waybill", "Clearance", "Customs", "Signature"] as const;
+
 export const TRACKING_RE = /^NKD-\d{8}-\d{4}$/;
 
 export const IMAGE_MAX_BYTES = 10 * 1024 * 1024;
@@ -122,7 +130,8 @@ export type Action =
   | "settings:write"
   | "demo:purge"
   | "shipments:archive"
-  | "notes:read";
+  | "notes:read"
+  | "lanes:write";
 
 const RANK: Record<Role, number> = {
   viewer: 1,
@@ -149,6 +158,7 @@ export function can(role: Role, action: Action): boolean {
       return RANK[role] >= 4;
     case "users:write":
     case "settings:write":
+    case "lanes:write":
     case "demo:purge":
       return RANK[role] >= 5;
     default:

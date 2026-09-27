@@ -85,9 +85,9 @@ export default function HomePage() {
         <div className="card grid gap-6 p-6 sm:grid-cols-3 sm:p-8">
           <div>
             <h2 className="serif text-2xl">Book</h2>
-            <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">Tell operations what is moving. The number comes back from the desk.</p>
-            <Link className="mt-3 inline-block text-sm font-semibold text-[var(--color-copper)] no-underline" href="/contact">
-              Request a movement
+            <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">Ask for a pickup or a quote. Staff open the shipment. The site does not price it.</p>
+            <Link className="mt-3 inline-block text-sm font-semibold text-[var(--color-copper)] no-underline" href="/book">
+              Request a pickup
             </Link>
           </div>
           <div>
@@ -99,9 +99,9 @@ export default function HomePage() {
           </div>
           <div>
             <h2 className="serif text-2xl">Ask</h2>
-            <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">Number format, public files, and what the contact form does not send.</p>
-            <Link className="mt-3 inline-block text-sm font-semibold text-[var(--color-copper)] no-underline" href="/faq">
-              Read the FAQ
+            <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">Status meanings, a missing update, customs papers, and the contact form.</p>
+            <Link className="mt-3 inline-block text-sm font-semibold text-[var(--color-copper)] no-underline" href="/support">
+              Support center
             </Link>
           </div>
         </div>

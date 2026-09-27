@@ -21,7 +21,7 @@ export default async function TrackPage({ searchParams }: { searchParams: Promis
           <TrackPanel initialNumber={number ?? ""} />
         </div>
         <p className="mt-6 text-sm text-[var(--color-muted)]">
-          Number refused or not found? <Link href="/faq">Check the FAQ</Link> or <Link href="/contact">send it to the desk</Link>.
+          Number refused or not found? <Link href="/support/tracking">Read tracking help</Link> or <Link href="/contact?topic=Tracking%20assistance">send it to the desk</Link>.
         </p>
       </section>
     </PublicFrame>

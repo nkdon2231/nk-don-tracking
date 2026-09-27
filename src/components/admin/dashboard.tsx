@@ -19,10 +19,14 @@ type Stats = {
   pickupScheduled: number;
   evidence: number;
   inquiries: number;
+  customs: number;
+  outForDelivery: number;
+  pendingRequests: number;
   recentShipments: Shipment[];
   recentEvents: ShipmentEvent[];
   recentEvidence: EvidenceItem[];
   recentInquiries: { id: string; name: string; email: string; topic: string; createdAt: string | null }[];
+  recentRequests: { id: string; kind: string; status: string; pickup: string; destination: string; contactName: string; createdAt: string | null }[];
 };
 
 const MODE: Record<string, string> = {
@@ -55,7 +59,10 @@ function Desk() {
   const figures = stats
     ? [
         ["Open movements", stats.active],
+        ["Pending requests", stats.pendingRequests],
         ["In transit", stats.inTransit],
+        ["Customs", stats.customs],
+        ["Out for delivery", stats.outForDelivery],
         ["Pickup scheduled", stats.pickupScheduled],
         ["Exceptions", stats.exceptions],
         ["Delivered", stats.delivered],
@@ -137,6 +144,26 @@ function Desk() {
           </ul>
         </section>
       </div>
+      <section className="card p-5">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="serif text-2xl">Quote and pickup requests</h2>
+          <Link href="/admin/requests" className="text-sm">
+            Review queue
+          </Link>
+        </div>
+        <ul className="mt-4 grid gap-3">
+          {stats?.recentRequests.map((item) => (
+            <li key={item.id} className="text-sm">
+              <span className="font-semibold">{item.contactName}</span>
+              <span className="text-[var(--color-muted)]">
+                {" "}
+                · {item.kind} · {item.status.replaceAll("_", " ")} · {item.pickup} → {item.destination}
+              </span>
+            </li>
+          ))}
+          {stats && stats.recentRequests.length === 0 ? <li className="text-sm text-[var(--color-muted)]">No customer requests yet.</li> : null}
+        </ul>
+      </section>
       <section className="card p-5">
         <div className="flex items-center justify-between gap-3">
           <h2 className="serif text-2xl">Messages</h2>

@@ -24,8 +24,11 @@ export function SiteFooter() {
           <Link href="/track" className="font-semibold text-[var(--color-copper)] no-underline">
             Track a shipment
           </Link>
-          <Link href="/contact" className="no-underline">
-            Request a movement
+          <Link href="/quote" className="no-underline">
+            Get a quote
+          </Link>
+          <Link href="/book" className="no-underline">
+            Request a pickup
           </Link>
           <Link href="/admin/login" className="text-white/70 no-underline">
             Staff sign in

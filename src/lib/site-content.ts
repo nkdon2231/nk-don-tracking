@@ -1,14 +1,33 @@
 export const PUBLIC_LINKS = [
   { href: "/services", label: "Services" },
   { href: "/solutions", label: "Solutions" },
+  { href: "/quote", label: "Quote" },
   { href: "/about", label: "About" },
-  { href: "/contact", label: "Support" },
+  { href: "/support", label: "Support" },
 ] as const;
 
 export const FOOTER_LINKS = [
-  ...PUBLIC_LINKS,
-  { href: "/track", label: "Track" },
+  { href: "/services", label: "Services" },
+  { href: "/solutions", label: "Solutions" },
+  { href: "/track", label: "Track a shipment" },
+  { href: "/quote", label: "Get a quote" },
+  { href: "/book", label: "Request a pickup" },
+  { href: "/estimate", label: "Delivery window" },
+  { href: "/support", label: "Support" },
+  { href: "/support/tracking", label: "Tracking help" },
   { href: "/faq", label: "FAQ" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
+] as const;
+
+export const SUPPORT_TOPICS = [
+  "Shipment support",
+  "Tracking assistance",
+  "Quote follow-up",
+  "Pickup request follow-up",
+  "Customs question",
+  "Delivery question",
+  "Other",
 ] as const;
 
 export const SOLUTIONS = [
@@ -160,6 +179,69 @@ export const STEPS = [
   },
 ] as const;
 
+export const STATUS_HELP = [
+  {
+    status: "pickup_scheduled",
+    label: "Pickup Scheduled",
+    means: "Staff created the shipment and recorded that collection is still ahead.",
+    next: "Use the window you were given. If that window has passed and the status has not changed, send the NKDON number to support.",
+  },
+  {
+    status: "picked_up",
+    label: "Picked Up",
+    means: "An event says the goods were collected.",
+    next: "The next update is written when the shipment is processed or moves.",
+  },
+  {
+    status: "processing",
+    label: "Processing",
+    means: "The shipment is in handling after collection, before the next movement event.",
+    next: "No automatic scan is implied. If nothing new is recorded, contact support with the number.",
+  },
+  {
+    status: "in_transit",
+    label: "In Transit",
+    means: "Staff recorded that the shipment is moving between points already on the file.",
+    next: "The page does not show live GPS. A new event appears only when someone records it.",
+  },
+  {
+    status: "arrived_at_facility",
+    label: "Arrived at Facility",
+    means: "An arrival at a named facility was recorded.",
+    next: "The facility name is shown when staff attached one. A missing name means it was not published.",
+  },
+  {
+    status: "customs_clearance",
+    label: "Customs Clearance",
+    means: "A clearance event was recorded on this shipment. It is not a government stamp or an approval by itself.",
+    next: "Public customs files appear only if staff marked them public.",
+  },
+  {
+    status: "out_for_delivery",
+    label: "Out for Delivery",
+    means: "Staff recorded that the shipment is on a delivery run.",
+    next: "A courier name is shown only when one is assigned. The courier phone is not published.",
+  },
+  {
+    status: "delivered",
+    label: "Delivered",
+    means: "A delivery event was recorded. A date is shown when staff stored one.",
+    next: "Proof of delivery is a public Delivery or Signature file, if one was released. If it is missing, it was not marked public.",
+  },
+  {
+    status: "exception",
+    label: "Exception",
+    means: "The movement left the usual path. The events are the record of what was written.",
+    next: "Contact support with the NKDON number. The page will not guess the cause.",
+  },
+  {
+    status: "cancelled",
+    label: "Cancelled",
+    means: "Staff recorded that this shipment will not continue.",
+    next: "Use the contact form if you were not told why. Do not expect further transit events.",
+  },
+] as const;
+
 export const QUESTIONS = [
   {
     q: "What does an NKDON tracking number look like?",
@@ -191,7 +273,15 @@ export const QUESTIONS = [
   },
   {
     q: "How do I ask for a quote or a pickup?",
-    a: "Use the contact page and say the cities, what is moving, and any timing you already know. A tracking number is issued when staff create the shipment, not when the form is sent.",
+    a: "Use Get a quote or Request a pickup. Both save a pending request for staff. Neither one calculates a price or creates a tracking number. A number is issued only when staff open the shipment.",
+  },
+  {
+    q: "Why has tracking not updated?",
+    a: "The page changes when staff record an event. It does not poll a vehicle. If the window you were given has passed, send the NKDON number through Contact and choose Tracking assistance.",
+  },
+  {
+    q: "Can the website tell me a delivery date?",
+    a: "Only when staff have published a transit window for that service, country pair, and speed. Otherwise the estimator says staff confirmation is required. A window is not a guarantee and not a price. A date on a live shipment appears only if staff stored an estimated or actual delivery date.",
   },
   {
     q: "What does TEST / DEMO on a tracking page mean?",

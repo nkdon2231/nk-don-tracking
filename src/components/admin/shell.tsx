@@ -19,9 +19,12 @@ export function useStaff() {
 const NAV: { href: string; label: string; exact?: boolean; action?: Action }[] = [
   { href: "/admin", label: "Desk", exact: true },
   { href: "/admin/shipments", label: "Shipments" },
-  { href: "/admin/facilities", label: "Facilities" },
+  { href: "/admin/requests", label: "Requests" },
   { href: "/admin/couriers", label: "Couriers" },
+  { href: "/admin/facilities", label: "Facilities" },
   { href: "/admin/evidence", label: "Evidence" },
+  { href: "/admin/documents", label: "Documents" },
+  { href: "/admin/lanes", label: "Transit windows" },
   { href: "/admin/messages", label: "Messages" },
   { href: "/admin/activity", label: "Activity" },
   { href: "/admin/team", label: "Team", action: "users:write" },

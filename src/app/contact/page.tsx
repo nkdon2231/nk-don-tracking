@@ -8,7 +8,8 @@ export const metadata = {
   description: "Send a pickup, quote, or tracking question to the NKDON operations desk.",
 };
 
-export default async function ContactPage() {
+export default async function ContactPage({ searchParams }: { searchParams: Promise<{ topic?: string; number?: string }> }) {
+  const params = await searchParams;
   const company = await publicCompany();
   const details = company
     ? [
@@ -29,7 +30,7 @@ export default async function ContactPage() {
             Quotes, document questions, and tracking help are saved for staff. Email and SMS are not sent until a provider is connected, so this form does not promise an automatic reply.
           </p>
           <p className="mt-3 text-sm leading-6">
-            Already have a number? <Link href="/track">Track it</Link>. Unsure of the format? <Link href="/faq">Read the FAQ</Link>.
+            Already have a number? <Link href="/track">Track it</Link>. Need a price or a pickup? <Link href="/quote">Get a quote</Link> or <Link href="/book">request a pickup</Link>.
           </p>
           {details.length ? (
             <dl className="mt-6 grid gap-3 text-sm">
@@ -47,7 +48,7 @@ export default async function ContactPage() {
           )}
           <img src="/images/handover.jpg" alt="A handover at a loading point" className="mt-6 h-64 w-full rounded-[1.5rem] object-cover" />
         </div>
-        <ContactForm />
+        <ContactForm initialTopic={params.topic ?? ""} initialNumber={params.number ?? ""} />
       </section>
     </PublicFrame>
   );

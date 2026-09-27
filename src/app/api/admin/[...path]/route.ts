@@ -33,8 +33,10 @@ import {
   eventSchema,
   evidenceMetaSchema,
   facilitySchema,
+  laneSchema,
   loginSchema,
   parseBody,
+  requestReviewSchema,
   settingsSchema,
   setupSchema,
   shipmentSchema,
@@ -46,27 +48,33 @@ import {
   assignCourier,
   createCourier,
   createFacility,
+  createLane,
   createShipment,
   dashboardStats,
   deleteEvidence,
   getCourierPhotoPath,
+  getCustomerRequest,
   getEvidence,
   getSettings,
   getShipment,
   insertEvidence,
   listActivity,
   listCouriers,
+  listCustomerRequests,
   listEvidence,
   listFacilities,
   listInquiries,
+  listLanes,
   listShipments,
   listUsers,
   purgeDemo,
   replaceCourierPhoto,
+  reviewCustomerRequest,
   setArchived,
   updateCourier,
   updateEvidence,
   updateFacility,
+  updateLane,
   updateSettings,
   updateShipment,
 } from "@/server/operations";
@@ -173,6 +181,7 @@ export async function GET(request: Request, context: { params: Promise<{ path: s
           type: url.searchParams.get("type") ?? "",
           shipmentId: url.searchParams.get("shipmentId") ?? "",
           visibility: url.searchParams.get("visibility") ?? "",
+          group: url.searchParams.get("group") ?? "",
         }),
       });
     }
@@ -230,6 +239,20 @@ export async function GET(request: Request, context: { params: Promise<{ path: s
     if (key === "inquiries") {
       await actor(request, "shipments:read");
       return jsonOk({ items: await listInquiries() });
+    }
+    if (key === "requests") {
+      await actor(request, "shipments:read");
+      return jsonOk({ items: await listCustomerRequests(url.searchParams.get("status") ?? "") });
+    }
+    if (path[0] === "requests" && path[1] && path.length === 2) {
+      await actor(request, "shipments:read");
+      const item = await getCustomerRequest(path[1]);
+      if (!item) return jsonError(404, "not_found", "Request not found.");
+      return jsonOk({ request: item });
+    }
+    if (key === "lanes") {
+      await actor(request, "shipments:read");
+      return jsonOk({ items: await listLanes() });
     }
     if (key === "activity") {
       await actor(request, "shipments:read");
@@ -471,6 +494,15 @@ export async function POST(request: Request, context: { params: Promise<{ path: 
       return jsonOk({ ok: true }, 201);
     }
 
+    if (key === "lanes") {
+      await guardMutation(request);
+      const user = await actor(request, "lanes:write");
+      const input = parseBody(laneSchema, await body(request));
+      const lane = await createLane(input);
+      await audit({ ...meta(request, user), action: "lane_created", resource: "service_lane", resourceId: lane.id });
+      return jsonOk({ lane }, 201);
+    }
+
     if (key === "demo/purge") {
       await guardMutation(request);
       const user = await actor(request, "demo:purge");
@@ -544,6 +576,28 @@ export async function PATCH(request: Request, context: { params: Promise<{ path:
       const facility = await updateFacility(path[1], input);
       await audit({ ...meta(request, user), action: "facility_updated", resource: "facility", resourceId: facility.id });
       return jsonOk({ facility });
+    }
+
+    if (path[0] === "requests" && path[1] && path.length === 2) {
+      const user = await actor(request, "shipments:write");
+      const input = parseBody(requestReviewSchema, await body(request));
+      const result = await reviewCustomerRequest(user, path[1], input);
+      await audit({
+        ...meta(request, user),
+        action: input.status === "booked" ? "request_booked" : "request_reviewed",
+        resource: "customer_request",
+        resourceId: path[1],
+        metadata: { status: input.status, shipmentId: result.shipment?.id ?? null },
+      });
+      return jsonOk(result);
+    }
+
+    if (path[0] === "lanes" && path[1] && path.length === 2) {
+      const user = await actor(request, "lanes:write");
+      const input = parseBody(laneSchema, await body(request));
+      const lane = await updateLane(path[1], input);
+      await audit({ ...meta(request, user), action: "lane_updated", resource: "service_lane", resourceId: lane.id });
+      return jsonOk({ lane });
     }
 
     if (path[0] === "settings") {

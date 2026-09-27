@@ -10,7 +10,6 @@ import {
   Float32BufferAttribute,
   Group,
   LatheGeometry,
-  MeshBasicMaterial,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
   PMREMGenerator,

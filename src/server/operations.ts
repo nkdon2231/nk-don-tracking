@@ -871,7 +871,7 @@ export async function publicTracking(trackingNumber: string) {
   };
 }
 
-export async function listEvidence(input: { q?: string; type?: string; shipmentId?: string; visibility?: string }) {
+export async function listEvidence(input: { q?: string; type?: string; shipmentId?: string; visibility?: string; group?: string }) {
   const where: string[] = [];
   const params: unknown[] = [];
   if (input.shipmentId) {
@@ -881,6 +881,9 @@ export async function listEvidence(input: { q?: string; type?: string; shipmentI
   if (input.type) {
     params.push(input.type);
     where.push(`ev.evidence_type = $${params.length}`);
+  }
+  if (input.group === "documents") {
+    where.push(`ev.evidence_type in ('Documents', 'Waybill', 'Clearance', 'Customs', 'Signature')`);
   }
   if (input.visibility === "public") where.push("ev.is_public = true");
   if (input.visibility === "private") where.push("ev.is_public = false");
@@ -1017,6 +1020,9 @@ export async function dashboardStats() {
     pickup_scheduled: number;
     evidence: number;
     inquiries: number;
+    customs: number;
+    out_for_delivery: number;
+    pending_requests: number;
   }>(
     `select
       count(*)::int as total,
@@ -1025,8 +1031,11 @@ export async function dashboardStats() {
       count(*) filter (where status = 'exception' and archived_at is null)::int as exceptions,
       count(*) filter (where status = 'in_transit' and archived_at is null)::int as in_transit,
       count(*) filter (where status = 'pickup_scheduled' and archived_at is null)::int as pickup_scheduled,
+      count(*) filter (where status = 'customs_clearance' and archived_at is null)::int as customs,
+      count(*) filter (where status = 'out_for_delivery' and archived_at is null)::int as out_for_delivery,
       (select count(*)::int from shipment_evidence) as evidence,
-      (select count(*)::int from inquiries) as inquiries
+      (select count(*)::int from inquiries) as inquiries,
+      (select count(*)::int from customer_requests where status in ('pending', 'in_review')) as pending_requests
      from shipments`,
   );
   const recentShipments = await query(
@@ -1044,6 +1053,10 @@ export async function dashboardStats() {
   const recentInquiries = await query(
     `select id, name, email, topic, created_at from inquiries order by created_at desc limit 5`,
   );
+  const recentRequests = await query(
+    `select id, kind, status, pickup_city, pickup_country, destination_city, destination_country, contact_name, created_at
+     from customer_requests order by created_at desc limit 5`,
+  );
   const stats = rows[0];
   return {
     total: stats?.total ?? 0,
@@ -1054,6 +1067,9 @@ export async function dashboardStats() {
     pickupScheduled: stats?.pickup_scheduled ?? 0,
     evidence: stats?.evidence ?? 0,
     inquiries: stats?.inquiries ?? 0,
+    customs: stats?.customs ?? 0,
+    outForDelivery: stats?.out_for_delivery ?? 0,
+    pendingRequests: stats?.pending_requests ?? 0,
     recentShipments: recentShipments.map(mapShipment),
     recentEvents: recentEvents.map(mapEvent),
     recentEvidence: recentEvidence.map((row) => presentEvidence(mapEvidence(row))),
@@ -1062,6 +1078,15 @@ export async function dashboardStats() {
       name: asString(row.name),
       email: asString(row.email),
       topic: asString(row.topic),
+      createdAt: iso(row.created_at),
+    })),
+    recentRequests: recentRequests.map((row) => ({
+      id: asString(row.id),
+      kind: asString(row.kind),
+      status: asString(row.status),
+      pickup: [asString(row.pickup_city), asString(row.pickup_country)].filter(Boolean).join(", "),
+      destination: [asString(row.destination_city), asString(row.destination_country)].filter(Boolean).join(", "),
+      contactName: asString(row.contact_name),
       createdAt: iso(row.created_at),
     })),
   };
@@ -1268,3 +1293,339 @@ export async function replaceCourierPhoto(id: string, photoPath: string) {
   await query("update couriers set photo_path = $2 where id = $1", [id, photoPath]);
   return current[0].photo_path || "";
 }
+
+const REQUEST_SELECT = `select r.*, s.tracking_number
+  from customer_requests r
+  left join shipments s on s.id = r.shipment_id`;
+
+function mapRequest(row: Row) {
+  return {
+    id: asString(row.id),
+    kind: asString(row.kind),
+    status: asString(row.status),
+    serviceType: asString(row.service_type),
+    serviceLabel: serviceLabel(asString(row.service_type)),
+    shipmentType: asString(row.shipment_type),
+    shipmentTypeLabel: shipmentTypeLabel(asString(row.shipment_type)),
+    speed: asString(row.speed),
+    pickupAddress: asString(row.pickup_address),
+    pickupCity: asString(row.pickup_city),
+    pickupCountry: asString(row.pickup_country),
+    destinationAddress: asString(row.destination_address),
+    destinationCity: asString(row.destination_city),
+    destinationCountry: asString(row.destination_country),
+    packageCount: Number(row.package_count ?? 1),
+    weight: asNumber(row.weight),
+    weightUnit: asString(row.weight_unit || "kg"),
+    dimensions: asString(row.dimensions),
+    contactName: asString(row.contact_name),
+    contactEmail: asString(row.contact_email),
+    contactPhone: asString(row.contact_phone),
+    company: asString(row.company),
+    recipientName: asString(row.recipient_name),
+    recipientPhone: asString(row.recipient_phone),
+    instructions: asString(row.instructions),
+    estimateNote: asString(row.estimate_note),
+    staffNote: asString(row.staff_note),
+    shipmentId: row.shipment_id ? asString(row.shipment_id) : null,
+    trackingNumber: asString(row.tracking_number),
+    createdAt: iso(row.created_at),
+    updatedAt: iso(row.updated_at),
+  };
+}
+
+export async function createCustomerRequest(input: {
+  kind: "quote" | "booking";
+  serviceType: string;
+  shipmentType: string;
+  speed: string;
+  pickupAddress?: string;
+  pickupCity: string;
+  pickupCountry: string;
+  destinationAddress?: string;
+  destinationCity: string;
+  destinationCountry: string;
+  packageCount: number;
+  weight?: number | null;
+  weightUnit?: "kg" | "lb";
+  dimensions?: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone?: string;
+  company?: string;
+  recipientName?: string;
+  recipientPhone?: string;
+  instructions?: string;
+  estimateNote?: string;
+}) {
+  const rows = await query(
+    `insert into customer_requests (
+      kind, service_type, shipment_type, speed,
+      pickup_address, pickup_city, pickup_country,
+      destination_address, destination_city, destination_country,
+      package_count, weight, weight_unit, dimensions,
+      contact_name, contact_email, contact_phone, company,
+      recipient_name, recipient_phone, instructions, estimate_note
+    ) values (
+      $1,$2,$3,$4,
+      $5,$6,$7,
+      $8,$9,$10,
+      $11,$12,$13,$14,
+      $15,$16,$17,$18,
+      $19,$20,$21,$22
+    ) returning id, kind, status`,
+    [
+      input.kind,
+      input.serviceType,
+      input.shipmentType,
+      input.speed,
+      input.pickupAddress ?? "",
+      input.pickupCity,
+      input.pickupCountry,
+      input.destinationAddress ?? "",
+      input.destinationCity,
+      input.destinationCountry,
+      input.packageCount,
+      input.weight ?? null,
+      input.weightUnit ?? "kg",
+      input.dimensions ?? "",
+      input.contactName,
+      input.contactEmail.toLowerCase(),
+      input.contactPhone ?? "",
+      input.company ?? "",
+      input.recipientName ?? "",
+      input.recipientPhone ?? "",
+      input.instructions ?? "",
+      input.estimateNote ?? "",
+    ],
+  );
+  return {
+    kind: asString(rows[0].kind),
+    status: asString(rows[0].status),
+  };
+}
+
+export async function listCustomerRequests(status?: string) {
+  const params: unknown[] = [];
+  let where = "";
+  if (status) {
+    params.push(status);
+    where = `where r.status = $1`;
+  }
+  const rows = await query(`${REQUEST_SELECT} ${where} order by r.created_at desc limit 200`, params);
+  return rows.map(mapRequest);
+}
+
+export async function getCustomerRequest(id: string) {
+  const rows = await query(`${REQUEST_SELECT} where r.id = $1`, [id]);
+  return rows[0] ? mapRequest(rows[0]) : null;
+}
+
+export async function reviewCustomerRequest(
+  actor: StaffUser,
+  id: string,
+  input: { status: "in_review" | "closed" | "declined" | "booked"; staffNote?: string; recipientName?: string; recipientPhone?: string },
+) {
+  const current = await getCustomerRequest(id);
+  if (!current) throw new HttpError(404, "not_found", "Request not found.");
+  if (current.status === "booked" && current.shipmentId) {
+    throw new HttpError(409, "already_booked", "This request already opened a shipment.");
+  }
+  const recipientName = input.recipientName?.trim() || current.recipientName;
+  const recipientPhone = input.recipientPhone?.trim() || current.recipientPhone;
+  if (input.recipientName?.trim()) {
+    await query("update customer_requests set recipient_name = $2, recipient_phone = $3 where id = $1", [id, recipientName, recipientPhone]);
+  }
+  if (input.status === "declined" || input.status === "closed") {
+    if (!input.staffNote?.trim()) {
+      throw new HttpError(400, "note_required", "Add a staff note so the decision stays on the record.");
+    }
+    await query(
+      `update customer_requests set status = $2, staff_note = $3, reviewed_by = $4 where id = $1`,
+      [id, input.status, input.staffNote.trim(), actor.id],
+    );
+    return { request: await getCustomerRequest(id), shipment: null };
+  }
+  if (input.status === "in_review") {
+    await query(
+      `update customer_requests set status = 'in_review', staff_note = $2, reviewed_by = $3 where id = $1`,
+      [id, input.staffNote?.trim() || current.staffNote, actor.id],
+    );
+    return { request: await getCustomerRequest(id), shipment: null };
+  }
+  if (!recipientName) {
+    throw new HttpError(400, "recipient_required", "Enter the recipient name before opening a shipment. The desk will not invent one.");
+  }
+  if (!current.pickupCity || !current.destinationCity) {
+    throw new HttpError(400, "route_required", "Pickup and destination cities are required before a shipment can be opened.");
+  }
+  const speedLine =
+    current.speed === "express"
+      ? "Customer asked for faster handling. That preference is not a confirmed service level or a price."
+      : current.speed === "freight"
+        ? "Customer asked for freight timing. That preference is not a confirmed service level or a price."
+        : "Customer asked for standard handling. That preference is not a price.";
+  const shipment = await createShipment(actor, {
+    status: "pickup_scheduled",
+    serviceType: current.serviceType,
+    shipmentType: current.shipmentType,
+    senderName: current.contactName,
+    senderCompany: current.company,
+    senderPhone: current.contactPhone,
+    senderEmail: current.contactEmail,
+    senderAddress: current.pickupAddress,
+    senderCity: current.pickupCity,
+    senderCountry: current.pickupCountry,
+    recipientName,
+    recipientPhone,
+    recipientAddress: current.destinationAddress,
+    recipientCity: current.destinationCity,
+    recipientCountry: current.destinationCountry,
+    packageCount: current.packageCount,
+    weight: current.weight,
+    weightUnit: current.weightUnit === "lb" ? "lb" : "kg",
+    dimensions: current.dimensions,
+    specialInstructions: current.instructions,
+    internalNotes: `Opened from ${current.kind} request ${current.id}. ${speedLine}${current.estimateNote ? ` Window shown to the customer: ${current.estimateNote}` : ""}`,
+    isDemo: false,
+  });
+  await query(
+    `update customer_requests
+     set status = 'booked', shipment_id = $2, reviewed_by = $3, staff_note = $4, recipient_name = $5, recipient_phone = $6
+     where id = $1`,
+    [id, shipment.id, actor.id, input.staffNote?.trim() || current.staffNote, recipientName, recipientPhone],
+  );
+  return { request: await getCustomerRequest(id), shipment };
+}
+
+export async function estimateTransit(input: { serviceType: string; originCountry: string; destinationCountry: string; speed: string }) {
+  const rows = await query(
+    `select transit_min_days, transit_max_days, note
+     from service_lanes
+     where is_active = true
+       and service_type = $1
+       and speed = $2
+       and lower(origin_country) = lower($3)
+       and lower(destination_country) = lower($4)
+     limit 1`,
+    [input.serviceType, input.speed, input.originCountry.trim(), input.destinationCountry.trim()],
+  );
+  const row = rows[0];
+  if (!row) {
+    return {
+      available: false as const,
+      message: "NKDON has not published a transit window for this lane. Staff confirmation is required before any delivery date is given. This is not a price.",
+    };
+  }
+  const min = Number(row.transit_min_days);
+  const max = Number(row.transit_max_days);
+  const note = asString(row.note);
+  return {
+    available: true as const,
+    transitMinDays: min,
+    transitMaxDays: max,
+    note,
+    message: `Staff recorded a planning window of ${min}–${max} days for this lane. It is not a guaranteed delivery date, and it is not a price.${note ? ` ${note}` : ""}`,
+  };
+}
+
+function mapLane(row: Row) {
+  return {
+    id: asString(row.id),
+    serviceType: asString(row.service_type),
+    serviceLabel: serviceLabel(asString(row.service_type)),
+    originCountry: asString(row.origin_country),
+    destinationCountry: asString(row.destination_country),
+    speed: asString(row.speed),
+    transitMinDays: Number(row.transit_min_days),
+    transitMaxDays: Number(row.transit_max_days),
+    note: asString(row.note),
+    isActive: asBool(row.is_active),
+    createdAt: iso(row.created_at),
+  };
+}
+
+export async function listLanes() {
+  const rows = await query("select * from service_lanes order by origin_country, destination_country, service_type");
+  return rows.map(mapLane);
+}
+
+export async function createLane(input: {
+  serviceType: string;
+  originCountry: string;
+  destinationCountry: string;
+  speed: string;
+  transitMinDays: number;
+  transitMaxDays: number;
+  note?: string;
+  isActive?: boolean;
+}) {
+  try {
+    const rows = await query(
+      `insert into service_lanes (
+        service_type, origin_country, destination_country, speed, transit_min_days, transit_max_days, note, is_active
+      ) values ($1,$2,$3,$4,$5,$6,$7,$8) returning *`,
+      [
+        input.serviceType,
+        input.originCountry.trim(),
+        input.destinationCountry.trim(),
+        input.speed,
+        input.transitMinDays,
+        input.transitMaxDays,
+        input.note ?? "",
+        input.isActive ?? true,
+      ],
+    );
+    return mapLane(rows[0]);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (/service_lanes_route_unique|duplicate key/i.test(message)) {
+      throw new HttpError(409, "duplicate_lane", "A window for that service, lane, and speed already exists.");
+    }
+    throw error;
+  }
+}
+
+export async function updateLane(
+  id: string,
+  input: {
+    serviceType: string;
+    originCountry: string;
+    destinationCountry: string;
+    speed: string;
+    transitMinDays: number;
+    transitMaxDays: number;
+    note?: string;
+    isActive?: boolean;
+  },
+) {
+  try {
+    const rows = await query(
+      `update service_lanes set
+        service_type = $2, origin_country = $3, destination_country = $4, speed = $5,
+        transit_min_days = $6, transit_max_days = $7, note = $8, is_active = $9
+       where id = $1 returning *`,
+      [
+        id,
+        input.serviceType,
+        input.originCountry.trim(),
+        input.destinationCountry.trim(),
+        input.speed,
+        input.transitMinDays,
+        input.transitMaxDays,
+        input.note ?? "",
+        input.isActive ?? true,
+      ],
+    );
+    if (!rows[0]) throw new HttpError(404, "not_found", "Transit window not found.");
+    return mapLane(rows[0]);
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
+    const message = error instanceof Error ? error.message : "";
+    if (/service_lanes_route_unique|duplicate key/i.test(message)) {
+      throw new HttpError(409, "duplicate_lane", "A window for that service, lane, and speed already exists.");
+    }
+    throw error;
+  }
+}
+

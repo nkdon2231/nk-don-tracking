@@ -9,19 +9,19 @@ import { AdminFrame, useStaff } from "./shell";
 import type { EvidenceItem } from "./types";
 import { Banner, Empty } from "./ui";
 
-export function EvidenceLibrary() {
+export function EvidenceLibrary({ documents = false }: { documents?: boolean }) {
   return (
     <AdminFrame>
-      <LibraryBody />
+      <LibraryBody documents={documents} />
     </AdminFrame>
   );
 }
 
-function LibraryBody() {
+function LibraryBody({ documents }: { documents: boolean }) {
   const session = useStaff();
   const [items, setItems] = useState<EvidenceItem[]>([]);
   const [error, setError] = useState("");
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(documents ? "group=documents" : "");
 
   async function load(next = query) {
     const result = await api<{ items: EvidenceItem[] }>(`/api/admin/evidence?${next}`);
@@ -30,7 +30,8 @@ function LibraryBody() {
 
   useEffect(() => {
     let cancel = false;
-    api<{ items: EvidenceItem[] }>("/api/admin/evidence")
+    const initial = documents ? "group=documents" : "";
+    api<{ items: EvidenceItem[] }>(`/api/admin/evidence${initial ? `?${initial}` : ""}`)
       .then((result) => {
         if (!cancel) setItems(result.items);
       })
@@ -40,7 +41,7 @@ function LibraryBody() {
     return () => {
       cancel = true;
     };
-  }, []);
+  }, [documents]);
 
   function apply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -50,6 +51,7 @@ function LibraryBody() {
       const value = String(form.get(key) ?? "");
       if (value) params.set(key, value);
     }
+    if (documents) params.set("group", "documents");
     const next = params.toString();
     setQuery(next);
     load(next).catch((caught) => setError(caught instanceof ApiError ? caught.message : "Evidence could not be loaded."));
@@ -58,9 +60,11 @@ function LibraryBody() {
   return (
     <div className="mx-auto grid max-w-6xl gap-5">
       <div>
-        <h1 className="serif text-4xl">Evidence</h1>
+        <h1 className="serif text-4xl">{documents ? "Documents" : "Evidence"}</h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--color-muted)]">
-          Private files stored with a shipment. Upload from the shipment itself. A public link appears only after the file is marked public.
+          {documents
+            ? "Waybills, customs files, clearance papers, and signatures staff uploaded. NKDON does not generate government forms, stamps, or labels."
+            : "Private files stored with a shipment. Upload from the shipment itself. A public link appears only after the file is marked public."}
         </p>
       </div>
       <form className="card grid gap-3 p-4 md:grid-cols-4" onSubmit={apply}>

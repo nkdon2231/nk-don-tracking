@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { EVIDENCE_TYPES, FACILITY_TYPES, ROLES, SERVICE_TYPES, SHIPMENT_TYPES, STATUSES, TRACKING_RE } from "./constants";
+import { EVIDENCE_TYPES, FACILITY_TYPES, ROLES, SERVICE_TYPES, SHIPMENT_TYPES, SPEEDS, STATUSES, TRACKING_RE } from "./constants";
 import { HttpError } from "./http";
 
 const text = (max: number) => z.string().trim().max(max);
@@ -29,6 +29,7 @@ const timestamp = z.string().trim().refine((value) => !Number.isNaN(Date.parse(v
 
 const serviceValues = SERVICE_TYPES.map((item) => item.value) as [string, ...string[]];
 const shipmentValues = SHIPMENT_TYPES.map((item) => item.value) as [string, ...string[]];
+const speedValues = SPEEDS.map((item) => item.value) as [string, ...string[]];
 
 export const passwordSchema = z
   .string()
@@ -190,6 +191,74 @@ export const contactSchema = z.object({
   phone: text(40).optional().default(""),
   topic: text(80).optional().default(""),
   message: z.string().trim().min(10, "Add a short message.").max(4000),
+});
+
+export const requestSchema = z
+  .object({
+    kind: z.enum(["quote", "booking"]),
+    serviceType: z.enum(serviceValues),
+    shipmentType: z.enum(shipmentValues),
+    speed: z.enum(speedValues),
+    pickupAddress: text(300).optional().default(""),
+    pickupCity: required(120),
+    pickupCountry: required(120),
+    destinationAddress: text(300).optional().default(""),
+    destinationCity: required(120),
+    destinationCountry: required(120),
+    packageCount: z.coerce.number().int().min(1).max(10000).default(1),
+    weight: optionalNumber.optional(),
+    weightUnit: z.enum(["kg", "lb"]).default("kg"),
+    dimensions: text(120).optional().default(""),
+    contactName: required(160),
+    contactEmail: z.string().trim().email().max(200),
+    contactPhone: text(40).optional().default(""),
+    company: text(160).optional().default(""),
+    recipientName: text(160).optional().default(""),
+    recipientPhone: text(40).optional().default(""),
+    instructions: text(4000).optional().default(""),
+    estimateNote: text(900).optional().default(""),
+  })
+  .superRefine((value, ctx) => {
+    if (value.kind !== "booking") return;
+    if (!value.pickupAddress.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["pickupAddress"], message: "Enter a pickup address." });
+    }
+    if (!value.destinationAddress.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["destinationAddress"], message: "Enter a destination address." });
+    }
+    if (!value.recipientName.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["recipientName"], message: "Enter the recipient name. Staff will not invent one." });
+    }
+  });
+
+export const requestReviewSchema = z.object({
+  status: z.enum(["in_review", "closed", "declined", "booked"]),
+  staffNote: text(2000).optional().default(""),
+  recipientName: text(160).optional().default(""),
+  recipientPhone: text(40).optional().default(""),
+});
+
+export const laneSchema = z
+  .object({
+    serviceType: z.enum(serviceValues),
+    originCountry: required(120),
+    destinationCountry: required(120),
+    speed: z.enum(speedValues),
+    transitMinDays: z.coerce.number().int().min(1).max(180),
+    transitMaxDays: z.coerce.number().int().min(1).max(180),
+    note: text(400).optional().default(""),
+    isActive: z.boolean().optional().default(true),
+  })
+  .refine((value) => value.transitMaxDays >= value.transitMinDays, {
+    message: "The latest day cannot be before the earliest.",
+    path: ["transitMaxDays"],
+  });
+
+export const estimateQuerySchema = z.object({
+  serviceType: z.enum(serviceValues),
+  originCountry: required(120),
+  destinationCountry: required(120),
+  speed: z.enum(speedValues),
 });
 
 export const trackingQuerySchema = z.object({
