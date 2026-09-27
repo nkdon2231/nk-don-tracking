@@ -18,14 +18,53 @@ function first(names: readonly string[]) {
   return { name: "", value: "" };
 }
 
-function cleanDatabaseUrl(value: string) {
+function stripPgbouncer(value: string) {
+  return value.replace(/([?&])pgbouncer=(?:true|1)&/gi, "$1").replace(/[?&]pgbouncer=(?:true|1)$/i, "");
+}
+
+function describeConnection(value: string) {
   try {
     const url = new URL(value);
-    url.searchParams.delete("pgbouncer");
-    return url.toString();
+    const host = url.hostname.toLowerCase();
+    const port = url.port || "5432";
+    const hostKind = host.includes("pooler") ? "pooler" : host.startsWith("db.") ? "direct" : "other";
+    let score = 2;
+    if (port === "6543" || url.searchParams.has("pgbouncer")) score = 1;
+    else if (hostKind === "pooler") score = 3;
+    return { port, hostKind, score };
   } catch {
-    return value;
+    const pooled = /:6543\b|pgbouncer=true/i.test(value);
+    const session = /pooler/i.test(value) && !pooled;
+    return { port: pooled ? "6543" : "5432", hostKind: session || pooled ? "pooler" : "other", score: session ? 3 : pooled ? 1 : 2 };
   }
+}
+
+export type DatabaseCandidate = {
+  source: string;
+  url: string;
+  port: string;
+  hostKind: string;
+  score: number;
+};
+
+export function databaseCandidates(): DatabaseCandidate[] {
+  const seen = new Set<string>();
+  const items: DatabaseCandidate[] = [];
+  for (const name of DATABASE_NAMES) {
+    const value = read(name);
+    if (!value || seen.has(value)) continue;
+    seen.add(value);
+    const described = describeConnection(value);
+    items.push({ source: name, url: stripPgbouncer(value), port: described.port, hostKind: described.hostKind, score: described.score });
+  }
+  items.sort((left, right) => right.score - left.score);
+  return items;
+}
+
+export function databaseConfig() {
+  const [best] = databaseCandidates();
+  if (!best) return { source: "", url: "" };
+  return { source: best.source, url: best.url };
 }
 
 const DATABASE_NAMES = ["DATABASE_URL", "POSTGRES_URL", "POSTGRES_URL_NON_POOLING", "POSTGRES_PRISMA_URL"] as const;
@@ -37,32 +76,6 @@ const PUBLISHABLE_KEY_NAMES = [
   "SUPABASE_PUBLISHABLE_KEY",
 ] as const;
 const SECRET_KEY_NAMES = ["SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_SECRET_KEY"] as const;
-
-function connectionScore(value: string) {
-  try {
-    const url = new URL(value);
-    const host = url.hostname.toLowerCase();
-    const port = url.port || "5432";
-    // Transaction pooler rejects node-pg prepared statements.
-    if (port === "6543" || url.searchParams.has("pgbouncer")) return 1;
-    // Session pooler is IPv4 and supports the extended query protocol.
-    if (host.includes("pooler")) return 3;
-    // Direct db.<ref>.supabase.co is often IPv6-only and fails from Vercel.
-    return 2;
-  } catch {
-    if (/:6543\b|pgbouncer=true/i.test(value)) return 1;
-    if (/pooler/i.test(value)) return 3;
-    return 2;
-  }
-}
-
-export function databaseConfig() {
-  const candidates = DATABASE_NAMES.map((name) => ({ name, value: read(name) })).filter((item) => item.value);
-  if (!candidates.length) return { source: "", url: "" };
-  candidates.sort((left, right) => connectionScore(right.value) - connectionScore(left.value));
-  const best = candidates[0];
-  return { source: best.name, url: cleanDatabaseUrl(best.value) };
-}
 
 export function databaseUrl() {
   return databaseConfig().url;

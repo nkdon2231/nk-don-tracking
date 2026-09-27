@@ -1,7 +1,7 @@
 import { mkdir, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import pg from "pg";
-import { databaseUrl, supabaseAuthConfigured as authReady, supabaseStorageConfigured } from "./env";
+import { databaseCandidates, databaseUrl, supabaseAuthConfigured as authReady, supabaseStorageConfigured } from "./env";
 import { HttpError } from "./http";
 
 const { Pool, types } = pg;
@@ -72,6 +72,18 @@ async function previewDb() {
   return globalRef.__nkdonPglite;
 }
 
+function failureReason(error: unknown) {
+  if (error && typeof error === "object" && "code" in error) {
+    const code = String((error as { code?: unknown }).code ?? "");
+    if (/^[A-Za-z0-9_]{2,32}$/.test(code)) return code;
+  }
+  return "connect_failed";
+}
+
+function needsSsl(url: string) {
+  return /supabase\.(co|com)|pooler/i.test(url);
+}
+
 async function checkout(): Promise<Runner> {
   const mode = databaseMode();
   if (mode === "unconfigured") {
@@ -91,11 +103,33 @@ async function checkout(): Promise<Runner> {
     };
   }
   if (!globalRef.__nkdonPool) {
-    globalRef.__nkdonPool = new Pool({
-      connectionString: databaseUrlSource(),
-      max: process.env.VERCEL ? 1 : 8,
-      ssl: /supabase\.(co|com)/i.test(databaseUrlSource()) ? { rejectUnauthorized: false } : undefined,
-    });
+    const failures: string[] = [];
+    for (const candidate of databaseCandidates()) {
+      const pool = new Pool({
+        connectionString: candidate.url,
+        max: process.env.VERCEL ? 1 : 8,
+        connectionTimeoutMillis: 5000,
+        ssl: needsSsl(candidate.url) ? { rejectUnauthorized: false } : undefined,
+      });
+      try {
+        const client = await pool.connect();
+        client.release();
+        globalRef.__nkdonPool = pool;
+        break;
+      } catch (error) {
+        failures.push(`${candidate.source} ${candidate.hostKind}:${candidate.port} ${failureReason(error)}`);
+        await pool.end().catch(() => undefined);
+      }
+    }
+    if (!globalRef.__nkdonPool) {
+      throw new HttpError(
+        503,
+        "database_unavailable",
+        failures.length
+          ? `The production database could not be reached (${failures.join("; ")}).`
+          : "The production database is not connected. Set DATABASE_URL to the Supabase session pooler URI.",
+      );
+    }
   }
   const client = await globalRef.__nkdonPool.connect();
   return {
@@ -112,12 +146,8 @@ async function openRunner() {
     return await checkout();
   } catch (error) {
     if (error instanceof HttpError) throw error;
-    console.error("[nkdon] database connect failed", error instanceof Error ? error.name : "error");
-    throw new HttpError(
-      503,
-      "database_unavailable",
-      "The production database could not be reached. Check DATABASE_URL or POSTGRES_URL_NON_POOLING.",
-    );
+    console.error("[nkdon] database connect failed", failureReason(error));
+    throw new HttpError(503, "database_unavailable", `The production database could not be reached (${failureReason(error)}).`);
   }
 }
 
@@ -129,12 +159,8 @@ export async function query<T = Record<string, unknown>>(sql: string, params: un
       return result.rows as T[];
     } catch (error) {
       if (error instanceof HttpError) throw error;
-      console.error("[nkdon] query failed", error instanceof Error ? error.name : "error");
-      throw new HttpError(
-        503,
-        "database_unavailable",
-        "The production database could not be reached. Check DATABASE_URL or POSTGRES_URL_NON_POOLING.",
-      );
+      console.error("[nkdon] query failed", failureReason(error));
+      throw new HttpError(503, "database_unavailable", `The database query failed (${failureReason(error)}).`);
     } finally {
       runner.release?.();
     }
@@ -156,12 +182,8 @@ export async function withTransaction<T>(fn: (q: QueryFn) => Promise<T>): Promis
         // Keep the original error.
       }
       if (error instanceof HttpError) throw error;
-      console.error("[nkdon] transaction failed", error instanceof Error ? error.name : "error");
-      throw new HttpError(
-        503,
-        "database_unavailable",
-        "The production database could not be reached. Check DATABASE_URL or POSTGRES_URL_NON_POOLING.",
-      );
+      console.error("[nkdon] transaction failed", failureReason(error));
+      throw new HttpError(503, "database_unavailable", `The database query failed (${failureReason(error)}).`);
     } finally {
       runner.release?.();
     }
