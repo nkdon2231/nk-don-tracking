@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #111111;
+  --paper: #f4f1ea;
+  --cream: #fbfaf6;
+  --line: #ddd8ce;
+  --steel: #6b675f;
+  --gold: #c9a15b;
+  --gold-deep: #9b7540;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-cream: var(--cream);
+  --color-line: var(--line);
+  --color-steel: var(--steel);
+  --color-gold: var(--gold);
+  --font-sans: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+.brand-mark {
+  letter-spacing: 0.16em;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.field {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--cream);
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.8rem;
+}
