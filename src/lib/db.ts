@@ -266,20 +266,20 @@ const BASELINE_COLUMNS: Record<string, Array<[string, string]>> = {
   ],
 };
 
-async function baselineState(name: string): Promise<"present" | "absent" | "partial" | "run"> {
+async function baselineState(name: string): Promise<{ state: "present" | "absent" | "partial" | "run"; missing: string[] }> {
   const markers = BASELINE_COLUMNS[name];
-  if (!markers) return "run";
+  if (!markers) return { state: "run", missing: [] };
+  const tables = [...new Set(markers.map(([table]) => table))];
   const rows = await query<{ table_name: string; column_name: string }>(
     `select table_name, column_name
      from information_schema.columns
-     where table_schema = 'public'
-       and (table_name, column_name) in (select * from unnest($1::text[], $2::text[]))`,
-    [markers.map(([table]) => table), markers.map(([, column]) => column)],
+     where table_schema = 'public' and table_name = any($1::text[])`,
+    [tables],
   );
   const found = new Set(rows.map((row) => `${row.table_name}.${row.column_name}`));
-  const hits = markers.filter(([table, column]) => found.has(`${table}.${column}`)).length;
-  if (hits === 0) return "absent";
-  if (hits !== markers.length) return "partial";
+  const missing = markers.filter(([table, column]) => !found.has(`${table}.${column}`)).map(([table, column]) => `${table}.${column}`);
+  if (missing.length === markers.length) return { state: "absent", missing };
+  if (missing.length > 0) return { state: "partial", missing };
   if (name === "0001_init.sql") {
     const functions = await query<{ proname: string }>(
       `select p.proname
@@ -289,9 +289,12 @@ async function baselineState(name: string): Promise<"present" | "absent" | "part
       [["set_updated_at", "prevent_event_mutation"]],
     );
     const names = new Set(functions.map((row) => row.proname));
-    if (!names.has("set_updated_at") || !names.has("prevent_event_mutation")) return "partial";
+    for (const fn of ["set_updated_at", "prevent_event_mutation"]) {
+      if (!names.has(fn)) missing.push(`function:${fn}`);
+    }
+    if (missing.length) return { state: "partial", missing };
   }
-  return "present";
+  return { state: "present", missing: [] };
 }
 
 async function recordExistingMigration(name: string) {
@@ -332,10 +335,14 @@ export async function migrate() {
   for (const name of files) {
     if (applied.has(name)) continue;
     const state = await baselineState(name);
-    if (state === "partial") {
-      throw new HttpError(503, "migration_failed", `Migration ${name} is only partly present. Nothing was dropped or rewritten.`);
+    if (state.state === "partial") {
+      throw new HttpError(
+        503,
+        "migration_failed",
+        `Migration ${name} is only partly present (${state.missing.join(", ")}). Nothing was dropped or rewritten.`,
+      );
     }
-    if (state === "present") {
+    if (state.state === "present") {
       await recordExistingMigration(name);
       console.log(`[nkdon] recorded existing migration ${name}`);
       continue;
