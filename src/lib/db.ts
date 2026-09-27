@@ -435,6 +435,22 @@ export async function migrate() {
     }
     console.log(`[nkdon] applied migration ${name}`);
   }
+  const copied = await query<{ legacy_rows: number; current_rows: number }>(
+    `select
+       case when to_regclass('public.legacy_shipments') is null then 0
+            else (select count(*)::int from legacy_shipments) end as legacy_rows,
+       case when to_regclass('public.shipments') is null then 0
+            else (select count(*)::int from shipments) end as current_rows`,
+  );
+  const legacyRows = copied[0]?.legacy_rows ?? 0;
+  const currentRows = copied[0]?.current_rows ?? 0;
+  if (legacyRows > 0 && currentRows === 0) {
+    throw new HttpError(
+      503,
+      "migration_failed",
+      "The previous shipment table was preserved, but none of its rows could be copied into the current record. Nothing was deleted.",
+    );
+  }
 }
 
 export async function ensureReady() {
