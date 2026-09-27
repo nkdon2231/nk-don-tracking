@@ -1,0 +1,12 @@
+node_modules
+.next
+.data
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+tsconfig.tsbuildinfo
+coverage
+.vercel
+supabase/.temp
