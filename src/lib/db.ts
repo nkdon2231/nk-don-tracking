@@ -107,12 +107,34 @@ async function checkout(): Promise<Runner> {
   };
 }
 
+async function openRunner() {
+  try {
+    return await checkout();
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
+    console.error("[nkdon] database connect failed", error instanceof Error ? error.name : "error");
+    throw new HttpError(
+      503,
+      "database_unavailable",
+      "The production database could not be reached. Check DATABASE_URL or POSTGRES_URL_NON_POOLING.",
+    );
+  }
+}
+
 export async function query<T = Record<string, unknown>>(sql: string, params: unknown[] = []) {
   return enqueue(async () => {
-    const runner = await checkout();
+    const runner = await openRunner();
     try {
       const result = await runner.query(sql, params);
       return result.rows as T[];
+    } catch (error) {
+      if (error instanceof HttpError) throw error;
+      console.error("[nkdon] query failed", error instanceof Error ? error.name : "error");
+      throw new HttpError(
+        503,
+        "database_unavailable",
+        "The production database could not be reached. Check DATABASE_URL or POSTGRES_URL_NON_POOLING.",
+      );
     } finally {
       runner.release?.();
     }
@@ -121,7 +143,7 @@ export async function query<T = Record<string, unknown>>(sql: string, params: un
 
 export async function withTransaction<T>(fn: (q: QueryFn) => Promise<T>): Promise<T> {
   return enqueue(async () => {
-    const runner = await checkout();
+    const runner = await openRunner();
     try {
       await runner.query("begin");
       const result = await fn(runner.query);
@@ -133,7 +155,13 @@ export async function withTransaction<T>(fn: (q: QueryFn) => Promise<T>): Promis
       } catch {
         // Keep the original error.
       }
-      throw error;
+      if (error instanceof HttpError) throw error;
+      console.error("[nkdon] transaction failed", error instanceof Error ? error.name : "error");
+      throw new HttpError(
+        503,
+        "database_unavailable",
+        "The production database could not be reached. Check DATABASE_URL or POSTGRES_URL_NON_POOLING.",
+      );
     } finally {
       runner.release?.();
     }
@@ -169,7 +197,13 @@ export async function migrate() {
     "create table if not exists schema_migrations (name text primary key, applied_at timestamptz not null default now())",
   );
   const dir = path.join(process.cwd(), "supabase", "migrations");
-  const files = (await readdir(dir)).filter((name) => name.endsWith(".sql")).sort();
+  let files: string[] = [];
+  try {
+    files = (await readdir(dir)).filter((name) => name.endsWith(".sql")).sort();
+  } catch (error) {
+    console.error("[nkdon] migrations unreadable", error instanceof Error ? error.name : "error");
+    throw new HttpError(503, "migrations_missing", "The server could not read supabase/migrations.");
+  }
   const appliedRows = await query<{ name: string }>("select name from schema_migrations");
   const applied = new Set(appliedRows.map((row) => row.name));
   for (const name of files) {

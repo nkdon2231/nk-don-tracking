@@ -38,8 +38,23 @@ const PUBLISHABLE_KEY_NAMES = [
 ] as const;
 const SECRET_KEY_NAMES = ["SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_SECRET_KEY"] as const;
 
+function looksPooled(value: string) {
+  try {
+    const url = new URL(value);
+    return url.port === "6543" || url.hostname.toLowerCase().includes("pooler") || url.searchParams.has("pgbouncer");
+  } catch {
+    return /:6543\b|pooler\.supabase|pgbouncer=true/i.test(value);
+  }
+}
+
 export function databaseConfig() {
+  // node-pg uses the extended query protocol. Supabase's transaction pooler
+  // (port 6543) rejects that. Prefer the direct connection when one is set.
+  const direct = read("POSTGRES_URL_NON_POOLING");
   const found = first(DATABASE_NAMES);
+  if (direct && (!found.value || looksPooled(found.value))) {
+    return { source: "POSTGRES_URL_NON_POOLING", url: cleanDatabaseUrl(direct) };
+  }
   return { source: found.name, url: found.value ? cleanDatabaseUrl(found.value) : "" };
 }
 
