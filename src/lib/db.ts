@@ -322,8 +322,8 @@ async function schemaInventory() {
      where table_schema = 'public' and table_type = 'BASE TABLE'
      order by table_name`,
   );
-  const columns = await query<{ table_name: string; column_name: string }>(
-    `select table_name, column_name
+  const columns = await query<{ table_name: string; column_name: string; data_type: string }>(
+    `select table_name, column_name, data_type
      from information_schema.columns
      where table_schema = 'public' and table_name = any($1::text[])
      order by table_name, ordinal_position`,
@@ -332,14 +332,33 @@ async function schemaInventory() {
   const grouped = new Map<string, string[]>();
   for (const row of columns) {
     const list = grouped.get(row.table_name) ?? [];
-    list.push(row.column_name);
+    list.push(`${row.column_name}:${row.data_type}`);
     grouped.set(row.table_name, list);
   }
+  const counts = await query<{ shipments: number; events: number; users: number; activity: number; nkd: number; minlen: number; maxlen: number }>(
+    `select
+       (select count(*)::int from shipments) as shipments,
+       (select count(*)::int from shipment_events) as events,
+       (select count(*)::int from admin_users) as users,
+       (select count(*)::int from admin_activity) as activity,
+       (select count(*)::int from shipments where tracking_number ~ '^NKD-[0-9]{8}-[0-9]{4}$') as nkd,
+       (select min(length(tracking_number))::int from shipments) as minlen,
+       (select max(length(tracking_number))::int from shipments) as maxlen`,
+  );
+  const statuses = await query<{ status: string; n: number }>(
+    `select status, count(*)::int as n from shipments group by status order by status`,
+  );
+  const eventStatuses = await query<{ status: string; n: number }>(
+    `select status, count(*)::int as n from shipment_events group by status order by status`,
+  );
   const detail = names
     .filter((name) => grouped.has(name))
     .map((name) => `${name}=${grouped.get(name)?.join(",")}`)
     .join(" | ");
-  return `using ${globalRef.__nkdonDbSource ?? "unknown"}; tables=${tables.map((row) => row.table_name).join(",")}; ${detail}`;
+  const count = counts[0];
+  const statusText = statuses.map((row) => `${row.status}:${row.n}`).join(",");
+  const eventText = eventStatuses.map((row) => `${row.status}:${row.n}`).join(",");
+  return `using ${globalRef.__nkdonDbSource ?? "unknown"}; tables=${tables.map((row) => row.table_name).join(",")}; counts=shipments:${count?.shipments ?? 0},events:${count?.events ?? 0},users:${count?.users ?? 0},activity:${count?.activity ?? 0},nkd:${count?.nkd ?? 0},len:${count?.minlen ?? 0}-${count?.maxlen ?? 0}; shipment_status=${statusText}; event_status=${eventText}; ${detail}`;
 }
 
 async function recordExistingMigration(name: string) {
