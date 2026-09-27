@@ -19,6 +19,7 @@ const NAV: { href: string; label: string; exact?: boolean; action?: Action }[] =
   { href: "/admin", label: "Desk", exact: true },
   { href: "/admin/shipments", label: "Shipments" },
   { href: "/admin/facilities", label: "Facilities" },
+  { href: "/admin/couriers", label: "Couriers" },
   { href: "/admin/evidence", label: "Evidence" },
   { href: "/admin/messages", label: "Messages" },
   { href: "/admin/activity", label: "Activity" },

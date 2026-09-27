@@ -4,11 +4,19 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { ApiError, api } from "@/lib/client-api";
 import { can, EVIDENCE_TYPES, STATUSES, STATUS_LABEL } from "@/lib/constants";
-import { formatBytes, formatWhen } from "@/lib/format";
+import { formatWhen } from "@/lib/format";
+import { journeyMarkers } from "@/lib/stages";
+import type { EvidenceStageId } from "@/lib/stages";
+import type { RecordedRoute } from "@/lib/route";
 import { StatusPill } from "@/components/status-pill";
+import { EvidenceBoard, type EvidenceView } from "@/components/logistics/evidence-board";
+import { CustomsPanel, DeliveryPanel } from "@/components/logistics/movement-panels";
+import { RecordedRoute as RecordedRouteView } from "@/components/logistics/recorded-route";
+import { ShipmentJourney } from "@/components/logistics/shipment-journey";
 import { AdminFrame, useStaff } from "./shell";
+import { CourierAssign } from "./couriers-panel";
 import { FacilityField, ShipmentForm } from "./shipment-form";
-import type { EvidenceItem, Facility, Shipment, ShipmentEvent } from "./types";
+import type { Courier, EvidenceItem, Facility, Shipment, ShipmentEvent } from "./types";
 import { Banner, localInputNow, toIso } from "./ui";
 
 type Detail = {
@@ -16,6 +24,8 @@ type Detail = {
   events: ShipmentEvent[];
   evidence: EvidenceItem[];
   currentFacility: { name: string; city: string; country: string; isDemo: boolean } | null;
+  courier: Courier | null;
+  route: RecordedRoute;
 };
 
 export function ShipmentDetail({ id }: { id: string }) {
@@ -32,6 +42,7 @@ function DetailBody({ id }: { id: string }) {
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [stage, setStage] = useState<EvidenceStageId>("all");
 
   async function reload() {
     const [next, facilityList] = await Promise.all([
@@ -109,6 +120,51 @@ function DetailBody({ id }: { id: string }) {
       {shipment.isDemo ? <Banner>This is demonstration data. It is not a customer shipment.</Banner> : null}
       {notice ? <Banner tone="ok">{notice}</Banner> : null}
       {error ? <Banner>{error}</Banner> : null}
+      <div className="grid min-w-0 gap-4 lg:grid-cols-2">
+        <ShipmentJourney
+          status={shipment.status}
+          serviceType={shipment.serviceType}
+          markers={journeyMarkers(
+            shipment.status,
+            detail.events.map((event) => event.status),
+          )}
+          points={detail.route.points}
+          stage={stage}
+          onStage={setStage}
+        />
+        <RecordedRouteView points={detail.route.points} />
+      </div>
+      <CourierAssign
+        shipmentId={shipment.id}
+        shipmentIsDemo={shipment.isDemo}
+        courier={detail.courier}
+        onChanged={async (message) => {
+          setNotice(message);
+          await reload();
+        }}
+      />
+      <div className="grid min-w-0 gap-4 lg:grid-cols-2">
+        <CustomsPanel
+          events={detail.events}
+          files={detail.evidence.map((item) => ({
+            key: item.id,
+            title: item.title,
+            evidenceType: item.evidenceType,
+            href: `/api/admin/evidence/${item.id}/file`,
+          }))}
+        />
+        <DeliveryPanel
+          status={shipment.status}
+          statusLabel={shipment.statusLabel}
+          actualDeliveryDate={shipment.actualDeliveryDate}
+          files={detail.evidence.map((item) => ({
+            key: item.id,
+            title: item.title,
+            evidenceType: item.evidenceType,
+            href: `/api/admin/evidence/${item.id}/file`,
+          }))}
+        />
+      </div>
       <section className="grid gap-4 lg:grid-cols-[180px_1fr] lg:items-center">
         <img src={`/api/admin/shipments/${id}/qr`} alt="" className="h-36 w-36 rounded-2xl bg-white p-3" />
         <div>
@@ -155,6 +211,12 @@ function DetailBody({ id }: { id: string }) {
               <p className="text-sm text-[var(--color-muted)]">
                 {[event.location, event.facilityName, event.createdByName].filter(Boolean).join(" · ")}
               </p>
+              {event.latitude != null && event.longitude != null ? (
+                <p className="text-sm text-[var(--color-muted)]">
+                  Recorded coordinates {Number(event.latitude).toFixed(5)}, {Number(event.longitude).toFixed(5)}
+                  {event.coordinateSource === "facility" ? " · copied from the facility record" : " · entered on this event"}. Not live GPS.
+                </p>
+              ) : null}
             </li>
           ))}
         </ol>
@@ -169,13 +231,16 @@ function DetailBody({ id }: { id: string }) {
           />
         ) : null}
       </section>
-      <section className="card p-5">
-        <h2 className="serif text-3xl">Evidence</h2>
-        <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">JPG, PNG, WEBP up to 10 MB. PDF up to 20 MB. Files stay private until an admin marks them public.</p>
-        <div className="mt-4 grid gap-4">
-          {detail.evidence.map((item) => (
-            <EvidenceRow
-              key={item.id}
+      <EvidenceBoard
+        items={detail.evidence.map(staffEvidence)}
+        stage={stage}
+        onStage={setStage}
+        empty={detail.evidence.length === 0 ? "No files have been added for this shipment." : "No files have been added for this stage."}
+        actions={(view) => {
+          const item = detail.evidence.find((entry) => entry.id === view.key);
+          if (!item) return null;
+          return (
+            <EvidenceActions
               item={item}
               canToggle={can(session.user.role, "evidence:visibility")}
               canDelete={can(session.user.role, "evidence:delete")}
@@ -185,10 +250,10 @@ function DetailBody({ id }: { id: string }) {
               }}
               onError={setError}
             />
-          ))}
-          {detail.evidence.length === 0 ? <p className="text-sm text-[var(--color-muted)]">No files on this shipment.</p> : null}
-        </div>
-        {evidenceWrite ? (
+          );
+        }}
+      />
+      {evidenceWrite ? (
           <UploadForm
             shipment={shipment}
             facilities={facilities}
@@ -199,9 +264,25 @@ function DetailBody({ id }: { id: string }) {
             }}
           />
         ) : null}
-      </section>
     </div>
   );
+}
+
+function staffEvidence(item: EvidenceItem): EvidenceView {
+  return {
+    key: item.id,
+    href: `/api/admin/evidence/${item.id}/file`,
+    title: item.title,
+    evidenceType: item.evidenceType,
+    fileType: item.fileType,
+    fileSize: item.fileSize,
+    capturedAt: item.capturedAt ?? item.createdAt,
+    location: item.location,
+    description: item.description,
+    isDemo: item.isDemo,
+    visibility: item.isPublic ? "Customer-visible" : "Staff only",
+    uploadedByName: item.uploadedByName,
+  };
 }
 
 function ReadOnly({ shipment, viewer }: { shipment: Shipment; viewer: boolean }) {
@@ -252,6 +333,8 @@ function EventForm({
         location: form.get("location") ?? "",
         facilityId: form.get("facilityId") || null,
         eventTime: toIso(String(form.get("eventTime") ?? "")),
+        latitude: form.get("latitude") || null,
+        longitude: form.get("longitude") || null,
       });
       event.currentTarget.reset();
     } catch (caught) {
@@ -288,6 +371,17 @@ function EventForm({
           <input name="location" maxLength={200} />
         </label>
         <FacilityField name="facilityId" label="Facility" facilities={facilities} />
+        <label className="field">
+          <span>Latitude</span>
+          <input name="latitude" inputMode="decimal" placeholder="Only if recorded" />
+        </label>
+        <label className="field">
+          <span>Longitude</span>
+          <input name="longitude" inputMode="decimal" placeholder="Only if recorded" />
+        </label>
+        <p className="text-xs leading-5 text-[var(--color-muted)] sm:col-span-2">
+          Leave both blank unless you have a recorded coordinate. This is not live GPS. If you choose a facility that already has coordinates and leave these blank, those facility coordinates are copied onto the event.
+        </p>
         <label className="field sm:col-span-2">
           <span>Description</span>
           <textarea name="description" maxLength={2000} />
@@ -301,7 +395,7 @@ function EventForm({
   );
 }
 
-function EvidenceRow({
+function EvidenceActions({
   item,
   canToggle,
   canDelete,
@@ -314,84 +408,57 @@ function EvidenceRow({
   onChange: () => Promise<void>;
   onError: (message: string) => void;
 }) {
-  const image = item.fileType.startsWith("image/");
+  if (!canToggle && !canDelete && !item.isPublic) return null;
   return (
-    <article className="grid gap-3 rounded-2xl border border-[var(--color-line)] bg-white p-3 sm:grid-cols-[120px_1fr]">
-      {image ? (
-        <img src={`/api/admin/evidence/${item.id}/file`} alt="" className="h-28 w-full rounded-xl object-cover" />
-      ) : (
-        <a className="btn btn-ghost h-fit" href={`/api/admin/evidence/${item.id}/file`}>
-          Open PDF
-        </a>
-      )}
-      <div>
-        <p className="font-semibold">
-          {item.title} {item.isDemo ? <span className="badge badge-warn">DEMO</span> : null}
-        </p>
-        <p className="text-sm text-[var(--color-muted)]">
-          {item.evidenceType} · {formatBytes(item.fileSize)} · {item.isPublic ? "Public" : "Private"} · {formatWhen(item.createdAt, true)}
-        </p>
-        {item.description ? <p className="mt-1 text-sm">{item.description}</p> : null}
-        <div className="mt-2 flex flex-wrap gap-2">
-          {image ? (
-            <a className="text-sm" href={`/api/admin/evidence/${item.id}/file`}>
-              Open file
-            </a>
-          ) : null}
-          {item.isPublic ? (
-            <a className="text-sm" href={`/api/evidence/${item.publicToken}`}>
-              Public link
-            </a>
-          ) : null}
-          {canToggle ? (
-            <button
-              className="text-sm underline"
-              type="button"
-              onClick={async () => {
-                try {
-                  await api(`/api/admin/evidence/${item.id}`, {
-                    method: "PATCH",
-                    body: JSON.stringify({
-                      evidenceType: item.evidenceType,
-                      title: item.title,
-                      description: item.description,
-                      location: item.location,
-                      facilityId: item.facilityId,
-                      eventId: item.eventId,
-                      capturedAt: item.capturedAt,
-                      isPublic: !item.isPublic,
-                      isDemo: item.isDemo,
-                    }),
-                  });
-                  await onChange();
-                } catch (caught) {
-                  onError(caught instanceof ApiError ? caught.message : "Visibility could not be changed.");
-                }
-              }}
-            >
-              {item.isPublic ? "Make private" : "Show on tracking"}
-            </button>
-          ) : null}
-          {canDelete ? (
-            <button
-              className="text-sm text-[#7a3e22] underline"
-              type="button"
-              onClick={async () => {
-                if (!window.confirm("Delete this evidence file? This cannot be undone.")) return;
-                try {
-                  await api(`/api/admin/evidence/${item.id}`, { method: "DELETE" });
-                  await onChange();
-                } catch (caught) {
-                  onError(caught instanceof ApiError ? caught.message : "The file could not be deleted.");
-                }
-              }}
-            >
-              Delete
-            </button>
-          ) : null}
-        </div>
-      </div>
-    </article>
+    <div className="flex flex-wrap gap-3 text-sm">
+      {item.isPublic ? <a href={`/api/evidence/${item.publicToken}`}>Public link</a> : null}
+      {canToggle ? (
+        <button
+          className="underline"
+          type="button"
+          onClick={async () => {
+            try {
+              await api(`/api/admin/evidence/${item.id}`, {
+                method: "PATCH",
+                body: JSON.stringify({
+                  evidenceType: item.evidenceType,
+                  title: item.title,
+                  description: item.description,
+                  location: item.location,
+                  facilityId: item.facilityId,
+                  eventId: item.eventId,
+                  capturedAt: item.capturedAt,
+                  isPublic: !item.isPublic,
+                  isDemo: item.isDemo,
+                }),
+              });
+              await onChange();
+            } catch (caught) {
+              onError(caught instanceof ApiError ? caught.message : "Visibility could not be changed.");
+            }
+          }}
+        >
+          {item.isPublic ? "Make private" : "Show on tracking"}
+        </button>
+      ) : null}
+      {canDelete ? (
+        <button
+          className="text-[#7a3e22] underline"
+          type="button"
+          onClick={async () => {
+            if (!window.confirm("Delete this evidence file? This cannot be undone.")) return;
+            try {
+              await api(`/api/admin/evidence/${item.id}`, { method: "DELETE" });
+              await onChange();
+            } catch (caught) {
+              onError(caught instanceof ApiError ? caught.message : "The file could not be deleted.");
+            }
+          }}
+        >
+          Delete
+        </button>
+      ) : null}
+    </div>
   );
 }
 
@@ -431,7 +498,7 @@ function UploadForm({
   }
 
   return (
-    <form className="mt-6 grid gap-3 border-t border-[var(--color-line)] pt-5" onSubmit={handle}>
+    <form className="card grid gap-3 p-5" onSubmit={handle}>
       <h3 className="font-semibold">Upload proof</h3>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="field sm:col-span-2">
@@ -446,6 +513,9 @@ function UploadForm({
             ))}
           </select>
         </label>
+        <p className="text-xs leading-5 text-[var(--color-muted)] sm:col-span-2">
+          Package and Package Condition are the parcel. Pickup/Handover is collection. Facility is the warehouse. Transportation, Air Cargo, and Vehicle are transit. Courier is a file about the assignment, separate from the courier profile photo. Customs and Clearance are clearance files. Documents and Waybill are papers. Delivery and Signature are proof of delivery. Exception is a problem record.
+        </p>
         <label className="field">
           <span>Title</span>
           <input name="title" required maxLength={160} />

@@ -24,10 +24,12 @@ import {
 import { barcodeSvg, qrSvg } from "@/lib/codes";
 import { audit } from "@/lib/audit";
 import { databaseMode, ensureReady, query, storageMode } from "@/lib/db";
-import { deleteEvidenceFile, readEvidenceFile, readUpload, saveEvidenceFile } from "@/lib/files";
+import { deleteEvidenceFile, detectFileType, readEvidenceFile, readUpload, saveCourierPhoto, saveEvidenceFile } from "@/lib/files";
 import { assertCsrf, assertSameOrigin, clientIp, handle, HttpError, jsonError, jsonOk, readCookie, siteBase, userAgent } from "@/lib/http";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import {
+  courierAssignSchema,
+  courierSchema,
   eventSchema,
   evidenceMetaSchema,
   facilitySchema,
@@ -41,22 +43,28 @@ import {
 } from "@/lib/validators";
 import {
   addEvent,
+  assignCourier,
+  createCourier,
   createFacility,
   createShipment,
   dashboardStats,
   deleteEvidence,
+  getCourierPhotoPath,
   getEvidence,
   getSettings,
   getShipment,
   insertEvidence,
   listActivity,
+  listCouriers,
   listEvidence,
   listFacilities,
   listInquiries,
   listShipments,
   listUsers,
   purgeDemo,
+  replaceCourierPhoto,
   setArchived,
+  updateCourier,
   updateEvidence,
   updateFacility,
   updateSettings,
@@ -148,7 +156,13 @@ export async function GET(request: Request, context: { params: Promise<{ path: s
       const user = await actor(request, "shipments:read");
       const detail = await getShipment(path[1]);
       if (!detail) return jsonError(404, "not_found", "Shipment not found.");
-      if (user.role === "viewer") detail.shipment.internalNotes = "";
+      if (user.role === "viewer") {
+        detail.shipment.internalNotes = "";
+        if (detail.courier) {
+          detail.courier.phone = "";
+          detail.courier.notes = "";
+        }
+      }
       return jsonOk(detail);
     }
     if (key === "evidence") {
@@ -167,13 +181,38 @@ export async function GET(request: Request, context: { params: Promise<{ path: s
       const evidence = await getEvidence(path[1]);
       if (!evidence) return jsonError(404, "not_found", "File not found.");
       const bytes = await readEvidenceFile(evidence.filePath);
+      const download = url.searchParams.get("download") === "1";
+      const filename = evidence.title.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80) || "evidence";
       return new NextResponse(new Uint8Array(bytes), {
         headers: {
           "content-type": evidence.fileType,
-          "content-disposition": `inline; filename="evidence"`,
+          "content-disposition": `${download ? "attachment" : "inline"}; filename="${filename}"`,
           "cache-control": "private, no-store",
           "x-content-type-options": "nosniff",
         },
+      });
+    }
+    if (path[0] === "couriers" && path[2] === "photo" && path[1]) {
+      await actor(request, "shipments:read");
+      const photoPath = await getCourierPhotoPath(path[1]);
+      if (photoPath == null) return jsonError(404, "not_found", "Courier not found.");
+      if (!photoPath) return jsonError(404, "not_found", "No photo has been added for this courier.");
+      const bytes = await readEvidenceFile(photoPath);
+      const type = detectFileType(bytes) ?? "application/octet-stream";
+      return new NextResponse(new Uint8Array(bytes), {
+        headers: {
+          "content-type": type,
+          "content-disposition": "inline; filename=\"courier-photo\"",
+          "cache-control": "private, no-store",
+          "x-content-type-options": "nosniff",
+        },
+      });
+    }
+    if (key === "couriers") {
+      const user = await actor(request, "shipments:read");
+      const items = await listCouriers();
+      return jsonOk({
+        items: user.role === "viewer" ? items.map((item) => ({ ...item, phone: "", notes: "" })) : items,
       });
     }
     if (key === "facilities") {
@@ -301,6 +340,44 @@ export async function POST(request: Request, context: { params: Promise<{ path: 
       const result = await addEvent(user, path[1], { ...input, status: input.status as ShipmentStatus });
       await audit({ ...meta(request, user), action: "event_created", resource: "shipment_event", resourceId: result.eventId, metadata: { shipmentId: path[1], status: input.status } });
       return jsonOk(result, 201);
+    }
+
+    if (path[0] === "shipments" && path[1] && path[2] === "courier") {
+      await guardMutation(request);
+      const user = await actor(request, "shipments:write");
+      const input = parseBody(courierAssignSchema, await body(request));
+      const courier = await assignCourier(path[1], input.courierId);
+      await audit({
+        ...meta(request, user),
+        action: courier ? "courier_assigned" : "courier_unassigned",
+        resource: "shipment",
+        resourceId: path[1],
+        metadata: { courierId: courier?.id ?? null, demo: courier?.isDemo ?? false },
+      });
+      return jsonOk({ courier });
+    }
+
+    if (key === "couriers") {
+      await guardMutation(request);
+      const user = await actor(request, "shipments:write");
+      const input = parseBody(courierSchema, await body(request));
+      const courier = await createCourier(input);
+      await audit({ ...meta(request, user), action: "courier_created", resource: "courier", resourceId: courier.id, metadata: { demo: courier.isDemo } });
+      return jsonOk({ courier }, 201);
+    }
+
+    if (path[0] === "couriers" && path[1] && path[2] === "photo") {
+      await guardMutation(request);
+      const user = await actor(request, "shipments:write");
+      const form = await request.formData();
+      const file = form.get("file");
+      if (!(file instanceof File)) return jsonError(400, "invalid_file", "Choose a photo.");
+      const stored = await readUpload(file);
+      const photoPath = await saveCourierPhoto(path[1], file.name || "photo", stored);
+      const previous = await replaceCourierPhoto(path[1], photoPath);
+      if (previous && previous !== photoPath) await deleteEvidenceFile(previous);
+      await audit({ ...meta(request, user), action: "courier_photo_updated", resource: "courier", resourceId: path[1] });
+      return jsonOk({ hasPhoto: true });
     }
 
     if (key === "evidence") {
@@ -434,6 +511,14 @@ export async function PATCH(request: Request, context: { params: Promise<{ path:
       const shipment = await updateShipment(path[1], { ...input, status: input.status as ShipmentStatus });
       await audit({ ...meta(request, user), action: "shipment_updated", resource: "shipment", resourceId: shipment.id, metadata: { status: shipment.status } });
       return jsonOk({ shipment });
+    }
+
+    if (path[0] === "couriers" && path[1] && path.length === 2) {
+      const user = await actor(request, "shipments:write");
+      const input = parseBody(courierSchema, await body(request));
+      const courier = await updateCourier(path[1], input);
+      await audit({ ...meta(request, user), action: "courier_updated", resource: "courier", resourceId: courier.id, metadata: { demo: courier.isDemo, active: courier.isActive } });
+      return jsonOk({ courier });
     }
 
     if (path[0] === "evidence" && path[1] && path.length === 2) {

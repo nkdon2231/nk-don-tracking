@@ -78,6 +78,10 @@ export type Shipment = {
   isDemo: boolean;
   archivedAt: string | null;
   createdAt: string | null;
+  courierId: string | null;
+  courierName: string;
+  courierVehicle: string;
+  courierIsDemo: boolean;
 };
 
 export type ShipmentEvent = {
@@ -91,6 +95,9 @@ export type ShipmentEvent = {
   facilityName: string;
   eventTime: string | null;
   createdByName: string;
+  latitude: number | null;
+  longitude: number | null;
+  coordinateSource: string | null;
 };
 
 export type EvidenceItem = {
@@ -110,4 +117,18 @@ export type EvidenceItem = {
   isDemo: boolean;
   createdAt: string | null;
   trackingNumber: string;
+  uploadedByName?: string;
+};
+
+export type Courier = {
+  id: string;
+  name: string;
+  courierCode: string;
+  vehicle: string;
+  phone: string;
+  notes: string;
+  isActive: boolean;
+  isDemo: boolean;
+  hasPhoto: boolean;
+  assignedCount?: number;
 };

@@ -58,10 +58,8 @@ async function storageClient() {
   });
 }
 
-export async function saveEvidenceFile(shipmentId: string, originalName: string, file: StoredFile) {
-  const objectName = safeObjectName(originalName);
-  const relative = path.posix.join("shipments", shipmentId, "evidence", objectName);
-  if (relative.includes("..")) throw new HttpError(400, "invalid_file", "Invalid file path.");
+async function storeObject(relative: string, file: StoredFile) {
+  if (!relative || relative.includes("..")) throw new HttpError(400, "invalid_file", "Invalid file path.");
   const mode = storageMode();
   if (mode === "supabase") {
     const supabase = await storageClient();
@@ -83,6 +81,20 @@ export async function saveEvidenceFile(shipmentId: string, originalName: string,
   await mkdir(path.dirname(absolute), { recursive: true });
   await writeFile(absolute, file.bytes);
   return relative;
+}
+
+export async function saveEvidenceFile(shipmentId: string, originalName: string, file: StoredFile) {
+  const relative = path.posix.join("shipments", shipmentId, "evidence", safeObjectName(originalName));
+  return storeObject(relative, file);
+}
+
+export async function saveCourierPhoto(courierId: string, originalName: string, file: StoredFile) {
+  if (!/^[0-9a-f-]{36}$/i.test(courierId)) throw new HttpError(400, "invalid_input", "Choose a courier.");
+  if (file.fileType === "application/pdf") {
+    throw new HttpError(400, "invalid_file", "Courier photos must be JPG, PNG, or WEBP.");
+  }
+  const relative = path.posix.join("couriers", courierId, safeObjectName(originalName));
+  return storeObject(relative, file);
 }
 
 export async function readEvidenceFile(filePath: string) {

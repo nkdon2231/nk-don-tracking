@@ -76,13 +76,19 @@ export const FACILITY_TYPES = [
 
 export const EVIDENCE_TYPES = [
   "Package",
+  "Package Condition",
   "Pickup/Handover",
   "Transportation",
   "Air Cargo",
+  "Vehicle",
   "Facility",
+  "Courier",
   "Customs",
+  "Clearance",
   "Documents",
+  "Waybill",
   "Delivery",
+  "Signature",
   "Exception",
 ] as const;
 

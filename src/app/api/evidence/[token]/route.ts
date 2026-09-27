@@ -18,11 +18,12 @@ export async function GET(request: Request, context: { params: Promise<{ token: 
     if (!evidence) return jsonError(404, "not_found", "File not found.");
     const bytes = await readEvidenceFile(evidence.filePath);
     const filename = evidence.title.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80) || "evidence";
+    const download = new URL(request.url).searchParams.get("download") === "1";
     return new NextResponse(new Uint8Array(bytes), {
       headers: {
         "content-type": evidence.fileType,
         "content-length": String(bytes.length),
-        "content-disposition": `inline; filename="${filename}"`,
+        "content-disposition": `${download ? "attachment" : "inline"}; filename="${filename}"`,
         "cache-control": "private, no-store",
         "x-content-type-options": "nosniff",
       },

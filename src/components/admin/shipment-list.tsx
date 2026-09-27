@@ -114,6 +114,8 @@ function ListBody() {
               <p className="font-semibold">{item.trackingNumber}</p>
               <p className="text-sm text-[var(--color-muted)]">
                 {item.referenceNumber || "No reference"} · {item.serviceLabel}
+                {item.courierName ? ` · ${item.courierName}` : ""}
+                {item.courierIsDemo ? " · DEMO courier" : ""}
                 {item.isDemo ? " · DEMO/TEST" : ""}
                 {item.archivedAt ? " · Archived" : ""}
               </p>

@@ -9,6 +9,7 @@ import {
 } from "@/lib/constants";
 import { query, withTransaction, type QueryFn } from "@/lib/db";
 import { HttpError } from "@/lib/http";
+import type { RecordedRoute, RoutePoint } from "@/lib/route";
 import type { StaffUser } from "@/lib/auth";
 
 type Row = Record<string, unknown>;
@@ -66,6 +67,8 @@ function facilityBrief(row: Row | undefined) {
     type: asString(row.type),
     city: asString(row.city),
     country: asString(row.country),
+    latitude: asNumber(row.latitude),
+    longitude: asNumber(row.longitude),
     isDemo: asBool(row.is_demo),
   };
 }
@@ -139,6 +142,10 @@ export function mapShipment(row: Row) {
     createdBy: row.created_by ? asString(row.created_by) : null,
     createdAt: iso(row.created_at),
     updatedAt: iso(row.updated_at),
+    courierId: row.courier_id ? asString(row.courier_id) : null,
+    courierName: asString(row.courier_name),
+    courierVehicle: asString(row.courier_vehicle),
+    courierIsDemo: asBool(row.courier_is_demo),
   };
 }
 
@@ -160,6 +167,9 @@ export function mapEvent(row: Row) {
     createdBy: row.created_by ? asString(row.created_by) : null,
     createdByName: asString(row.created_by_name),
     createdAt: iso(row.created_at),
+    latitude: asNumber(row.latitude),
+    longitude: asNumber(row.longitude),
+    coordinateSource: row.coordinate_source ? asString(row.coordinate_source) : null,
   };
 }
 
@@ -187,6 +197,106 @@ export function mapEvidence(row: Row) {
     updatedAt: iso(row.updated_at),
     trackingNumber: asString(row.tracking_number),
   };
+}
+
+export function presentEvidence<T extends { filePath?: string; uploadedBy?: string | null }>(item: T) {
+  const { filePath: _filePath, uploadedBy: _uploadedBy, ...rest } = item;
+  return rest;
+}
+
+async function recordedCoordinates(
+  q: QueryFn,
+  input: { latitude?: number | null; longitude?: number | null; facilityId?: string | null },
+) {
+  const latitude = input.latitude ?? null;
+  const longitude = input.longitude ?? null;
+  if ((latitude == null) !== (longitude == null)) {
+    throw new HttpError(400, "invalid_input", "Enter both latitude and longitude, or leave both blank.");
+  }
+  if (latitude != null && longitude != null) {
+    return { latitude, longitude, source: "entered" as const };
+  }
+  if (input.facilityId) {
+    const facility = await q("select latitude, longitude from facilities where id = $1", [input.facilityId]);
+    const facilityLatitude = asNumber(facility.rows[0]?.latitude);
+    const facilityLongitude = asNumber(facility.rows[0]?.longitude);
+    if (facilityLatitude != null && facilityLongitude != null) {
+      return { latitude: facilityLatitude, longitude: facilityLongitude, source: "facility" as const };
+    }
+  }
+  return { latitude: null, longitude: null, source: null };
+}
+
+function placeLabel(parts: Array<string | null | undefined>) {
+  return parts.map((part) => (part ?? "").trim()).filter(Boolean).join(", ");
+}
+
+function pushPoint(points: RoutePoint[], point: RoutePoint) {
+  const last = points[points.length - 1];
+  if (
+    last &&
+    Math.abs(last.latitude - point.latitude) < 0.00001 &&
+    Math.abs(last.longitude - point.longitude) < 0.00001 &&
+    last.label === point.label
+  ) {
+    if (point.role === "current" || point.role === "destination") last.role = point.role;
+    if (point.eventTime) last.eventTime = point.eventTime;
+    if (point.statusLabel) last.statusLabel = point.statusLabel;
+    return;
+  }
+  points.push(point);
+}
+
+function buildRoute(input: {
+  origin: ReturnType<typeof facilityBrief>;
+  destination: ReturnType<typeof facilityBrief>;
+  events: Array<{
+    title: string;
+    location: string;
+    statusLabel: string;
+    eventTime: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    coordinateSource: string | null;
+    facilityName: string;
+  }>;
+}): RecordedRoute {
+  const points: RoutePoint[] = [];
+  if (input.origin?.latitude != null && input.origin.longitude != null) {
+    pushPoint(points, {
+      role: "origin",
+      label: placeLabel([input.origin.name, input.origin.city, input.origin.country]) || "Origin facility",
+      latitude: input.origin.latitude,
+      longitude: input.origin.longitude,
+      eventTime: null,
+      statusLabel: input.origin.isDemo ? "Origin · demonstration facility" : "Origin facility",
+      source: "facility",
+    });
+  }
+  const recorded = input.events.filter((event) => event.latitude != null && event.longitude != null);
+  recorded.forEach((event, index) => {
+    pushPoint(points, {
+      role: index === recorded.length - 1 ? "current" : "recorded",
+      label: placeLabel([event.location, event.facilityName]) || event.title,
+      latitude: event.latitude as number,
+      longitude: event.longitude as number,
+      eventTime: event.eventTime,
+      statusLabel: event.statusLabel,
+      source: event.coordinateSource === "facility" ? "facility" : "event",
+    });
+  });
+  if (input.destination?.latitude != null && input.destination.longitude != null) {
+    pushPoint(points, {
+      role: "destination",
+      label: placeLabel([input.destination.name, input.destination.city, input.destination.country]) || "Destination facility",
+      latitude: input.destination.latitude,
+      longitude: input.destination.longitude,
+      eventTime: null,
+      statusLabel: input.destination.isDemo ? "Destination · demonstration facility" : "Destination facility",
+      source: "facility",
+    });
+  }
+  return { liveGps: false, points };
 }
 
 const EVENT_SELECT = `
@@ -459,17 +569,23 @@ export async function createShipment(actor: StaffUser, input: ShipmentInput) {
       throw error;
     }
     const shipment = rows[0];
+    const facilityId = input.currentFacilityId || input.originFacilityId || null;
+    const coordinates = await recordedCoordinates(q, { facilityId });
     await q(
-      `insert into shipment_events (shipment_id, status, title, description, location, facility_id, event_time, created_by)
-       values ($1, $2, $3, $4, $5, $6, now(), $7)`,
+      `insert into shipment_events (
+        shipment_id, status, title, description, location, facility_id, event_time, created_by, latitude, longitude, coordinate_source
+      ) values ($1, $2, $3, $4, $5, $6, now(), $7, $8, $9, $10)`,
       [
         shipment.id,
         input.status,
         STATUS_LABEL[input.status],
         input.isDemo ? "TEST / DEMO. Initial status recorded for this demonstration shipment." : "Shipment record created.",
         [input.senderCity, input.senderCountry].filter(Boolean).join(", "),
-        input.currentFacilityId || input.originFacilityId || null,
+        facilityId,
         actor.id,
+        coordinates.latitude,
+        coordinates.longitude,
+        coordinates.source,
       ],
     );
     return mapShipment(shipment);
@@ -523,14 +639,21 @@ export async function getShipment(id: string) {
     : [];
   const events = await query(`${EVENT_SELECT} where e.shipment_id = $1 order by e.event_time asc, e.created_at asc`, [id]);
   const evidence = await query(`${EVIDENCE_SELECT} where ev.shipment_id = $1 order by ev.created_at desc`, [id]);
+  const courier = rows[0].courier_id ? await query("select * from couriers where id = $1", [rows[0].courier_id]) : [];
   const byId = new Map(facilities.map((row) => [asString(row.id), row]));
+  const originFacility = facilityBrief(rows[0].origin_facility_id ? byId.get(asString(rows[0].origin_facility_id)) : undefined);
+  const destinationFacility = facilityBrief(rows[0].destination_facility_id ? byId.get(asString(rows[0].destination_facility_id)) : undefined);
+  const currentFacility = facilityBrief(rows[0].current_facility_id ? byId.get(asString(rows[0].current_facility_id)) : undefined);
+  const mappedEvents = events.map(mapEvent);
   return {
     shipment: mapShipment(rows[0]),
-    originFacility: facilityBrief(rows[0].origin_facility_id ? byId.get(asString(rows[0].origin_facility_id)) : undefined),
-    destinationFacility: facilityBrief(rows[0].destination_facility_id ? byId.get(asString(rows[0].destination_facility_id)) : undefined),
-    currentFacility: facilityBrief(rows[0].current_facility_id ? byId.get(asString(rows[0].current_facility_id)) : undefined),
-    events: events.map(mapEvent),
-    evidence: evidence.map(mapEvidence),
+    originFacility,
+    destinationFacility,
+    currentFacility,
+    courier: courier[0] ? mapCourier(courier[0]) : null,
+    route: buildRoute({ origin: originFacility, destination: destinationFacility, events: mappedEvents }),
+    events: mappedEvents,
+    evidence: evidence.map((row) => presentEvidence(mapEvidence(row))),
   };
 }
 
@@ -566,7 +689,8 @@ export async function listShipments(input: {
     add(
       `(s.tracking_number ilike ? escape '\\' or coalesce(s.reference_number, '') ilike ? escape '\\'
         or s.sender_name ilike ? escape '\\' or s.recipient_name ilike ? escape '\\'
-        or s.sender_company ilike ? escape '\\' or s.recipient_company ilike ? escape '\\')`,
+        or s.sender_company ilike ? escape '\\' or s.recipient_company ilike ? escape '\\'
+        or coalesce(c.name, '') ilike ? escape '\\' or coalesce(c.courier_code, '') ilike ? escape '\\')`,
       escapeLike(input.q.trim()),
     );
     const placeholder = `$${params.length}`;
@@ -577,9 +701,15 @@ export async function listShipments(input: {
   const dir = input.dir === "asc" ? "asc" : "desc";
   const pageSize = Math.min(50, Math.max(1, input.pageSize ?? 20));
   const page = Math.max(1, input.page ?? 1);
-  const countRows = await query<{ count: number }>(`select count(*)::int as count from shipments s ${clause}`, params);
+  const countRows = await query<{ count: number }>(
+    `select count(*)::int as count from shipments s left join couriers c on c.id = s.courier_id ${clause}`,
+    params,
+  );
   const rows = await query(
-    `select s.* from shipments s ${clause} order by ${sort} ${dir} limit ${pageSize} offset ${(page - 1) * pageSize}`,
+    `select s.*, c.name as courier_name, c.vehicle as courier_vehicle, c.is_demo as courier_is_demo
+     from shipments s
+     left join couriers c on c.id = s.courier_id
+     ${clause} order by ${sort} ${dir} limit ${pageSize} offset ${(page - 1) * pageSize}`,
     params,
   );
   return {
@@ -593,14 +723,25 @@ export async function listShipments(input: {
 export async function addEvent(
   actor: StaffUser,
   shipmentId: string,
-  input: { status: ShipmentStatus; title: string; description?: string; location?: string; facilityId?: string | null; eventTime: string },
+  input: {
+    status: ShipmentStatus;
+    title: string;
+    description?: string;
+    location?: string;
+    facilityId?: string | null;
+    eventTime: string;
+    latitude?: number | null;
+    longitude?: number | null;
+  },
 ) {
   return withTransaction(async (q) => {
     const existing = await q("select id, is_demo from shipments where id = $1", [shipmentId]);
     if (!existing.rows[0]) throw new HttpError(404, "not_found", "Shipment not found.");
+    const coordinates = await recordedCoordinates(q, input);
     const inserted = await q(
-      `insert into shipment_events (shipment_id, status, title, description, location, facility_id, event_time, created_by)
-       values ($1,$2,$3,$4,$5,$6,$7,$8)
+      `insert into shipment_events (
+        shipment_id, status, title, description, location, facility_id, event_time, created_by, latitude, longitude, coordinate_source
+      ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
        returning *`,
       [
         shipmentId,
@@ -611,6 +752,9 @@ export async function addEvent(
         input.facilityId || null,
         new Date(input.eventTime).toISOString(),
         actor.id,
+        coordinates.latitude,
+        coordinates.longitude,
+        coordinates.source,
       ],
     );
     await q(
@@ -621,7 +765,7 @@ export async function addEvent(
        where id = $1`,
       [shipmentId, input.status, input.facilityId || null, new Date(input.eventTime).toISOString().slice(0, 10)],
     );
-    return { eventId: asString(inserted.rows[0].id), isDemo: asBool(existing.rows[0].is_demo) };
+    return { eventId: asString(inserted.rows[0].id), isDemo: asBool(existing.rows[0].is_demo), coordinateSource: coordinates.source };
   });
 }
 
@@ -629,9 +773,8 @@ export async function publicTracking(trackingNumber: string) {
   const rows = await query("select * from shipments where tracking_number = $1", [trackingNumber]);
   const row = rows[0];
   if (!row) return null;
-  const facilityRows = row.current_facility_id
-    ? await query("select * from facilities where id = $1", [row.current_facility_id])
-    : [];
+  const facilityIds = [row.origin_facility_id, row.destination_facility_id, row.current_facility_id].filter(Boolean);
+  const facilityRows = facilityIds.length ? await query("select * from facilities where id = any($1::uuid[])", [facilityIds]) : [];
   const events = await query(
     `${EVENT_SELECT} where e.shipment_id = $1 order by e.event_time asc, e.created_at asc`,
     [row.id],
@@ -640,13 +783,21 @@ export async function publicTracking(trackingNumber: string) {
     `${EVIDENCE_SELECT} where ev.shipment_id = $1 and ev.is_public = true order by ev.captured_at desc nulls last, ev.created_at desc`,
     [row.id],
   );
+  const courierRows = row.courier_id ? await query("select name, vehicle, is_demo from couriers where id = $1", [row.courier_id]) : [];
   const occurred = new Set(events.map((event) => asString(event.status)));
-  const facility = facilityRows[0];
+  const byId = new Map(facilityRows.map((facility) => [asString(facility.id), facility]));
+  const originFacility = facilityBrief(row.origin_facility_id ? byId.get(asString(row.origin_facility_id)) : undefined);
+  const destinationFacility = facilityBrief(row.destination_facility_id ? byId.get(asString(row.destination_facility_id)) : undefined);
+  const current = row.current_facility_id ? byId.get(asString(row.current_facility_id)) : undefined;
+  const mappedEvents = events.map(mapEvent);
+  const route = buildRoute({ origin: originFacility, destination: destinationFacility, events: mappedEvents });
+  const courier = courierRows[0];
   return {
     trackingNumber: asString(row.tracking_number),
     status: asString(row.status),
     statusLabel: STATUS_LABEL[asString(row.status) as ShipmentStatus] ?? asString(row.status),
     serviceType: serviceLabel(asString(row.service_type)),
+    serviceCode: asString(row.service_type),
     shipmentType: shipmentTypeLabel(asString(row.shipment_type)),
     origin: {
       city: asString(row.sender_city),
@@ -659,37 +810,50 @@ export async function publicTracking(trackingNumber: string) {
     packageCount: Number(row.package_count ?? 1),
     weight: asNumber(row.weight),
     weightUnit: asString(row.weight_unit || "kg"),
+    dimensions: asString(row.dimensions),
     publicDescription: asString(row.public_description),
     estimatedDeliveryDate: dateOnly(row.estimated_delivery_date),
     actualDeliveryDate: dateOnly(row.actual_delivery_date),
     isDemo: asBool(row.is_demo),
-    currentFacility: facility
+    liveGps: false as const,
+    currentFacility: current
       ? {
-          name: asString(facility.name),
-          city: asString(facility.city),
-          country: asString(facility.country),
-          isDemo: asBool(facility.is_demo),
+          name: asString(current.name),
+          city: asString(current.city),
+          country: asString(current.country),
+          isDemo: asBool(current.is_demo),
         }
       : null,
+    courier: courier
+      ? {
+          name: asString(courier.name),
+          vehicle: asString(courier.vehicle),
+          isDemo: asBool(courier.is_demo),
+        }
+      : null,
+    route,
     progress: HAPPY_PATH.map((status) => ({
       status,
       label: STATUS_LABEL[status],
       occurred: occurred.has(status),
       current: asString(row.status) === status,
     })),
-    events: events.map((event) => ({
-      status: asString(event.status),
-      statusLabel: STATUS_LABEL[asString(event.status) as ShipmentStatus] ?? asString(event.status),
-      title: asString(event.title),
-      description: asString(event.description),
-      location: asString(event.location),
-      eventTime: iso(event.event_time),
-      facility: event.facility_name
+    events: mappedEvents.map((event) => ({
+      status: event.status,
+      statusLabel: event.statusLabel,
+      title: event.title,
+      description: event.description,
+      location: event.location,
+      eventTime: event.eventTime,
+      latitude: event.latitude,
+      longitude: event.longitude,
+      coordinateSource: event.coordinateSource,
+      facility: event.facilityName
         ? {
-            name: asString(event.facility_name),
-            city: asString(event.facility_city),
-            country: asString(event.facility_country),
-            isDemo: asBool(event.facility_is_demo),
+            name: event.facilityName,
+            city: event.facilityCity,
+            country: event.facilityCountry,
+            isDemo: event.facilityIsDemo,
           }
         : null,
     })),
@@ -701,7 +865,7 @@ export async function publicTracking(trackingNumber: string) {
       fileType: asString(item.file_type),
       fileSize: Number(item.file_size ?? 0),
       location: asString(item.location),
-      capturedAt: iso(item.captured_at),
+      capturedAt: iso(item.captured_at) ?? iso(item.created_at),
       isDemo: asBool(item.is_demo),
     })),
   };
@@ -728,7 +892,7 @@ export async function listEvidence(input: { q?: string; type?: string; shipmentI
   }
   const clause = where.length ? `where ${where.join(" and ")}` : "";
   const rows = await query(`${EVIDENCE_SELECT} ${clause} order by ev.created_at desc limit 200`, params);
-  return rows.map(mapEvidence);
+  return rows.map((row) => presentEvidence(mapEvidence(row)));
 }
 
 export async function insertEvidence(input: {
@@ -821,7 +985,7 @@ export async function updateEvidence(
     ],
   );
   const full = await query(`${EVIDENCE_SELECT} where ev.id = $1`, [id]);
-  return mapEvidence(full[0] ?? rows[0]);
+  return presentEvidence(mapEvidence(full[0] ?? rows[0]));
 }
 
 export async function getEvidence(id: string) {
@@ -866,7 +1030,12 @@ export async function dashboardStats() {
      from shipments`,
   );
   const recentShipments = await query(
-    `select * from shipments where archived_at is null order by created_at desc limit 6`,
+    `select s.*, c.name as courier_name, c.vehicle as courier_vehicle, c.is_demo as courier_is_demo
+     from shipments s
+     left join couriers c on c.id = s.courier_id
+     where s.archived_at is null
+     order by s.created_at desc
+     limit 6`,
   );
   const recentEvents = await query(
     `${EVENT_SELECT} order by e.created_at desc limit 8`,
@@ -887,7 +1056,7 @@ export async function dashboardStats() {
     inquiries: stats?.inquiries ?? 0,
     recentShipments: recentShipments.map(mapShipment),
     recentEvents: recentEvents.map(mapEvent),
-    recentEvidence: recentEvidence.map(mapEvidence),
+    recentEvidence: recentEvidence.map((row) => presentEvidence(mapEvidence(row))),
     recentInquiries: recentInquiries.map((row) => ({
       id: asString(row.id),
       name: asString(row.name),
@@ -951,12 +1120,18 @@ export async function listUsers() {
 export async function purgeDemo() {
   const files = await withTransaction(async (q) => {
     await q("select set_config('nkdon.purge', 'on', true)");
-    const evidence = await q("select file_path from shipment_evidence where is_demo = true or shipment_id in (select id from shipments where is_demo = true)");
+    const evidence = await q(
+      "select file_path from shipment_evidence where is_demo = true or shipment_id in (select id from shipments where is_demo = true)",
+    );
+    const photos = await q("select photo_path from couriers where is_demo = true and photo_path is not null");
     await q("delete from shipment_evidence where is_demo = true or shipment_id in (select id from shipments where is_demo = true)");
     await q("delete from shipment_events where shipment_id in (select id from shipments where is_demo = true)");
     await q("delete from shipments where is_demo = true");
-    await q("delete from facilities where is_demo = true and not exists (select 1 from shipments s where s.origin_facility_id = facilities.id or s.destination_facility_id = facilities.id or s.current_facility_id = facilities.id)");
-    return evidence.rows.map((row) => asString(row.file_path));
+    await q("delete from couriers where is_demo = true");
+    await q(
+      "delete from facilities where is_demo = true and not exists (select 1 from shipments s where s.origin_facility_id = facilities.id or s.destination_facility_id = facilities.id or s.current_facility_id = facilities.id)",
+    );
+    return [...evidence.rows.map((row) => asString(row.file_path)), ...photos.rows.map((row) => asString(row.photo_path))].filter(Boolean);
   });
   return files;
 }
@@ -968,4 +1143,128 @@ export async function saveInquiry(input: { name: string; email: string; phone?: 
     [input.name, input.email, input.phone ?? "", input.topic ?? "", input.message],
   );
   return asString(rows[0].id);
+}
+
+export function mapCourier(row: Row) {
+  return {
+    id: asString(row.id),
+    name: asString(row.name),
+    courierCode: asString(row.courier_code),
+    vehicle: asString(row.vehicle),
+    phone: asString(row.phone),
+    notes: asString(row.notes),
+    isActive: asBool(row.is_active),
+    isDemo: asBool(row.is_demo),
+    hasPhoto: Boolean(row.photo_path),
+    createdAt: iso(row.created_at),
+    updatedAt: iso(row.updated_at),
+  };
+}
+
+export async function listCouriers() {
+  const rows = await query(
+    `select c.*, (select count(*)::int from shipments s where s.courier_id = c.id and s.archived_at is null) as assigned_count
+     from couriers c order by c.is_active desc, c.name asc`,
+  );
+  return rows.map((row) => ({ ...mapCourier(row), assignedCount: Number(row.assigned_count ?? 0) }));
+}
+
+export async function createCourier(input: {
+  name: string;
+  courierCode: string;
+  vehicle?: string;
+  phone?: string;
+  notes?: string;
+  isActive?: boolean;
+  isDemo?: boolean;
+}) {
+  try {
+    const rows = await query(
+      `insert into couriers (name, courier_code, vehicle, phone, notes, is_active, is_demo)
+       values ($1,$2,$3,$4,$5,$6,$7) returning *`,
+      [
+        input.name,
+        input.courierCode.toUpperCase(),
+        input.vehicle ?? "",
+        input.phone ?? "",
+        input.notes ?? "",
+        input.isActive ?? true,
+        input.isDemo ?? false,
+      ],
+    );
+    return mapCourier(rows[0]);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (/duplicate|unique/i.test(message)) throw new HttpError(409, "duplicate_code", "That courier code is already in use.");
+    throw error;
+  }
+}
+
+export async function updateCourier(
+  id: string,
+  input: {
+    name: string;
+    courierCode: string;
+    vehicle?: string;
+    phone?: string;
+    notes?: string;
+    isActive?: boolean;
+    isDemo?: boolean;
+  },
+) {
+  try {
+    const rows = await query("select id, is_demo from couriers where id = $1", [id]);
+    if (!rows[0]) throw new HttpError(404, "not_found", "Courier not found.");
+    const nextDemo = input.isDemo ?? asBool(rows[0].is_demo);
+    if (nextDemo !== asBool(rows[0].is_demo)) {
+      const clash = await query(
+        "select id from shipments where courier_id = $1 and is_demo <> $2 limit 1",
+        [id, nextDemo],
+      );
+      if (clash[0]) {
+        throw new HttpError(400, "demo_mismatch", "Unassign this courier before changing whether it is demonstration data.");
+      }
+    }
+    const updated = await query(
+      `update couriers set name = $2, courier_code = $3, vehicle = $4, phone = $5, notes = $6, is_active = $7, is_demo = $8
+       where id = $1 returning *`,
+      [id, input.name, input.courierCode.toUpperCase(), input.vehicle ?? "", input.phone ?? "", input.notes ?? "", input.isActive ?? true, nextDemo],
+    );
+    return mapCourier(updated[0]);
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
+    const message = error instanceof Error ? error.message : "";
+    if (/duplicate|unique/i.test(message)) throw new HttpError(409, "duplicate_code", "That courier code is already in use.");
+    throw error;
+  }
+}
+
+export async function assignCourier(shipmentId: string, courierId: string | null) {
+  const shipment = await query<{ id: string; is_demo: boolean }>("select id, is_demo from shipments where id = $1", [shipmentId]);
+  if (!shipment[0]) throw new HttpError(404, "not_found", "Shipment not found.");
+  if (!courierId) {
+    await query("update shipments set courier_id = null where id = $1", [shipmentId]);
+    return null;
+  }
+  const courier = await query("select * from couriers where id = $1", [courierId]);
+  if (!courier[0]) throw new HttpError(404, "not_found", "Courier not found.");
+  if (!asBool(courier[0].is_active)) throw new HttpError(400, "inactive_courier", "That courier is inactive. Activate the record before assigning it.");
+  if (asBool(courier[0].is_demo) !== asBool(shipment[0].is_demo)) {
+    throw new HttpError(400, "demo_mismatch", "A demonstration courier can only be assigned to a demonstration shipment.");
+  }
+  await query("update shipments set courier_id = $2 where id = $1", [shipmentId, courierId]);
+  return mapCourier(courier[0]);
+}
+
+export async function getCourierPhotoPath(id: string) {
+  const rows = await query<{ photo_path: string | null }>("select photo_path from couriers where id = $1", [id]);
+  if (!rows[0]) return null;
+  return rows[0].photo_path || "";
+}
+
+export async function replaceCourierPhoto(id: string, photoPath: string) {
+  const current = await query<{ photo_path: string | null }>("select photo_path from couriers where id = $1", [id]);
+  if (!current[0]) throw new HttpError(404, "not_found", "Courier not found.");
+  await query("update couriers set photo_path = $2 where id = $1", [id, photoPath]);
+  return current[0].photo_path || "";
 }

@@ -5,7 +5,11 @@ import { HttpError } from "./http";
 const text = (max: number) => z.string().trim().max(max);
 const required = (max: number) => z.string().trim().min(1, "This field is required.").max(max);
 const optionalEmail = z.union([z.literal(""), z.string().trim().email("Enter a valid email.").max(200)]);
-const optionalSigned = z.preprocess(
+const optionalLat = z.preprocess(
+  (value) => (value === "" || value === undefined || value === null ? null : value),
+  z.coerce.number().min(-90).max(90).nullable(),
+) as z.ZodType<number | null>;
+const optionalLng = z.preprocess(
   (value) => (value === "" || value === undefined || value === null ? null : value),
   z.coerce.number().min(-180).max(180).nullable(),
 ) as z.ZodType<number | null>;
@@ -89,36 +93,54 @@ export const shipmentSchema = z.object({
   isDemo: z.boolean().optional().default(false),
 });
 
-export const eventSchema = z.object({
-  status: z.enum(STATUSES),
-  title: required(160),
-  description: text(2000).optional().default(""),
-  location: text(200).optional().default(""),
-  facilityId: optionalUuid.optional(),
-  eventTime: timestamp,
-});
+export const eventSchema = z
+  .object({
+    status: z.enum(STATUSES),
+    title: required(160),
+    description: text(2000).optional().default(""),
+    location: text(200).optional().default(""),
+    facilityId: optionalUuid.optional(),
+    eventTime: timestamp,
+    latitude: optionalLat.optional(),
+    longitude: optionalLng.optional(),
+  })
+  .superRefine((value, ctx) => {
+    const latitude = value.latitude ?? null;
+    const longitude = value.longitude ?? null;
+    if ((latitude == null) !== (longitude == null)) {
+      ctx.addIssue({ code: "custom", message: "Enter both latitude and longitude, or leave both blank." });
+    }
+  });
 
-export const facilitySchema = z.object({
-  name: required(160),
-  facilityCode: z
-    .string()
-    .trim()
-    .min(2)
-    .max(40)
-    .regex(/^[A-Z0-9-]+$/, "Use uppercase letters, numbers, and hyphens."),
-  type: z.enum(FACILITY_TYPES),
-  address: text(300).optional().default(""),
-  city: text(120).optional().default(""),
-  state: text(120).optional().default(""),
-  country: text(120).optional().default(""),
-  latitude: optionalSigned.optional(),
-  longitude: optionalSigned.optional(),
-  phone: text(40).optional().default(""),
-  email: optionalEmail.optional().default(""),
-  operatingHours: text(200).optional().default(""),
-  isActive: z.boolean().optional().default(true),
-  isDemo: z.boolean().optional().default(false),
-});
+export const facilitySchema = z
+  .object({
+    name: required(160),
+    facilityCode: z
+      .string()
+      .trim()
+      .min(2)
+      .max(40)
+      .regex(/^[A-Z0-9-]+$/, "Use uppercase letters, numbers, and hyphens."),
+    type: z.enum(FACILITY_TYPES),
+    address: text(300).optional().default(""),
+    city: text(120).optional().default(""),
+    state: text(120).optional().default(""),
+    country: text(120).optional().default(""),
+    latitude: optionalLat.optional(),
+    longitude: optionalLng.optional(),
+    phone: text(40).optional().default(""),
+    email: optionalEmail.optional().default(""),
+    operatingHours: text(200).optional().default(""),
+    isActive: z.boolean().optional().default(true),
+    isDemo: z.boolean().optional().default(false),
+  })
+  .superRefine((value, ctx) => {
+    const latitude = value.latitude ?? null;
+    const longitude = value.longitude ?? null;
+    if ((latitude == null) !== (longitude == null)) {
+      ctx.addIssue({ code: "custom", message: "Enter both latitude and longitude, or leave both blank." });
+    }
+  });
 
 export const evidenceMetaSchema = z.object({
   evidenceType: z.enum(EVIDENCE_TYPES),
@@ -176,6 +198,26 @@ export const trackingQuerySchema = z.object({
     .trim()
     .toUpperCase()
     .regex(TRACKING_RE, "Enter a tracking number in the format NKD-YYYYMMDD-XXXX."),
+});
+
+export const courierSchema = z.object({
+  name: required(160),
+  courierCode: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .min(2)
+    .max(40)
+    .regex(/^[A-Z0-9-]+$/, "Use uppercase letters, numbers, and hyphens."),
+  vehicle: text(120).optional().default(""),
+  phone: text(40).optional().default(""),
+  notes: text(2000).optional().default(""),
+  isActive: z.boolean().optional().default(true),
+  isDemo: z.boolean().optional().default(false),
+});
+
+export const courierAssignSchema = z.object({
+  courierId: optionalUuid,
 });
 
 export function parseBody<T>(schema: z.ZodType<T>, data: unknown): T {
