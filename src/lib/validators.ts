@@ -117,7 +117,7 @@ export const facilitySchema = z.object({
   email: optionalEmail.optional().default(""),
   operatingHours: text(200).optional().default(""),
   isActive: z.boolean().optional().default(true),
-  isDemo: z.boolean().optional().default(true),
+  isDemo: z.boolean().optional().default(false),
 });
 
 export const evidenceMetaSchema = z.object({

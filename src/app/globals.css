@@ -1,23 +1,16 @@
 @import "tailwindcss";
 
-:root {
-  --ink: #111111;
-  --paper: #f4f1ea;
-  --cream: #fbfaf6;
-  --line: #ddd8ce;
-  --steel: #6b675f;
-  --gold: #c9a15b;
-  --gold-deep: #9b7540;
-}
-
-@theme inline {
-  --color-ink: var(--ink);
-  --color-paper: var(--paper);
-  --color-cream: var(--cream);
-  --color-line: var(--line);
-  --color-steel: var(--steel);
-  --color-gold: var(--gold);
-  --font-sans: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+@theme {
+  --font-sans: "Outfit", "Avenir Next", "Segoe UI", sans-serif;
+  --font-serif: "Fraunces", "Iowan Old Style", "Palatino Linotype", serif;
+  --color-ink: #1b1914;
+  --color-pine: #1d3b32;
+  --color-pine-2: #2f5b4c;
+  --color-copper: #9a5732;
+  --color-sand: #f4efe6;
+  --color-paper: #fbf8f2;
+  --color-line: #e3d9cb;
+  --color-muted: #6d655c;
 }
 
 html {
@@ -25,25 +18,118 @@ html {
 }
 
 body {
-  background: var(--paper);
-  color: var(--ink);
+  margin: 0;
+  min-height: 100vh;
+  background: var(--color-sand);
+  color: var(--color-ink);
   font-family: var(--font-sans);
 }
 
-.brand-mark {
-  letter-spacing: 0.16em;
+button,
+[role="button"],
+a,
+summary {
+  cursor: pointer;
 }
 
-input,
-select,
-textarea {
-  font: inherit;
+button:disabled {
+  cursor: not-allowed;
+}
+
+::selection {
+  background: #e7c7ae;
+}
+
+.serif {
+  font-family: var(--font-serif);
 }
 
 .field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.field span {
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.field input,
+.field select,
+.field textarea {
   width: 100%;
-  border: 1px solid var(--line);
-  background: var(--cream);
+  border: 1px solid var(--color-line);
+  background: white;
+  color: var(--color-ink);
   border-radius: 0.75rem;
-  padding: 0.65rem 0.8rem;
+  padding: 0.72rem 0.85rem;
+  font: inherit;
+}
+
+.field textarea {
+  min-height: 6.5rem;
+  resize: vertical;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  padding: 0.72rem 1.15rem;
+  border: 1px solid transparent;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+.btn-copper {
+  background: var(--color-copper);
+  color: white;
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--color-line);
+  color: var(--color-ink);
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid var(--color-line);
+  border-radius: 1.25rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  background: #efe7db;
+  color: var(--color-ink);
+}
+
+.badge-live {
+  background: #e5f2ea;
+  color: #1d3b32;
+}
+
+.badge-warn {
+  background: #f8e7dc;
+  color: #7a3e22;
+}
+
+.badge-muted {
+  background: #eceae6;
+  color: #5c564e;
 }

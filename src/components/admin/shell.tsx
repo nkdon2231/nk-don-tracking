@@ -2,82 +2,145 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactNode, useEffect, useState } from "react";
-import { api, type SessionUser } from "@/lib/client";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { ApiError, api } from "@/lib/client-api";
 import { can, ROLE_LABEL, type Action } from "@/lib/constants";
+import type { SessionInfo, Staff } from "./types";
 
-const LINKS: { href: string; label: string; action?: Action }[] = [
-  { href: "/admin/dashboard", label: "Dashboard" },
+const SessionContext = createContext<SessionInfo | null>(null);
+
+export function useStaff() {
+  const session = useContext(SessionContext);
+  if (!session?.user) throw new Error("Staff session is not ready.");
+  return session as SessionInfo & { user: Staff };
+}
+
+const NAV: { href: string; label: string; exact?: boolean; action?: Action }[] = [
+  { href: "/admin", label: "Desk", exact: true },
   { href: "/admin/shipments", label: "Shipments" },
-  { href: "/admin/evidence", label: "Evidence" },
   { href: "/admin/facilities", label: "Facilities" },
+  { href: "/admin/evidence", label: "Evidence" },
+  { href: "/admin/messages", label: "Messages" },
   { href: "/admin/activity", label: "Activity" },
-  { href: "/admin/users", label: "Users", action: "users:write" },
-  { href: "/admin/settings", label: "Settings", action: "settings:write" },
+  { href: "/admin/team", label: "Team", action: "users:write" },
+  { href: "/admin/settings", label: "Settings" },
 ];
 
-export function AdminShell({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
+export function AdminFrame({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const [user, setUser] = useState<SessionUser | null>(null);
-  const [ready, setReady] = useState(false);
+  const pathname = usePathname();
+  const [session, setSession] = useState<SessionInfo | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    api<{ user: SessionUser | null }>("/api/admin/auth/session")
-      .then((payload) => {
-        if (!payload.user) {
-          router.replace(`/admin/login?next=${encodeURIComponent(pathname)}`);
+    let cancel = false;
+    api<SessionInfo>("/api/admin/auth/session")
+      .then((data) => {
+        if (cancel) return;
+        if (!data.user) {
+          router.replace(`/admin/login?next=${encodeURIComponent(pathname || "/admin")}`);
           return;
         }
-        setUser(payload.user);
+        setSession(data);
       })
-      .catch(() => router.replace("/admin/login"))
-      .finally(() => setReady(true));
+      .catch((caught) => {
+        if (!cancel) setError(caught instanceof ApiError ? caught.message : "The desk could not be opened.");
+      });
+    return () => {
+      cancel = true;
+    };
   }, [pathname, router]);
 
-  async function logout() {
-    await api("/api/admin/auth/logout", { method: "POST" });
-    router.replace("/admin/login");
+  if (error) {
+    return (
+      <div className="mx-auto max-w-lg px-6 py-20">
+        <p className="serif text-4xl">The desk is not connected</p>
+        <p className="mt-3 text-sm leading-6 text-[var(--color-muted)]">{error}</p>
+      </div>
+    );
   }
 
-  if (!ready || !user) {
-    return <div className="flex min-h-screen items-center justify-center bg-paper text-steel">Loading operations desk…</div>;
+  if (!session?.user) {
+    return <p className="px-6 py-16 text-sm text-[var(--color-muted)]">Opening the desk…</p>;
+  }
+
+  const user = session.user;
+
+  return (
+    <SessionContext.Provider value={session}>
+      <div className="min-h-screen bg-[var(--color-sand)] lg:pl-64">
+        <aside className="border-b border-white/10 bg-[var(--color-pine)] text-[var(--color-paper)] lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col lg:border-b-0 lg:border-r">
+          <div className="flex items-end justify-between px-4 py-4 lg:block">
+            <Link href="/admin" className="no-underline">
+              <span className="serif block text-2xl leading-none">NKDON</span>
+              <span className="mt-1 block text-[0.68rem] uppercase tracking-[0.16em] text-white/70">Operations desk</span>
+            </Link>
+            <div className="flex items-center gap-3 lg:block">
+              <Link href="/" className="text-xs text-white/70 no-underline lg:mt-4 lg:inline-block">
+                Public site
+              </Link>
+              <div className="lg:hidden">
+                <SignOut user={user} compact />
+              </div>
+            </div>
+          </div>
+          <nav className="flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-1 lg:flex-col lg:overflow-visible lg:px-3">
+            {NAV.filter((item) => !item.action || can(user.role, item.action)).map((item) => {
+              const active = item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`rounded-full px-3 py-2 text-sm no-underline whitespace-nowrap ${active ? "bg-white/15 text-white" : "text-white/75"}`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+          <SignOut user={user} />
+        </aside>
+        <div className="px-4 py-6 sm:px-8 sm:py-8">{children}</div>
+      </div>
+    </SessionContext.Provider>
+  );
+}
+
+function SignOut({ user, compact = false }: { user: Staff; compact?: boolean }) {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+
+  async function leave() {
+    setPending(true);
+    try {
+      await api("/api/admin/auth/logout", { method: "POST" });
+    } finally {
+      router.replace("/admin/login");
+      router.refresh();
+    }
+  }
+
+  if (compact) {
+    return (
+      <button className="text-xs text-white/80" type="button" disabled={pending} onClick={leave}>
+        {pending ? "…" : "Sign out"}
+      </button>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-paper">
-      <header className="border-b border-line bg-ink text-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
-          <Link href="/admin/dashboard" className="font-black tracking-[0.16em]">
-            NKDON DESK
-          </Link>
-          <div className="flex items-center gap-3 text-sm text-white/70">
-            <span>
-              {user.name} · {ROLE_LABEL[user.role]}
-            </span>
-            <Link href="/" className="hidden sm:inline hover:text-white">
-              Public site
-            </Link>
-            <button onClick={logout} className="rounded-lg border border-white/20 px-3 py-1.5 text-white">
-              Sign out
-            </button>
-          </div>
-        </div>
-        <nav className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-3 pb-3">
-          {LINKS.filter((link) => !link.action || can(user.role, link.action)).map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`shrink-0 rounded-full px-3 py-1.5 text-sm ${
-                pathname.startsWith(link.href) ? "bg-white text-ink" : "text-white/70 hover:text-white"
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-      </header>
-      <div className="mx-auto max-w-7xl px-4 py-6">{children}</div>
+    <div className="hidden border-t border-white/10 px-4 py-4 lg:block">
+      <p className="truncate text-sm font-semibold">{user.name}</p>
+      <p className="truncate text-xs text-white/70">{user.email}</p>
+      <p className="mt-1 text-xs uppercase tracking-[0.12em] text-white/60">{ROLE_LABEL[user.role]}</p>
+      <button
+        className="btn btn-ghost mt-3 !border-white/20 !px-3 !py-1.5 text-sm !text-white"
+        type="button"
+        disabled={pending}
+        onClick={leave}
+      >
+        {pending ? "Signing out…" : "Sign out"}
+      </button>
     </div>
   );
 }

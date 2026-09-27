@@ -18,10 +18,11 @@ import {
   verifyPassword,
   type StaffUser,
 } from "@/lib/auth";
+import { barcodeSvg, qrSvg } from "@/lib/codes";
 import { audit } from "@/lib/audit";
 import { databaseMode, ensureReady, query, storageMode } from "@/lib/db";
 import { deleteEvidenceFile, readEvidenceFile, readUpload, saveEvidenceFile } from "@/lib/files";
-import { assertCsrf, assertSameOrigin, clientIp, handle, HttpError, jsonError, jsonOk, readCookie, userAgent } from "@/lib/http";
+import { assertCsrf, assertSameOrigin, clientIp, handle, HttpError, jsonError, jsonOk, readCookie, siteBase, userAgent } from "@/lib/http";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import {
   eventSchema,
@@ -48,6 +49,7 @@ import {
   listActivity,
   listEvidence,
   listFacilities,
+  listInquiries,
   listShipments,
   listUsers,
   purgeDemo,
@@ -57,6 +59,7 @@ import {
   updateSettings,
   updateShipment,
 } from "@/server/operations";
+import { setupToken, supabaseSecretKey, supabaseStorageConfigured, supabaseUrl } from "@/lib/env";
 import type { Action, ShipmentStatus } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
@@ -116,6 +119,22 @@ export async function GET(request: Request, context: { params: Promise<{ path: s
       });
       return jsonOk(result);
     }
+    if (path[0] === "shipments" && path[1] && (path[2] === "qr" || path[2] === "barcode")) {
+      await actor(request, "shipments:read");
+      const detail = await getShipment(path[1]);
+      if (!detail) return jsonError(404, "not_found", "Shipment not found.");
+      const svg =
+        path[2] === "qr"
+          ? await qrSvg(`${siteBase(request)}/track?number=${encodeURIComponent(detail.shipment.trackingNumber)}`)
+          : barcodeSvg(detail.shipment.trackingNumber);
+      return new NextResponse(svg, {
+        headers: {
+          "content-type": "image/svg+xml; charset=utf-8",
+          "cache-control": "private, no-store",
+          "x-content-type-options": "nosniff",
+        },
+      });
+    }
     if (path[0] === "shipments" && path[1] && path.length === 2) {
       const user = await actor(request, "shipments:read");
       const detail = await getShipment(path[1]);
@@ -159,6 +178,10 @@ export async function GET(request: Request, context: { params: Promise<{ path: s
     if (key === "users") {
       await actor(request, "users:write");
       return jsonOk({ items: await listUsers() });
+    }
+    if (key === "inquiries") {
+      await actor(request, "shipments:read");
+      return jsonOk({ items: await listInquiries() });
     }
     if (key === "activity") {
       await actor(request, "shipments:read");
@@ -212,7 +235,7 @@ export async function POST(request: Request, context: { params: Promise<{ path: 
       await guardMutation(request, true);
       await enforceRateLimit(`setup:${clientIp(request)}`, 8, 3600);
       if ((await countUsers()) > 0) return jsonError(403, "setup_closed", "An administrator already exists. Setup is closed.");
-      const expected = process.env.SETUP_TOKEN?.trim();
+      const expected = setupToken();
       if (!expected) {
         return jsonError(503, "setup_unconfigured", "Set SETUP_TOKEN on the server before creating the first administrator.");
       }
@@ -221,7 +244,7 @@ export async function POST(request: Request, context: { params: Promise<{ path: 
       let id: string | null = null;
       let provider: "local" | "supabase" = "local";
       let passwordHash: string | null = await hashPassword(input.password);
-      if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      if (supabaseStorageConfigured()) {
         id = await createSupabaseUser(input.email, input.password, input.name);
         provider = "supabase";
         passwordHash = null;
@@ -330,7 +353,7 @@ export async function POST(request: Request, context: { params: Promise<{ path: 
       let id: string | null = null;
       let provider: "local" | "supabase" = "local";
       let passwordHash: string | null = await hashPassword(input.password);
-      if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      if (supabaseStorageConfigured()) {
         id = await createSupabaseUser(input.email, input.password, input.name);
         provider = "supabase";
         passwordHash = null;
@@ -504,10 +527,10 @@ export async function DELETE(request: Request, context: { params: Promise<{ path
 }
 
 async function updateSupabasePassword(id: string, password: string) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const service = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = supabaseUrl();
+  const service = supabaseSecretKey();
   if (!url || !service) return;
-  const response = await fetch(`${url.replace(/\/$/, "")}/auth/v1/admin/users/${id}`, {
+  const response = await fetch(`${url}/auth/v1/admin/users/${id}`, {
     method: "PUT",
     headers: { apikey: service, authorization: `Bearer ${service}`, "content-type": "application/json" },
     body: JSON.stringify({ password }),

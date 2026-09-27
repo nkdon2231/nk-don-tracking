@@ -1,182 +1,281 @@
 "use client";
 
-import { FormEvent, useEffect, useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
-import { api, ApiError } from "@/lib/client";
-import { SERVICE_TYPES, SHIPMENT_TYPES, STATUSES } from "@/lib/constants";
-import { statusLabel } from "@/lib/format";
+import { FormEvent, useState } from "react";
+import { SERVICE_TYPES, SHIPMENT_TYPES, STATUSES, STATUS_LABEL } from "@/lib/constants";
+import type { Facility, Shipment } from "./types";
+import { Banner, readText } from "./ui";
 
-type Facility = { id: string; name: string; facilityCode: string };
-type Shipment = Record<string, string | number | boolean | null>;
+export function shipmentPayload(form: FormData, status: string) {
+  const text = (key: string) => readText(form, key);
+  const blank = (key: string) => text(key) || null;
+  return {
+    referenceNumber: text("referenceNumber"),
+    status,
+    serviceType: text("serviceType"),
+    shipmentType: text("shipmentType"),
+    senderName: text("senderName"),
+    senderCompany: text("senderCompany"),
+    senderPhone: text("senderPhone"),
+    senderEmail: text("senderEmail"),
+    senderAddress: text("senderAddress"),
+    senderCity: text("senderCity"),
+    senderState: text("senderState"),
+    senderCountry: text("senderCountry"),
+    recipientName: text("recipientName"),
+    recipientCompany: text("recipientCompany"),
+    recipientPhone: text("recipientPhone"),
+    recipientEmail: text("recipientEmail"),
+    recipientAddress: text("recipientAddress"),
+    recipientCity: text("recipientCity"),
+    recipientState: text("recipientState"),
+    recipientCountry: text("recipientCountry"),
+    originFacilityId: blank("originFacilityId"),
+    destinationFacilityId: blank("destinationFacilityId"),
+    currentFacilityId: blank("currentFacilityId"),
+    packageCount: text("packageCount") || "1",
+    weight: text("weight"),
+    weightUnit: text("weightUnit") || "kg",
+    dimensions: text("dimensions"),
+    declaredValue: text("declaredValue"),
+    currency: (text("currency") || "USD").toUpperCase(),
+    description: text("description"),
+    publicDescription: text("publicDescription"),
+    internalNotes: text("internalNotes"),
+    estimatedDeliveryDate: text("estimatedDeliveryDate"),
+    actualDeliveryDate: text("actualDeliveryDate"),
+    specialInstructions: text("specialInstructions"),
+    isDemo: form.get("isDemo") === "on",
+  };
+}
 
-const empty: Record<string, string> = {
-  referenceNumber: "",
-  status: "pickup_scheduled",
-  serviceType: "express_courier",
-  shipmentType: "parcel",
-  senderName: "",
-  senderCompany: "",
-  senderPhone: "",
-  senderEmail: "",
-  senderAddress: "",
-  senderCity: "",
-  senderCountry: "",
-  recipientName: "",
-  recipientCompany: "",
-  recipientPhone: "",
-  recipientEmail: "",
-  recipientAddress: "",
-  recipientCity: "",
-  recipientCountry: "",
-  originFacilityId: "",
-  destinationFacilityId: "",
-  currentFacilityId: "",
-  packageCount: "1",
-  weight: "",
-  weightUnit: "kg",
-  publicDescription: "",
-  internalNotes: "",
-  estimatedDeliveryDate: "",
-  actualDeliveryDate: "",
-  isDemo: "false",
-};
-
-export function ShipmentForm({ initial }: { initial?: Shipment }) {
-  const router = useRouter();
-  const [facilities, setFacilities] = useState<Facility[]>([]);
-  const [values, setValues] = useState(empty);
+export function ShipmentForm({
+  shipment,
+  facilities,
+  submitLabel,
+  onSubmit,
+}: {
+  shipment?: Shipment | null;
+  facilities: Facility[];
+  submitLabel: string;
+  onSubmit: (payload: ReturnType<typeof shipmentPayload>) => Promise<void>;
+}) {
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [pending, setPending] = useState(false);
+  const value = shipment;
 
-  useEffect(() => {
-    api<{ items: Facility[] }>("/api/admin/facilities").then((data) => setFacilities(data.items)).catch(() => undefined);
-  }, []);
-
-  useEffect(() => {
-    if (!initial) return;
-    const next = { ...empty };
-    for (const key of Object.keys(empty)) {
-      const value = initial[key];
-      if (value == null) continue;
-      next[key] = String(value);
-    }
-    setValues(next);
-  }, [initial]);
-
-  function set(name: string, value: string) {
-    setValues((current) => ({ ...current, [name]: value }));
-  }
-
-  async function onSubmit(event: FormEvent) {
+  async function handle(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setBusy(true);
+    const form = new FormData(event.currentTarget);
+    const status = value ? value.status : readText(form, "status");
+    setPending(true);
     setError("");
-    const payload = {
-      ...values,
-      packageCount: Number(values.packageCount || 1),
-      weight: values.weight === "" ? null : Number(values.weight),
-      originFacilityId: values.originFacilityId || null,
-      destinationFacilityId: values.destinationFacilityId || null,
-      currentFacilityId: values.currentFacilityId || null,
-      estimatedDeliveryDate: values.estimatedDeliveryDate || null,
-      actualDeliveryDate: values.actualDeliveryDate || null,
-      isDemo: values.isDemo === "true",
-    };
     try {
-      if (initial?.id) {
-        await api(`/api/admin/shipments/${initial.id}`, { method: "PATCH", body: JSON.stringify(payload) });
-        router.refresh();
-      } else {
-        const created = await api<{ shipment: { id: string } }>("/api/admin/shipments", { method: "POST", body: JSON.stringify(payload) });
-        router.replace(`/admin/shipments/${created.shipment.id}`);
-      }
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not save the shipment.");
+      await onSubmit(shipmentPayload(form, status));
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "The shipment could not be saved.");
     } finally {
-      setBusy(false);
+      setPending(false);
     }
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6 rounded-2xl border border-line bg-white p-5">
-      <div className="grid gap-4 md:grid-cols-3">
-        <Field label="Reference"><input value={values.referenceNumber} onChange={(e) => set("referenceNumber", e.target.value)} className="field" /></Field>
-        <Field label="Status">
-          <select value={values.status} onChange={(e) => set("status", e.target.value)} className="field">
-            {STATUSES.map((item) => <option key={item} value={item}>{statusLabel(item)}</option>)}
-          </select>
-        </Field>
-        <Field label="Service">
-          <select value={values.serviceType} onChange={(e) => set("serviceType", e.target.value)} className="field">
-            {SERVICE_TYPES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-          </select>
-        </Field>
-        <Field label="Type">
-          <select value={values.shipmentType} onChange={(e) => set("shipmentType", e.target.value)} className="field">
-            {SHIPMENT_TYPES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-          </select>
-        </Field>
-        <Field label="Packages"><input type="number" min={1} value={values.packageCount} onChange={(e) => set("packageCount", e.target.value)} className="field" /></Field>
-        <Field label="Weight">
-          <div className="flex gap-2">
-            <input value={values.weight} onChange={(e) => set("weight", e.target.value)} className="field" />
-            <select value={values.weightUnit} onChange={(e) => set("weightUnit", e.target.value)} className="field max-w-20">
+    <form className="grid gap-5" onSubmit={handle}>
+      <section className="card grid gap-4 p-5">
+        <h2 className="serif text-2xl">Movement</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {value ? (
+            <p className="text-sm text-[var(--color-muted)] sm:col-span-2">
+              Status is {value.statusLabel}. Change it by adding a tracking event so the customer timeline stays intact.
+            </p>
+          ) : (
+            <label className="field">
+              <span>Initial status</span>
+              <select name="status" defaultValue="pickup_scheduled">
+                {STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {STATUS_LABEL[status]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <label className="field">
+            <span>Reference</span>
+            <input name="referenceNumber" defaultValue={value?.referenceNumber ?? ""} maxLength={80} />
+          </label>
+          <label className="field">
+            <span>Service</span>
+            <select name="serviceType" defaultValue={value?.serviceType ?? "express_courier"}>
+              {SERVICE_TYPES.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="field">
+            <span>Type</span>
+            <select name="shipmentType" defaultValue={value?.shipmentType ?? "parcel"}>
+              {SHIPMENT_TYPES.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </section>
+      <div className="grid gap-5 lg:grid-cols-2">
+        <Party title="Sender" prefix="sender" shipment={value} />
+        <Party title="Recipient" prefix="recipient" shipment={value} />
+      </div>
+      <section className="card grid gap-4 p-5">
+        <h2 className="serif text-2xl">Facilities and cargo</h2>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <FacilityField name="originFacilityId" label="Origin facility" facilities={facilities} value={value?.originFacilityId} />
+          <FacilityField name="destinationFacilityId" label="Destination facility" facilities={facilities} value={value?.destinationFacilityId} />
+          <FacilityField name="currentFacilityId" label="Current facility" facilities={facilities} value={value?.currentFacilityId} />
+          <label className="field">
+            <span>Packages</span>
+            <input name="packageCount" type="number" min={1} max={10000} required defaultValue={value?.packageCount ?? 1} />
+          </label>
+          <label className="field">
+            <span>Weight</span>
+            <input name="weight" type="number" min={0} step="0.01" defaultValue={value?.weight ?? ""} />
+          </label>
+          <label className="field">
+            <span>Unit</span>
+            <select name="weightUnit" defaultValue={value?.weightUnit || "kg"}>
               <option value="kg">kg</option>
               <option value="lb">lb</option>
             </select>
-          </div>
-        </Field>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label="Shipper name"><input required value={values.senderName} onChange={(e) => set("senderName", e.target.value)} className="field" /></Field>
-        <Field label="Shipper city"><input value={values.senderCity} onChange={(e) => set("senderCity", e.target.value)} className="field" /></Field>
-        <Field label="Shipper country"><input value={values.senderCountry} onChange={(e) => set("senderCountry", e.target.value)} className="field" /></Field>
-        <Field label="Consignee name"><input required value={values.recipientName} onChange={(e) => set("recipientName", e.target.value)} className="field" /></Field>
-        <Field label="Consignee city"><input value={values.recipientCity} onChange={(e) => set("recipientCity", e.target.value)} className="field" /></Field>
-        <Field label="Consignee country"><input value={values.recipientCountry} onChange={(e) => set("recipientCountry", e.target.value)} className="field" /></Field>
-      </div>
-      <div className="grid gap-4 md:grid-cols-3">
-        <Field label="Origin facility">
-          <select value={values.originFacilityId} onChange={(e) => set("originFacilityId", e.target.value)} className="field">
-            <option value="">None</option>
-            {facilities.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-          </select>
-        </Field>
-        <Field label="Current facility">
-          <select value={values.currentFacilityId} onChange={(e) => set("currentFacilityId", e.target.value)} className="field">
-            <option value="">None</option>
-            {facilities.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-          </select>
-        </Field>
-        <Field label="Destination facility">
-          <select value={values.destinationFacilityId} onChange={(e) => set("destinationFacilityId", e.target.value)} className="field">
-            <option value="">None</option>
-            {facilities.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-          </select>
-        </Field>
-        <Field label="Estimated delivery"><input type="date" value={values.estimatedDeliveryDate} onChange={(e) => set("estimatedDeliveryDate", e.target.value)} className="field" /></Field>
-        <Field label="Demo record">
-          <select value={values.isDemo} onChange={(e) => set("isDemo", e.target.value)} className="field">
-            <option value="false">No</option>
-            <option value="true">Yes</option>
-          </select>
-        </Field>
-        <Field label="Public description"><textarea value={values.publicDescription} onChange={(e) => set("publicDescription", e.target.value)} className="field" rows={3} /></Field>
-        <Field label="Internal notes"><textarea value={values.internalNotes} onChange={(e) => set("internalNotes", e.target.value)} className="field" rows={3} /></Field>
-      </div>
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
-      <button disabled={busy} className="rounded-xl bg-ink px-5 py-3 font-semibold text-white disabled:opacity-60">
-        {busy ? "Saving…" : initial?.id ? "Save shipment" : "Create shipment"}
+          </label>
+          <label className="field">
+            <span>Dimensions</span>
+            <input name="dimensions" defaultValue={value?.dimensions ?? ""} maxLength={120} />
+          </label>
+          <label className="field">
+            <span>Declared value</span>
+            <input name="declaredValue" type="number" min={0} step="0.01" defaultValue={value?.declaredValue ?? ""} />
+          </label>
+          <label className="field">
+            <span>Currency</span>
+            <input name="currency" defaultValue={value?.currency || "USD"} maxLength={3} required />
+          </label>
+          <label className="field">
+            <span>Estimated delivery</span>
+            <input name="estimatedDeliveryDate" type="date" defaultValue={value?.estimatedDeliveryDate ?? ""} />
+          </label>
+          <label className="field">
+            <span>Actual delivery</span>
+            <input name="actualDeliveryDate" type="date" defaultValue={value?.actualDeliveryDate ?? ""} />
+          </label>
+        </div>
+      </section>
+      <section className="card grid gap-4 p-5">
+        <h2 className="serif text-2xl">What customers and staff can see</h2>
+        <label className="field">
+          <span>Public description</span>
+          <textarea name="publicDescription" maxLength={500} defaultValue={value?.publicDescription ?? ""} />
+        </label>
+        <label className="field">
+          <span>Internal description</span>
+          <textarea name="description" maxLength={2000} defaultValue={value?.description ?? ""} />
+        </label>
+        <label className="field">
+          <span>Internal notes</span>
+          <textarea name="internalNotes" maxLength={4000} defaultValue={value?.internalNotes ?? ""} />
+        </label>
+        <label className="field">
+          <span>Special instructions</span>
+          <textarea name="specialInstructions" maxLength={2000} defaultValue={value?.specialInstructions ?? ""} />
+        </label>
+        <label className="flex items-start gap-3 text-sm leading-6">
+          <input className="mt-1" name="isDemo" type="checkbox" defaultChecked={Boolean(value?.isDemo)} />
+          <span>Mark this record DEMO/TEST. Use it only for a demonstration. Real customer shipments stay unmarked so they are not removed with demo data.</span>
+        </label>
+      </section>
+      {error ? <Banner>{error}</Banner> : null}
+      <button className="btn btn-primary w-fit" type="submit" disabled={pending}>
+        {pending ? "Saving…" : submitLabel}
       </button>
     </form>
   );
 }
 
-function Field({ label, children }: { label: string; children: ReactNode }) {
+function Party({ title, prefix, shipment }: { title: string; prefix: "sender" | "recipient"; shipment?: Shipment | null }) {
+  const field = (suffix: string) => {
+    const key = `${prefix}${suffix}` as keyof Shipment;
+    const current = shipment?.[key];
+    return typeof current === "string" ? current : "";
+  };
   return (
-    <label className="text-sm font-medium">
-      {label}
-      <div className="mt-1">{children}</div>
+    <section className="card grid gap-4 p-5">
+      <h2 className="serif text-2xl">{title}</h2>
+      <label className="field">
+        <span>Name</span>
+        <input name={`${prefix}Name`} required maxLength={160} defaultValue={field("Name")} />
+      </label>
+      <label className="field">
+        <span>Company</span>
+        <input name={`${prefix}Company`} maxLength={160} defaultValue={field("Company")} />
+      </label>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="field">
+          <span>Phone</span>
+          <input name={`${prefix}Phone`} maxLength={40} defaultValue={field("Phone")} />
+        </label>
+        <label className="field">
+          <span>Email</span>
+          <input name={`${prefix}Email`} type="email" maxLength={200} defaultValue={field("Email")} />
+        </label>
+      </div>
+      <label className="field">
+        <span>Address</span>
+        <input name={`${prefix}Address`} maxLength={300} defaultValue={field("Address")} />
+      </label>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <label className="field">
+          <span>City</span>
+          <input name={`${prefix}City`} maxLength={120} defaultValue={field("City")} />
+        </label>
+        <label className="field">
+          <span>State</span>
+          <input name={`${prefix}State`} maxLength={120} defaultValue={field("State")} />
+        </label>
+        <label className="field">
+          <span>Country</span>
+          <input name={`${prefix}Country`} maxLength={120} defaultValue={field("Country")} />
+        </label>
+      </div>
+    </section>
+  );
+}
+
+export function FacilityField({
+  name,
+  label,
+  facilities,
+  value,
+}: {
+  name: string;
+  label: string;
+  facilities: Facility[];
+  value?: string | null;
+}) {
+  return (
+    <label className="field">
+      <span>{label}</span>
+      <select name={name} defaultValue={value ?? ""}>
+        <option value="">None</option>
+        {facilities.map((facility) => (
+          <option key={facility.id} value={facility.id}>
+            {facility.name}
+            {facility.isDemo ? " · DEMO" : ""}
+            {facility.city ? ` · ${facility.city}` : ""}
+          </option>
+        ))}
+      </select>
     </label>
   );
 }

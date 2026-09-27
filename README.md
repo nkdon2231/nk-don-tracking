@@ -1,63 +1,73 @@
 # NKDON Global Logistics
 
-Production platform for shipment management, public tracking, and operations.
+Shipment management, public tracking, and the operations desk for NKDON.
 
-The Next.js application is the production app on `main`. The original static pages remain in the repository and are not the Cloudflare Worker.
+The Next.js application in this repository is the production app. The original static pages (`index.html`, `tracking.html`, `text.txt`) are kept and are not the live product.
 
 ## Stack
 
-- Next.js (App Router) and TypeScript
+- Next.js App Router and TypeScript
 - Tailwind CSS
 - Zod validation
-- Supabase PostgreSQL for the production database
-- Supabase Auth for production administrator sign-in
-- Supabase Storage bucket `shipment-evidence` for proof and documents
-- Deploy target: Vercel, with `NEXT_PUBLIC_SITE_URL` set to the public domain
+- Supabase PostgreSQL
+- Supabase Auth for administrator sign-in when the URL and keys are set
+- Private Supabase Storage bucket `shipment-evidence`
+- Vercel, using the existing project and the existing Supabase integration
 
-The embedded database used when `DATABASE_URL` is absent is a **local development fallback only**. It is disabled when `NODE_ENV=production`. It is not the production backend.
+If `DATABASE_URL` (and the Postgres aliases) are absent and `NODE_ENV` is not production, the server can use a local preview database. That path is disabled in production. It is not the production backend.
 
-## Supabase configuration
+## Environment names
 
-Create a Supabase project, then set these server environment variables (see `.env.example`). Do not commit real values.
+Set these on the existing Vercel project. Do not commit values. The server reads either the original name or the current Vercel Supabase integration name.
 
-| Name | Where it is used |
-| --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL. Safe to expose. |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Browser-safe anon key. Table access is denied by RLS. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server only. Auth admin API and Storage uploads. |
-| `DATABASE_URL` | Supabase Postgres connection string, used by the Next.js server. |
-| `SETUP_TOKEN` | One-time secret required to create the first super admin. |
-| `NEXT_PUBLIC_SITE_URL` | Canonical site URL for links and QR codes. |
+| Purpose | Preferred name | Also accepted |
+| --- | --- | --- |
+| Project URL | `NEXT_PUBLIC_SUPABASE_URL` | `SUPABASE_URL` |
+| Publishable key | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_ANON_KEY` |
+| Secret key | `SUPABASE_SERVICE_ROLE_KEY` | `SUPABASE_SECRET_KEY` |
+| Postgres | `DATABASE_URL` | `POSTGRES_URL`, `POSTGRES_URL_NON_POOLING`, `POSTGRES_PRISMA_URL` |
+| First administrator | `SETUP_TOKEN` | — |
+| Public site URL | `NEXT_PUBLIC_SITE_URL` | `VERCEL_PROJECT_PRODUCTION_URL`, then `VERCEL_URL` |
 
-After the variables are set, apply migrations and storage rules:
+`SETUP_TOKEN` and `NEXT_PUBLIC_SITE_URL` are not created by the Supabase integration. They must be set on Vercel by hand. Secret keys stay on the server. The browser never receives them.
 
-```bash
-# From the Supabase SQL editor, or: supabase db push
-# Files:
-#   supabase/migrations/0001_init.sql
-#   supabase/migrations/0002_rls.sql
-#   supabase/storage-policies.sql
-```
+The `pgbouncer` query parameter is stripped from the Postgres URL because the Node driver does not use it. Prefer the direct or session connection string if the transaction pooler rejects the session.
 
-The app also creates the private `shipment-evidence` bucket on startup when the service role key is present.
+## Database and storage
+
+Do not replace the schema. The files already in the repo are the schema:
+
+- `supabase/migrations/0001_init.sql`
+- `supabase/migrations/0002_rls.sql`
+- `supabase/storage-policies.sql`
+
+On startup the server applies any migration in `supabase/migrations` that is not already recorded in `schema_migrations`, then creates the private `shipment-evidence` bucket when the Supabase URL and secret key are present.
+
+Do not paste `0001` and `0002` into the SQL editor if the app is going to apply them. A second run fails because the tables already exist while `schema_migrations` is still empty. Run `storage-policies.sql` only if the bucket was not created.
+
+Row Level Security is enabled and `anon` / `authenticated` have no grants. The Next.js server uses the database owner connection, which bypasses RLS. There is no browser policy that can read operational tables with the publishable key.
+
+Accepted evidence is JPG, JPEG, PNG, WEBP, and PDF. Images are limited to 10 MB and PDFs to 20 MB. The bucket is private. A file is served on the public tracking page only when staff mark it public.
 
 ## Authentication
 
-Production administrators are created in Supabase Auth. A matching row in `admin_users` stores the role (`super_admin`, `admin`, `operations`, `support`, `viewer`). The browser never receives the service role key.
+`/admin/setup` creates the first super admin only while `admin_users` is empty, and only with `SETUP_TOKEN`. There is no default password. After that account exists, setup closes.
 
-Sign-in checks the password with Supabase Auth, then issues an httpOnly session cookie backed by `admin_sessions`. Roles are enforced on every admin API. Login attempts are rate-limited and written to `login_attempts` and `admin_activity`.
+Later accounts are created from Team by a super admin. When the Supabase URL and secret key are set, the account is also created in Supabase Auth and sign-in checks the password there. Otherwise a server-side password hash is stored for development.
 
-The first account is created at `/admin/setup` and only while `admin_users` is empty. It requires `SETUP_TOKEN`. There is no default production password.
+Sessions are httpOnly cookies. Mutations require a same-origin CSRF token. Roles are `super_admin`, `admin`, `operations`, `support`, and `viewer`.
 
-If Supabase Auth is not configured, a local password hash can be used for development only. That path is not the production design.
+## What staff can do
 
-## Application routes
+- Book shipments and issue `NKD-YYYYMMDD-XXXX` tracking numbers
+- Append tracking events. Events are not edited or deleted
+- Upload evidence, mark it public, or delete it according to role
+- Record facilities, review contact messages, and read the activity log
+- Manage the team, company profile, and DEMO/TEST purge (super admin)
 
-Public pages: `/`, `/tracking`, `/services`, `/rates`, `/book`, `/about`, `/contact`, `/faq`.
+Public tracking shows status, route cities, events, and public files. It does not show sender or recipient names or internal notes.
 
-Operations desk: `/admin/login`, `/admin/setup`, `/admin/dashboard`, `/admin/shipments`, `/admin/evidence`, `/admin/facilities`, `/admin/users`, `/admin/settings`, `/admin/activity`.
-
-Public tracking reads `/api/tracking`. Admin screens use `/api/admin/*` with the `nkdon_session` cookie and CSRF header. Legacy files `index.html`, `tracking.html`, and `text.txt` remain in the tree and are not the production app.
+Demonstration rows must be marked DEMO/TEST. Production does not seed them. `ALLOW_DEMO_SEED` is ignored when `NODE_ENV=production`.
 
 ## Scripts
 

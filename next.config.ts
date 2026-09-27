@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(__dirname),
+  outputFileTracingIncludes: {
+    "*": ["./supabase/migrations/**/*"],
+  },
   serverExternalPackages: ["pg", "@electric-sql/pglite"],
   poweredByHeader: false,
   reactStrictMode: true,

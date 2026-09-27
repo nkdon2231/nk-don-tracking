@@ -852,6 +852,7 @@ export async function dashboardStats() {
     in_transit: number;
     pickup_scheduled: number;
     evidence: number;
+    inquiries: number;
   }>(
     `select
       count(*)::int as total,
@@ -860,7 +861,8 @@ export async function dashboardStats() {
       count(*) filter (where status = 'exception' and archived_at is null)::int as exceptions,
       count(*) filter (where status = 'in_transit' and archived_at is null)::int as in_transit,
       count(*) filter (where status = 'pickup_scheduled' and archived_at is null)::int as pickup_scheduled,
-      (select count(*)::int from shipment_evidence) as evidence
+      (select count(*)::int from shipment_evidence) as evidence,
+      (select count(*)::int from inquiries) as inquiries
      from shipments`,
   );
   const recentShipments = await query(
@@ -870,6 +872,9 @@ export async function dashboardStats() {
     `${EVENT_SELECT} order by e.created_at desc limit 8`,
   );
   const recentEvidence = await query(`${EVIDENCE_SELECT} order by ev.created_at desc limit 6`);
+  const recentInquiries = await query(
+    `select id, name, email, topic, created_at from inquiries order by created_at desc limit 5`,
+  );
   const stats = rows[0];
   return {
     total: stats?.total ?? 0,
@@ -879,10 +884,35 @@ export async function dashboardStats() {
     inTransit: stats?.in_transit ?? 0,
     pickupScheduled: stats?.pickup_scheduled ?? 0,
     evidence: stats?.evidence ?? 0,
+    inquiries: stats?.inquiries ?? 0,
     recentShipments: recentShipments.map(mapShipment),
     recentEvents: recentEvents.map(mapEvent),
     recentEvidence: recentEvidence.map(mapEvidence),
+    recentInquiries: recentInquiries.map((row) => ({
+      id: asString(row.id),
+      name: asString(row.name),
+      email: asString(row.email),
+      topic: asString(row.topic),
+      createdAt: iso(row.created_at),
+    })),
   };
+}
+
+export async function listInquiries() {
+  const rows = await query(
+    `select id, name, email, phone, topic, message, notification_status, created_at
+     from inquiries order by created_at desc limit 100`,
+  );
+  return rows.map((row) => ({
+    id: asString(row.id),
+    name: asString(row.name),
+    email: asString(row.email),
+    phone: asString(row.phone),
+    topic: asString(row.topic),
+    message: asString(row.message),
+    notificationStatus: asString(row.notification_status),
+    createdAt: iso(row.created_at),
+  }));
 }
 
 export async function listActivity(limit = 80) {

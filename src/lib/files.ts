@@ -1,8 +1,8 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { storageMode } from "./db";
-import { supabaseServiceRoleKey, supabaseUrl } from "./env";
 import { IMAGE_MAX_BYTES, PDF_MAX_BYTES } from "./constants";
+import { storageMode } from "./db";
+import { supabaseSecretKey, supabaseUrl } from "./env";
 import { HttpError } from "./http";
 
 export type StoredFile = {
@@ -51,12 +51,11 @@ function localRoot() {
   return path.join(process.cwd(), ".data", "evidence");
 }
 
-function storageClient() {
-  return import("@supabase/supabase-js").then(({ createClient }) =>
-    createClient(supabaseUrl(), supabaseServiceRoleKey(), {
-      auth: { persistSession: false, autoRefreshToken: false },
-    }),
-  );
+async function storageClient() {
+  const { createClient } = await import("@supabase/supabase-js");
+  return createClient(supabaseUrl(), supabaseSecretKey(), {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
 
 export async function saveEvidenceFile(shipmentId: string, originalName: string, file: StoredFile) {
@@ -77,7 +76,7 @@ export async function saveEvidenceFile(shipmentId: string, originalName: string,
     return relative;
   }
   if (mode === "unconfigured") {
-    throw new HttpError(503, "storage_unconfigured", "Supabase Storage is not configured. Set the Supabase URL and service role key.");
+    throw new HttpError(503, "storage_unconfigured", "Supabase Storage is not configured. Set the Supabase URL and secret key.");
   }
   const absolute = path.join(localRoot(), relative);
   if (!absolute.startsWith(localRoot())) throw new HttpError(400, "invalid_file", "Invalid file path.");

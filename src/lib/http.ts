@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { publicSiteUrl } from "./env";
 
 export class HttpError extends Error {
   status: number;
@@ -78,7 +79,7 @@ export function readCookie(req: Request, name: string) {
 }
 
 export function siteBase(req?: Request) {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
+  const configured = publicSiteUrl();
   if (configured) return configured;
   if (!req) return "";
   const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "";

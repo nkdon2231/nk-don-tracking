@@ -1,7 +1,7 @@
 import { mkdir, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import pg from "pg";
-import { databaseUrl as resolveDatabaseUrl, isSupabaseHost, supabaseAnonKey, supabaseServiceRoleKey, supabaseUrl } from "./env";
+import { databaseUrl, supabaseAuthConfigured as authReady, supabaseStorageConfigured } from "./env";
 import { HttpError } from "./http";
 
 const { Pool, types } = pg;
@@ -27,28 +27,28 @@ const globalRef = globalThis as typeof globalThis & {
   __nkdonChain?: Promise<unknown>;
 };
 
-function databaseUrl() {
-  return resolveDatabaseUrl();
+function databaseUrlSource() {
+  return databaseUrl();
 }
 
 export function databaseMode(): DbMode {
-  const url = databaseUrl();
+  const url = databaseUrlSource();
   if (!url) {
     if (process.env.NODE_ENV === "production") return "unconfigured";
     return "preview";
   }
-  if (isSupabaseHost(url)) return "supabase";
+  if (/supabase\.(co|com)/i.test(url)) return "supabase";
   return "postgres";
 }
 
 export function storageMode(): "supabase" | "local-preview" | "unconfigured" {
-  if (supabaseUrl() && supabaseServiceRoleKey()) return "supabase";
+  if (supabaseStorageConfigured()) return "supabase";
   if (process.env.NODE_ENV === "production") return "unconfigured";
   return "local-preview";
 }
 
 export function supabaseAuthConfigured() {
-  return Boolean(supabaseUrl() && supabaseAnonKey());
+  return authReady();
 }
 
 function enqueue<T>(fn: () => Promise<T>): Promise<T> {
@@ -78,7 +78,7 @@ async function checkout(): Promise<Runner> {
     throw new HttpError(
       503,
       "database_unconfigured",
-      "The production database is not connected. Set DATABASE_URL to the Supabase Postgres connection string.",
+      "The production database is not connected. Set DATABASE_URL (or the Vercel Supabase POSTGRES_URL) to the Supabase Postgres connection string.",
     );
   }
   if (mode === "preview") {
@@ -91,11 +91,10 @@ async function checkout(): Promise<Runner> {
     };
   }
   if (!globalRef.__nkdonPool) {
-    const url = databaseUrl();
     globalRef.__nkdonPool = new Pool({
-      connectionString: url,
-      max: 8,
-      ssl: isSupabaseHost(url) ? { rejectUnauthorized: false } : undefined,
+      connectionString: databaseUrlSource(),
+      max: process.env.VERCEL ? 1 : 8,
+      ssl: /supabase\.(co|com)/i.test(databaseUrlSource()) ? { rejectUnauthorized: false } : undefined,
     });
   }
   const client = await globalRef.__nkdonPool.connect();

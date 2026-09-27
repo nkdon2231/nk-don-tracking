@@ -3,7 +3,7 @@ import { promisify } from "node:util";
 import { cookies } from "next/headers";
 import { can, type Action, type Role } from "./constants";
 import { query } from "./db";
-import { supabaseAnonKey, supabaseServiceRoleKey, supabaseUrl } from "./env";
+import { supabasePublishableKey, supabaseSecretKey, supabaseUrl } from "./env";
 import { HttpError } from "./http";
 
 const scryptAsync = promisify(scrypt);
@@ -168,6 +168,13 @@ export async function verifyCredentials(email: string, password: string) {
   const row = await findUserByEmail(email);
   if (!row || !row.is_active) return null;
   if (row.auth_provider === "supabase") {
+    if (!supabaseUrl() || !supabasePublishableKey()) {
+      throw new HttpError(
+        503,
+        "auth_unconfigured",
+        "Supabase Auth is not fully configured. Set the Supabase URL and the publishable key.",
+      );
+    }
     const ok = await verifySupabasePassword(email, password);
     return ok ? mapUser(row) : null;
   }
@@ -177,7 +184,7 @@ export async function verifyCredentials(email: string, password: string) {
 
 async function verifySupabasePassword(email: string, password: string) {
   const url = supabaseUrl();
-  const anon = supabaseAnonKey();
+  const anon = supabasePublishableKey();
   if (!url || !anon) return false;
   const response = await fetch(`${url}/auth/v1/token?grant_type=password`, {
     method: "POST",
@@ -192,7 +199,7 @@ async function verifySupabasePassword(email: string, password: string) {
 
 export async function createSupabaseUser(email: string, password: string, name: string) {
   const url = supabaseUrl();
-  const service = supabaseServiceRoleKey();
+  const service = supabaseSecretKey();
   if (!url || !service) return null;
   const response = await fetch(`${url}/auth/v1/admin/users`, {
     method: "POST",
