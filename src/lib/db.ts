@@ -25,20 +25,12 @@ const globalRef = globalThis as typeof globalThis & {
   __nkdonDb?: Promise<void>;
   __nkdonPool?: pg.Pool;
   __nkdonDbSource?: string;
-  __nkdonDbSkips?: string[];
   __nkdonPglite?: import("@electric-sql/pglite").PGlite;
   __nkdonChain?: Promise<unknown>;
 };
 
 function databaseUrlSource() {
   return databaseUrl();
-}
-
-export function databaseConnection() {
-  return {
-    source: globalRef.__nkdonDbSource ?? "",
-    skipped: globalRef.__nkdonDbSkips ?? [],
-  };
 }
 
 export function databaseMode(): DbMode {
@@ -155,7 +147,6 @@ async function checkout(): Promise<Runner> {
         client.release();
         globalRef.__nkdonPool = pool;
         globalRef.__nkdonDbSource = candidate.source;
-        globalRef.__nkdonDbSkips = failures.slice();
         console.log(`[nkdon] database connected via ${candidate.source} ${candidate.hostKind}:${candidate.port}`);
         break;
       } catch (error) {
