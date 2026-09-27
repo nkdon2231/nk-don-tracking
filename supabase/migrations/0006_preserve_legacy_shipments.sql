@@ -118,7 +118,7 @@ begin
     coalesce(e.description, ''),
     concat_ws(' · ', nullif(trim(e.location), ''), nullif(trim(e.facility), '')),
     e.event_time,
-    coalesce(e.created_at, e.event_time)
+    e.event_time
   from legacy_shipment_events e
   where e.event_time is not null
     and exists (select 1 from shipments s where s.id = e.shipment_id)
