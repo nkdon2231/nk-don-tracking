@@ -38,24 +38,30 @@ const PUBLISHABLE_KEY_NAMES = [
 ] as const;
 const SECRET_KEY_NAMES = ["SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_SECRET_KEY"] as const;
 
-function looksPooled(value: string) {
+function connectionScore(value: string) {
   try {
     const url = new URL(value);
-    return url.port === "6543" || url.hostname.toLowerCase().includes("pooler") || url.searchParams.has("pgbouncer");
+    const host = url.hostname.toLowerCase();
+    const port = url.port || "5432";
+    // Transaction pooler rejects node-pg prepared statements.
+    if (port === "6543" || url.searchParams.has("pgbouncer")) return 1;
+    // Session pooler is IPv4 and supports the extended query protocol.
+    if (host.includes("pooler")) return 3;
+    // Direct db.<ref>.supabase.co is often IPv6-only and fails from Vercel.
+    return 2;
   } catch {
-    return /:6543\b|pooler\.supabase|pgbouncer=true/i.test(value);
+    if (/:6543\b|pgbouncer=true/i.test(value)) return 1;
+    if (/pooler/i.test(value)) return 3;
+    return 2;
   }
 }
 
 export function databaseConfig() {
-  // node-pg uses the extended query protocol. Supabase's transaction pooler
-  // (port 6543) rejects that. Prefer the direct connection when one is set.
-  const direct = read("POSTGRES_URL_NON_POOLING");
-  const found = first(DATABASE_NAMES);
-  if (direct && (!found.value || looksPooled(found.value))) {
-    return { source: "POSTGRES_URL_NON_POOLING", url: cleanDatabaseUrl(direct) };
-  }
-  return { source: found.name, url: found.value ? cleanDatabaseUrl(found.value) : "" };
+  const candidates = DATABASE_NAMES.map((name) => ({ name, value: read(name) })).filter((item) => item.value);
+  if (!candidates.length) return { source: "", url: "" };
+  candidates.sort((left, right) => connectionScore(right.value) - connectionScore(left.value));
+  const best = candidates[0];
+  return { source: best.name, url: cleanDatabaseUrl(best.value) };
 }
 
 export function databaseUrl() {
