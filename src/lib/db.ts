@@ -133,6 +133,7 @@ async function checkout(): Promise<Runner> {
         client.release();
         globalRef.__nkdonPool = pool;
         globalRef.__nkdonDbSource = candidate.source;
+        console.log(`[nkdon] database connected via ${candidate.source} ${candidate.hostKind}:${candidate.port}`);
         break;
       } catch (error) {
         failures.push(`${candidate.source} ${candidate.hostKind}:${candidate.port} ${failureReason(error)}`);
@@ -299,66 +300,29 @@ async function baselineState(name: string): Promise<{ state: "present" | "absent
   return { state: "present", missing: [] };
 }
 
-async function schemaInventory() {
-  const names = [
-    "admin_users",
-    "admin_sessions",
-    "login_attempts",
-    "facilities",
-    "shipments",
-    "shipment_events",
-    "shipment_evidence",
-    "admin_activity",
-    "company_settings",
-    "inquiries",
-    "rate_limits",
-    "tracking_counters",
-    "couriers",
-    "customer_requests",
-    "service_lanes",
-  ];
-  const tables = await query<{ table_name: string }>(
-    `select table_name from information_schema.tables
-     where table_schema = 'public' and table_type = 'BASE TABLE'
-     order by table_name`,
+async function preserveLegacyTables() {
+  const rows = await query<{ legacy: boolean }>(
+    `select (
+      to_regclass('public.shipments') is not null
+      and to_regclass('public.legacy_shipments') is null
+      and exists (
+        select 1 from information_schema.columns
+        where table_schema = 'public' and table_name = 'shipments' and column_name = 'package_description'
+      )
+      and not exists (
+        select 1 from information_schema.columns
+        where table_schema = 'public' and table_name = 'shipments' and column_name = 'public_description'
+      )
+    ) as legacy`,
   );
-  const columns = await query<{ table_name: string; column_name: string; data_type: string }>(
-    `select table_name, column_name, data_type
-     from information_schema.columns
-     where table_schema = 'public' and table_name = any($1::text[])
-     order by table_name, ordinal_position`,
-    [names],
-  );
-  const grouped = new Map<string, string[]>();
-  for (const row of columns) {
-    const list = grouped.get(row.table_name) ?? [];
-    list.push(`${row.column_name}:${row.data_type}`);
-    grouped.set(row.table_name, list);
-  }
-  const counts = await query<{ shipments: number; events: number; users: number; activity: number; nkd: number; minlen: number; maxlen: number }>(
-    `select
-       (select count(*)::int from shipments) as shipments,
-       (select count(*)::int from shipment_events) as events,
-       (select count(*)::int from admin_users) as users,
-       (select count(*)::int from admin_activity) as activity,
-       (select count(*)::int from shipments where tracking_number ~ '^NKD-[0-9]{8}-[0-9]{4}$') as nkd,
-       (select min(length(tracking_number))::int from shipments) as minlen,
-       (select max(length(tracking_number))::int from shipments) as maxlen`,
-  );
-  const statuses = await query<{ status: string; n: number }>(
-    `select status, count(*)::int as n from shipments group by status order by status`,
-  );
-  const eventStatuses = await query<{ status: string; n: number }>(
-    `select status, count(*)::int as n from shipment_events group by status order by status`,
-  );
-  const detail = names
-    .filter((name) => grouped.has(name))
-    .map((name) => `${name}=${grouped.get(name)?.join(",")}`)
-    .join(" | ");
-  const count = counts[0];
-  const statusText = statuses.map((row) => `${row.status}:${row.n}`).join(",");
-  const eventText = eventStatuses.map((row) => `${row.status}:${row.n}`).join(",");
-  return `using ${globalRef.__nkdonDbSource ?? "unknown"}; tables=${tables.map((row) => row.table_name).join(",")}; counts=shipments:${count?.shipments ?? 0},events:${count?.events ?? 0},users:${count?.users ?? 0},activity:${count?.activity ?? 0},nkd:${count?.nkd ?? 0},len:${count?.minlen ?? 0}-${count?.maxlen ?? 0}; shipment_status=${statusText}; event_status=${eventText}; ${detail}`;
+  if (!rows[0]?.legacy) return;
+  await withTransaction(async (q) => {
+    await q("alter table shipments rename to legacy_shipments");
+    await q("alter table if exists shipment_events rename to legacy_shipment_events");
+    await q("alter table if exists admin_users rename to legacy_admin_users");
+    await q("alter table if exists admin_activity rename to legacy_admin_activity");
+  });
+  console.log("[nkdon] preserved previous tables as legacy_shipments, legacy_shipment_events, legacy_admin_users, legacy_admin_activity");
 }
 
 async function recordExistingMigration(name: string) {
@@ -396,19 +360,12 @@ export async function migrate() {
   }
   const appliedRows = await query<{ name: string }>("select name from schema_migrations");
   const applied = new Set(appliedRows.map((row) => row.name));
+  await preserveLegacyTables();
   for (const name of files) {
     if (applied.has(name)) continue;
     const state = await baselineState(name);
-    if (state.state === "partial" && name === "0001_init.sql") {
-      const inventory = await schemaInventory();
-      throw new HttpError(503, "migration_failed", `Migration ${name} is only partly present (${state.missing.join(", ")}). ${inventory}`);
-    }
     if (state.state === "partial") {
-      throw new HttpError(
-        503,
-        "migration_failed",
-        `Migration ${name} is only partly present (${state.missing.join(", ")}). Nothing was dropped or rewritten.`,
-      );
+      throw new HttpError(503, "migration_failed", `Migration ${name} is only partly present. Nothing was dropped or rewritten.`);
     }
     if (state.state === "present") {
       await recordExistingMigration(name);
