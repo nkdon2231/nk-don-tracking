@@ -24,6 +24,7 @@ type Runner = {
 const globalRef = globalThis as typeof globalThis & {
   __nkdonDb?: Promise<void>;
   __nkdonPool?: pg.Pool;
+  __nkdonDbSource?: string;
   __nkdonPglite?: import("@electric-sql/pglite").PGlite;
   __nkdonChain?: Promise<unknown>;
 };
@@ -131,6 +132,7 @@ async function checkout(): Promise<Runner> {
         const client = await pool.connect();
         client.release();
         globalRef.__nkdonPool = pool;
+        globalRef.__nkdonDbSource = candidate.source;
         break;
       } catch (error) {
         failures.push(`${candidate.source} ${candidate.hostKind}:${candidate.port} ${failureReason(error)}`);
@@ -297,6 +299,49 @@ async function baselineState(name: string): Promise<{ state: "present" | "absent
   return { state: "present", missing: [] };
 }
 
+async function schemaInventory() {
+  const names = [
+    "admin_users",
+    "admin_sessions",
+    "login_attempts",
+    "facilities",
+    "shipments",
+    "shipment_events",
+    "shipment_evidence",
+    "admin_activity",
+    "company_settings",
+    "inquiries",
+    "rate_limits",
+    "tracking_counters",
+    "couriers",
+    "customer_requests",
+    "service_lanes",
+  ];
+  const tables = await query<{ table_name: string }>(
+    `select table_name from information_schema.tables
+     where table_schema = 'public' and table_type = 'BASE TABLE'
+     order by table_name`,
+  );
+  const columns = await query<{ table_name: string; column_name: string }>(
+    `select table_name, column_name
+     from information_schema.columns
+     where table_schema = 'public' and table_name = any($1::text[])
+     order by table_name, ordinal_position`,
+    [names],
+  );
+  const grouped = new Map<string, string[]>();
+  for (const row of columns) {
+    const list = grouped.get(row.table_name) ?? [];
+    list.push(row.column_name);
+    grouped.set(row.table_name, list);
+  }
+  const detail = names
+    .filter((name) => grouped.has(name))
+    .map((name) => `${name}=${grouped.get(name)?.join(",")}`)
+    .join(" | ");
+  return `using ${globalRef.__nkdonDbSource ?? "unknown"}; tables=${tables.map((row) => row.table_name).join(",")}; ${detail}`;
+}
+
 async function recordExistingMigration(name: string) {
   if (name === "0001_init.sql") {
     await query(
@@ -335,6 +380,10 @@ export async function migrate() {
   for (const name of files) {
     if (applied.has(name)) continue;
     const state = await baselineState(name);
+    if (state.state === "partial" && name === "0001_init.sql") {
+      const inventory = await schemaInventory();
+      throw new HttpError(503, "migration_failed", `Migration ${name} is only partly present (${state.missing.join(", ")}). ${inventory}`);
+    }
     if (state.state === "partial") {
       throw new HttpError(
         503,
