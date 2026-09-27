@@ -82,11 +82,25 @@ async function previewDb() {
   return globalRef.__nkdonPglite;
 }
 
-function failureReason(error: unknown) {
-  if (error && typeof error === "object" && "code" in error) {
-    const code = String((error as { code?: unknown }).code ?? "");
-    if (/^[A-Za-z0-9_]{2,32}$/.test(code)) return code;
+function failureReason(error: unknown): string {
+  if (!error || typeof error !== "object") return "connect_failed";
+  const record = error as { code?: unknown; message?: unknown; errors?: unknown };
+  const code = String(record.code ?? "");
+  if (/^[A-Za-z0-9_]{2,40}$/.test(code)) return code;
+  if (Array.isArray(record.errors)) {
+    const nested = record.errors.map((item) => failureReason(item)).filter((item) => item !== "connect_failed");
+    if (nested.length) return nested.slice(0, 2).join("+");
   }
+  const message = String(record.message ?? "");
+  if (/timeout/i.test(message)) return "timeout";
+  if (/ENOTFOUND|getaddrinfo|EAI_AGAIN/i.test(message)) return "dns";
+  if (/ECONNREFUSED/i.test(message)) return "refused";
+  if (/certificate|SELF_SIGNED|unable to verify/i.test(message)) return "tls";
+  if (/password authentication failed/i.test(message)) return "28P01";
+  if (/ECONNRESET|Connection terminated|socket hang up/i.test(message)) return "reset";
+  if (/no pg_hba/i.test(message)) return "pg_hba";
+  if (/remaining connection slots|too many clients/i.test(message)) return "too_many_clients";
+  if (/SSL/i.test(message)) return "tls";
   return "connect_failed";
 }
 
