@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 8080",
-    "build": "node scripts/pin-cloudflare-worker.mjs && next build",
+    "postinstall": "node scripts/install-wrangler-pin.mjs",
+    "build": "node scripts/pin-cloudflare-worker.mjs && next build && node scripts/pin-cloudflare-worker.mjs && node scripts/verify-cloudflare-worker.mjs",
+    "deploy": "opennextjs-cloudflare build && node scripts/verify-cloudflare-worker.mjs && opennextjs-cloudflare deploy",
     "start": "next start -H 0.0.0.0 -p 8080",
     "typecheck": "tsc --noEmit"
   },

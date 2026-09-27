@@ -1,10 +1,11 @@
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const workerName = "nk-don-tracking";
-const staleName = "nkdon-global-logistics";
 const root = process.cwd();
 const canonicalPath = join(root, "wrangler.json");
+
+rmSync(join(root, ".next", "cache"), { recursive: true, force: true });
 
 const canonical = {
   $schema: "node_modules/wrangler/config-schema.json",
@@ -18,6 +19,15 @@ const canonical = {
 
 writeFileSync(canonicalPath, `${JSON.stringify(canonical, null, 2)}\n`);
 
+const packageJsonPath = join(root, "package.json");
+if (existsSync(packageJsonPath)) {
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
+  if (packageJson.name !== workerName) {
+    packageJson.name = workerName;
+    writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`);
+  }
+}
+
 function walk(dir, out = []) {
   let entries = [];
   try {
@@ -29,20 +39,19 @@ function walk(dir, out = []) {
     if (entry.name === "node_modules" || entry.name === ".git" || entry.name === ".next") continue;
     const path = join(dir, entry.name);
     if (entry.isDirectory()) walk(path, out);
-    else if (/^wrangler\.(json|jsonc|toml)$/.test(entry.name) && path !== canonicalPath) out.push(path);
+    else if (/^wrangler\.(json|jsonc|toml)$/.test(entry.name)) out.push(path);
   }
   return out;
 }
 
 for (const path of walk(root)) {
-  const text = readFileSync(path, "utf8");
-  if (!text.includes(staleName)) continue;
-  writeFileSync(path, text.replaceAll(staleName, workerName));
+  if (path === canonicalPath) continue;
+  rmSync(path, { force: true });
 }
 
 const resolved = JSON.parse(readFileSync(canonicalPath, "utf8"));
 const service = resolved.services.find((item) => item.binding === "WORKER_SELF_REFERENCE").service;
-if (resolved.name !== workerName || service !== workerName || JSON.stringify(resolved).includes(staleName)) {
+if (resolved.name !== workerName || service !== workerName) {
   console.error("Cloudflare worker binding was not pinned to nk-don-tracking");
   process.exit(1);
 }
