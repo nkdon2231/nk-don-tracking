@@ -1,6 +1,7 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { storageMode } from "./db";
+import { supabaseServiceRoleKey, supabaseUrl } from "./env";
 import { IMAGE_MAX_BYTES, PDF_MAX_BYTES } from "./constants";
 import { HttpError } from "./http";
 
@@ -50,16 +51,21 @@ function localRoot() {
   return path.join(process.cwd(), ".data", "evidence");
 }
 
+function storageClient() {
+  return import("@supabase/supabase-js").then(({ createClient }) =>
+    createClient(supabaseUrl(), supabaseServiceRoleKey(), {
+      auth: { persistSession: false, autoRefreshToken: false },
+    }),
+  );
+}
+
 export async function saveEvidenceFile(shipmentId: string, originalName: string, file: StoredFile) {
   const objectName = safeObjectName(originalName);
   const relative = path.posix.join("shipments", shipmentId, "evidence", objectName);
   if (relative.includes("..")) throw new HttpError(400, "invalid_file", "Invalid file path.");
   const mode = storageMode();
   if (mode === "supabase") {
-    const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+    const supabase = await storageClient();
     const { error } = await supabase.storage.from("shipment-evidence").upload(relative, file.bytes, {
       contentType: file.fileType,
       upsert: false,
@@ -84,10 +90,7 @@ export async function readEvidenceFile(filePath: string) {
   if (!filePath || filePath.includes("..")) throw new HttpError(404, "not_found", "File not found.");
   const mode = storageMode();
   if (mode === "supabase") {
-    const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+    const supabase = await storageClient();
     const { data, error } = await supabase.storage.from("shipment-evidence").download(filePath);
     if (error || !data) throw new HttpError(404, "not_found", "File not found.");
     return Buffer.from(await data.arrayBuffer());
@@ -106,10 +109,7 @@ export async function deleteEvidenceFile(filePath: string) {
   if (!filePath || filePath.includes("..")) return;
   const mode = storageMode();
   if (mode === "supabase") {
-    const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+    const supabase = await storageClient();
     await supabase.storage.from("shipment-evidence").remove([filePath]);
     return;
   }
@@ -121,10 +121,7 @@ export async function deleteEvidenceFile(filePath: string) {
 
 export async function ensureStorageBucket() {
   if (storageMode() !== "supabase") return;
-  const { createClient } = await import("@supabase/supabase-js");
-  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  const supabase = await storageClient();
   const { error } = await supabase.storage.createBucket("shipment-evidence", {
     public: false,
     fileSizeLimit: 20 * 1024 * 1024,
