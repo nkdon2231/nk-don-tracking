@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { BRAND } from "@/lib/constants";
+import { BRAND, SUPPORT_EMAIL } from "@/lib/constants";
 import { FOOTER_LINKS } from "@/lib/site-content";
 import { BrandLockup } from "./brand-mark";
 import { SiteHeader } from "./site-nav";
@@ -33,6 +33,11 @@ export function SiteFooter() {
           <Link href="/admin/login" className="text-white/70 no-underline">
             Staff sign in
           </Link>
+          <p className="mt-4 text-xs uppercase tracking-[0.14em] text-white/45">Customer Support</p>
+          <a href={`mailto:${SUPPORT_EMAIL}`} className="text-sm font-semibold text-[var(--color-copper)] no-underline">
+            {SUPPORT_EMAIL}
+          </a>
+          <p className="text-xs leading-5 text-white/45">Shown for customers. Mail is not sent automatically.</p>
         </div>
       </div>
       <div className="border-t border-white/10">

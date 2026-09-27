@@ -5,6 +5,8 @@ export const BRAND = {
   positioning: "Courier · Freight · Consignment",
 } as const;
 
+export const SUPPORT_EMAIL = "bennethmayor@hotmail.com";
+
 export const STATUSES = [
   "pickup_scheduled",
   "picked_up",

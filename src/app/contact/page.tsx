@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ContactForm } from "@/components/contact-form";
 import { PublicFrame } from "@/components/site-chrome";
+import { SUPPORT_EMAIL } from "@/lib/constants";
 import { publicCompany } from "@/server/public-profile";
 
 export const metadata = {
@@ -32,6 +33,12 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
           <p className="mt-3 text-sm leading-6">
             Already have a number? <Link href="/track">Track it</Link>. Need a price or a pickup? <Link href="/quote">Get a quote</Link> or <Link href="/book">request a pickup</Link>.
           </p>
+          <p className="mt-6 text-sm leading-6">
+            <span className="block text-xs uppercase tracking-[0.14em] text-[var(--color-muted)]">Customer Support Email</span>
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="mt-1 inline-block font-semibold text-[var(--color-copper)] no-underline">
+              {SUPPORT_EMAIL}
+            </a>
+          </p>
           {details.length ? (
             <dl className="mt-6 grid gap-3 text-sm">
               {details.map(([label, value]) => (
@@ -43,7 +50,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
             </dl>
           ) : (
             <p className="mt-6 text-sm leading-6 text-[var(--color-muted)]">
-              Phone, email, and address appear here after a super admin saves them in company settings. Until then, use the form.
+              Phone and address appear here after a super admin saves them. Until then, use the customer support email or the form. The form does not send email.
             </p>
           )}
           <img src="/images/handover.jpg" alt="A handover at a loading point" className="mt-6 h-64 w-full rounded-[1.5rem] object-cover" />

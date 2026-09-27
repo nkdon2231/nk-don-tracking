@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PublicFrame } from "@/components/site-chrome";
+import { SUPPORT_EMAIL } from "@/lib/constants";
 import { STATUS_HELP } from "@/lib/site-content";
 
 export const metadata = {
@@ -31,6 +32,12 @@ export default function TrackingHelpPage() {
             <Link className="mt-4 inline-block text-sm font-semibold text-[var(--color-copper)] no-underline" href="/contact?topic=Tracking%20assistance">
               Contact support
             </Link>
+            <p className="mt-4 text-sm leading-6">
+              <span className="block text-xs uppercase tracking-[0.14em] text-[var(--color-muted)]">Customer Support Email</span>
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="font-semibold text-[var(--color-copper)] no-underline">
+                {SUPPORT_EMAIL}
+              </a>
+            </p>
           </article>
         </div>
         <h2 className="serif mt-12 text-4xl">What each stage means</h2>

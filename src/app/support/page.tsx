@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PublicFrame } from "@/components/site-chrome";
+import { SUPPORT_EMAIL } from "@/lib/constants";
 import { SERVICES } from "@/lib/site-content";
 
 export const metadata = {
@@ -64,6 +65,13 @@ export default function SupportPage() {
         <h1 className="serif mt-3 max-w-3xl text-5xl leading-[0.95]">Help that reaches the desk, or explains the record.</h1>
         <p className="mt-4 max-w-2xl leading-7 text-[var(--color-muted)]">
           NKDON Global Logistics does not run a chatbot and does not send automatic status mail. Use a form when a person needs to see the question. Use the guides when the answer is how the record works.
+        </p>
+        <p className="mt-6 text-sm leading-6">
+          <span className="block text-xs uppercase tracking-[0.14em] text-[var(--color-copper)]">Customer Support Email</span>
+          <a href={`mailto:${SUPPORT_EMAIL}`} className="mt-1 inline-block text-lg font-semibold text-[var(--color-copper)] no-underline">
+            {SUPPORT_EMAIL}
+          </a>
+          <span className="mt-1 block max-w-xl text-[var(--color-muted)]">Write to this address, or use the contact form. The site does not send email on its own.</span>
         </p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PATHS.map((item) => (

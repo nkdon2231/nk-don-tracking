@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PublicFrame } from "@/components/site-chrome";
+import { SUPPORT_EMAIL } from "@/lib/constants";
 import { QUESTIONS } from "@/lib/site-content";
 
 export const metadata = {
@@ -24,6 +25,13 @@ export default function FaqPage() {
             </details>
           ))}
         </div>
+        <p className="mt-6 text-sm leading-6">
+          <span className="block text-xs uppercase tracking-[0.14em] text-[var(--color-muted)]">Customer Support Email</span>
+          <a href={`mailto:${SUPPORT_EMAIL}`} className="font-semibold text-[var(--color-copper)] no-underline">
+            {SUPPORT_EMAIL}
+          </a>
+          <span className="mt-1 block text-[var(--color-muted)]">The contact form saves a message for staff. It does not send this email for you.</span>
+        </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link className="btn btn-primary" href="/track">
             Track a shipment
