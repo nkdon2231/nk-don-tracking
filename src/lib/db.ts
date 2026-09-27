@@ -322,6 +322,38 @@ async function preserveLegacyTables() {
       end if;
     end $$;
   `);
+  await query(`
+    do $$
+    declare
+      item record;
+    begin
+      for item in
+        select ic.relname as index_name
+        from pg_index i
+        join pg_class ic on ic.oid = i.indexrelid
+        join pg_class t on t.oid = i.indrelid
+        join pg_namespace n on n.oid = t.relnamespace
+        where n.nspname = 'public'
+          and t.relname like 'legacy\\_%' escape '\\'
+          and ic.relname not like 'legacy\\_%' escape '\\'
+      loop
+        execute format('alter index public.%I rename to %I', item.index_name, left('legacy_' || item.index_name, 63));
+      end loop;
+      for item in
+        select s.relname as sequence_name
+        from pg_class s
+        join pg_namespace n on n.oid = s.relnamespace
+        join pg_depend d on d.objid = s.oid and d.deptype = 'a'
+        join pg_class t on t.oid = d.refobjid
+        where n.nspname = 'public'
+          and s.relkind = 'S'
+          and t.relname like 'legacy\\_%' escape '\\'
+          and s.relname not like 'legacy\\_%' escape '\\'
+      loop
+        execute format('alter sequence public.%I rename to %I', item.sequence_name, left('legacy_' || item.sequence_name, 63));
+      end loop;
+    end $$;
+  `);
 }
 
 async function recordExistingMigration(name: string) {
@@ -385,10 +417,14 @@ export async function migrate() {
         let extra = "";
         if (name === "0001_init.sql") {
           try {
-            const tables = await query<{ table_name: string }>(
-              "select table_name from information_schema.tables where table_schema = 'public' order by table_name",
+            const tables = await query<{ relname: string; relkind: string }>(
+              `select c.relname, c.relkind
+               from pg_class c
+               join pg_namespace n on n.oid = c.relnamespace
+               where n.nspname = 'public' and c.relkind in ('r', 'i', 'S')
+               order by c.relkind, c.relname`,
             );
-            extra = ` Remaining tables: ${tables.map((row) => row.table_name).join(", ")}.`;
+            extra = ` Remaining relations: ${tables.map((row) => `${row.relkind}:${row.relname}`).join(", ")}.`;
           } catch {
             extra = "";
           }
