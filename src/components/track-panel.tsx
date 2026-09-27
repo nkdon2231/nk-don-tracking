@@ -331,7 +331,7 @@ function TrackingResult({
             type="button"
             role="tab"
             aria-selected={active === item.id}
-            className={`rounded-full px-3 py-1.5 text-sm ${active === item.id ? "bg-[var(--color-copper)] text-[#1a1203]" : "border border-[var(--color-line)]"}`}
+            className={`inline-flex min-h-11 items-center rounded-full px-3 py-2 text-sm ${active === item.id ? "bg-[var(--color-copper)] text-[#1a1203]" : "border border-[var(--color-line)]"}`}
             onClick={() => setSection(item.id)}
           >
             {item.label}

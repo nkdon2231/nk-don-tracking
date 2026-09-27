@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { HeroAircraft } from "@/components/hero-aircraft";
+import { HeroBackdrop } from "@/components/hero-aircraft";
 import { PublicFrame } from "@/components/site-chrome";
-import { TrackPanel } from "@/components/track-panel";
 import { BRAND } from "@/lib/constants";
 import { SERVICES, STEPS } from "@/lib/site-content";
 
@@ -11,34 +10,92 @@ export default function HomePage() {
   const spotlight = SERVICES.filter((service) => featured.includes(service.value));
   return (
     <PublicFrame hero>
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[#071018]" />
-        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#071018] to-transparent" />
-        <div className="relative mx-auto max-w-6xl px-4 pb-8 pt-28">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--color-lane)]">{BRAND.positioning}</p>
-          <h1 className="mt-4">
-            <span className="brand-hero-name">NKDON</span>
-            <span className="brand-hero-sub">Global Logistics</span>
+      <section className="home-hero">
+        <HeroBackdrop />
+        <div className="home-hero-copy">
+          <p className="home-hero-kicker">{BRAND.positioning}</p>
+          <h1 className="home-hero-title">
+            NKDON
+            <span>Global Logistics</span>
           </h1>
-          <p className="mt-6 max-w-xl text-lg leading-8 text-white/85">{BRAND.tagline}</p>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-white/65">
-            Parcels, documents, freight, and consignments stay on one record. Customers follow the tracking number. The operational file stays with staff.
+          <p className="home-hero-lead">
+            Parcels, documents, freight, and consignments stay on one record. Staff open the shipment. You follow the tracking number they issue.
           </p>
         </div>
-        <div className="relative mx-auto mt-8 max-w-6xl px-3 sm:px-4">
-          <HeroAircraft />
+        <div className="home-hero-track-wrap">
+          <form className="hero-track" action="/track" method="get">
+            <div className="hero-track-head">
+              <span className="hero-track-pin" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11z" />
+                  <circle cx="12" cy="10" r="2.2" />
+                </svg>
+              </span>
+              <div>
+                <h2>Track a shipment</h2>
+                <p>Enter the number staff issued. You will see recorded events, not a live position.</p>
+              </div>
+            </div>
+            <div className="hero-track-row">
+              <label className="sr-only" htmlFor="hero-tracking-number">
+                Tracking number
+              </label>
+              <input id="hero-tracking-number" name="number" placeholder="NKD-YYYYMMDD-XXXX" autoComplete="off" spellCheck={false} maxLength={40} />
+              <button type="submit">Track</button>
+            </div>
+          </form>
         </div>
-        <div className="relative mx-auto mt-6 flex max-w-6xl flex-wrap gap-3 px-4">
-            <Link className="btn btn-primary" href="/track">
-              Track a shipment
-            </Link>
-            <Link className="btn btn-ghost" href="/services">
-              View services
-            </Link>
-          </div>
-      </section>
-      <section className="relative z-10 mx-auto max-w-6xl px-4 pb-4">
-        <TrackPanel />
+        <ul className="home-hero-facts">
+          <li>
+            <span aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.7">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M3 12h18M12 3c2.5 2.8 2.5 15.2 0 18M12 3c-2.5 2.8-2.5 15.2 0 18" />
+              </svg>
+            </span>
+            <div>
+              <strong>Recorded tracking</strong>
+              <p>Updates when staff log an event</p>
+            </div>
+          </li>
+          <li>
+            <span aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.7">
+                <path d="M12 3 5 6v6c0 4.2 2.8 7.2 7 9 4.2-1.8 7-4.8 7-9V6l-7-3z" />
+                <path d="m8.5 12 2.2 2.2 4.8-5" />
+              </svg>
+            </span>
+            <div>
+              <strong>Private by default</strong>
+              <p>Names and notes stay off the public page</p>
+            </div>
+          </li>
+          <li>
+            <span aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.7">
+                <rect x="4" y="7" width="16" height="11" rx="2" />
+                <path d="M8 7V5h8v2M4 12h16" />
+              </svg>
+            </span>
+            <div>
+              <strong>Staff-set timing</strong>
+              <p>A window only after a lane is published</p>
+            </div>
+          </li>
+          <li>
+            <span aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.7">
+                <path d="M5 16v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" />
+                <path d="M8 16V8a4 4 0 0 1 8 0v8" />
+                <path d="M8 13h2M14 13h2" />
+              </svg>
+            </span>
+            <div>
+              <strong>Operations desk</strong>
+              <p>Messages are stored for staff</p>
+            </div>
+          </li>
+        </ul>
       </section>
       <section className="mx-auto grid max-w-6xl gap-4 px-4 py-10 md:grid-cols-3">
         {STEPS.map((step, index) => (

@@ -51,6 +51,12 @@ function localRoot() {
   return path.join(process.cwd(), ".data", "evidence");
 }
 
+function isInsideRoot(absolute: string) {
+  const root = path.resolve(localRoot());
+  const resolved = path.resolve(absolute);
+  return resolved === root || resolved.startsWith(root + path.sep);
+}
+
 async function storageClient() {
   const { createClient } = await import("@supabase/supabase-js");
   return createClient(supabaseUrl(), supabaseSecretKey(), {
@@ -77,7 +83,7 @@ async function storeObject(relative: string, file: StoredFile) {
     throw new HttpError(503, "storage_unconfigured", "Supabase Storage is not configured. Set the Supabase URL and secret key.");
   }
   const absolute = path.join(localRoot(), relative);
-  if (!absolute.startsWith(localRoot())) throw new HttpError(400, "invalid_file", "Invalid file path.");
+  if (!isInsideRoot(absolute)) throw new HttpError(400, "invalid_file", "Invalid file path.");
   await mkdir(path.dirname(absolute), { recursive: true });
   await writeFile(absolute, file.bytes);
   return relative;
@@ -108,7 +114,7 @@ export async function readEvidenceFile(filePath: string) {
   }
   if (mode !== "local-preview") throw new HttpError(404, "not_found", "File not found.");
   const absolute = path.join(localRoot(), filePath);
-  if (!absolute.startsWith(localRoot())) throw new HttpError(404, "not_found", "File not found.");
+  if (!isInsideRoot(absolute)) throw new HttpError(404, "not_found", "File not found.");
   try {
     return await readFile(absolute);
   } catch {
@@ -126,7 +132,7 @@ export async function deleteEvidenceFile(filePath: string) {
   }
   if (mode !== "local-preview") return;
   const absolute = path.join(localRoot(), filePath);
-  if (!absolute.startsWith(localRoot())) return;
+  if (!isInsideRoot(absolute)) return;
   await rm(absolute, { force: true });
 }
 

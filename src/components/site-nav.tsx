@@ -53,20 +53,20 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
               {link.label}
             </Link>
           ))}
-          <Link href="/admin/login" className="text-sm text-white/60 no-underline hover:text-white">
-            Staff
+          <Link href="/admin/login" className="hidden text-sm text-white/80 no-underline hover:text-white lg:inline">
+            Staff sign in
           </Link>
-          <Link href="/track" className="btn btn-primary !px-4 !py-2 text-sm">
+          <Link href="/track" className="btn btn-primary !min-h-11 !px-4 !py-2 text-sm">
             Track
           </Link>
         </nav>
         <div className="flex items-center gap-2 md:hidden">
-          <Link href="/track" className="btn btn-primary !px-3 !py-2 text-sm">
+          <Link href="/track" className="btn btn-primary !min-h-11 !px-3 !py-2 text-sm">
             Track
           </Link>
           <button
             type="button"
-            className="btn btn-ghost !px-3 !py-2 text-sm"
+            className="btn btn-ghost !min-h-11 !px-3 !py-2 text-sm"
             aria-expanded={open}
             aria-controls="site-menu"
             onClick={() => setOpen((value) => !value)}
@@ -92,9 +92,6 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
                 {link.label}
               </Link>
             ))}
-            <Link href="/faq" className="rounded-xl px-3 py-3 no-underline">
-              FAQ
-            </Link>
             <Link href="/admin/login" className="rounded-xl px-3 py-3 text-white/70 no-underline">
               Staff sign in
             </Link>

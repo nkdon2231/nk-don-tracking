@@ -54,6 +54,22 @@ const teal = new MeshStandardMaterial({
   envMapIntensity: 0.6,
 });
 
+const cheat = new MeshStandardMaterial({
+  color: "#2ad4c8",
+  metalness: 0.42,
+  roughness: 0.28,
+  emissive: "#0b3f3c",
+  emissiveIntensity: 0.18,
+  envMapIntensity: 0.7,
+});
+
+const navy = new MeshStandardMaterial({
+  color: "#0c2744",
+  metalness: 0.58,
+  roughness: 0.36,
+  envMapIntensity: 0.65,
+});
+
 const glass = new MeshStandardMaterial({
   color: "#163044",
   metalness: 0.72,
@@ -277,11 +293,35 @@ function Engine({ side }: { side: number }) {
   );
 }
 
-function CameraFit() {
+function GearLeg({ position, reach = 0.42 }: { position: [number, number, number]; reach?: number }) {
+  return (
+    <group position={position}>
+      <mesh position={[0, -reach * 0.45, 0]} material={dark}>
+        <cylinderGeometry args={[0.016, 0.014, reach, 8]} />
+      </mesh>
+      <mesh position={[0, -reach, 0]} rotation={[Math.PI / 2, 0, 0]} material={dark}>
+        <cylinderGeometry args={[0.014, 0.014, 0.14, 8]} />
+      </mesh>
+      <mesh position={[0.055, -reach, 0]} rotation={[0, 0, Math.PI / 2]} material={silver}>
+        <torusGeometry args={[0.046, 0.013, 8, 16]} />
+      </mesh>
+    </group>
+  );
+}
+
+function CameraFit({ embedded }: { embedded: boolean }) {
   const { camera, size } = useThree();
   useEffect(() => {
     const cam = camera as PerspectiveCamera;
     const aspect = size.width / Math.max(1, size.height);
+    if (embedded) {
+      cam.fov = aspect < 0.9 ? 36 : 30;
+      const distance = aspect < 0.9 ? 8.6 : 6.7;
+      cam.position.set(-0.15, -0.05, distance);
+      cam.lookAt(0.1, 0.12, 0);
+      cam.updateProjectionMatrix();
+      return;
+    }
     const fov = aspect < 1.25 ? 30 : 25;
     cam.fov = fov;
     const half = (fov * Math.PI) / 360;
@@ -291,11 +331,11 @@ function CameraFit() {
     cam.position.copy(direction);
     cam.lookAt(0.02, 0.06, 0);
     cam.updateProjectionMatrix();
-  }, [camera, size]);
+  }, [camera, embedded, size]);
   return null;
 }
 
-function Stage({ motion }: { motion: boolean }) {
+function Stage({ motion, embedded }: { motion: boolean; embedded: boolean }) {
   const rig = useRef<Group>(null);
   const drag = useRef<{ x: number; yaw: number } | null>(null);
   const offset = useRef(0);
@@ -389,7 +429,7 @@ function Stage({ motion }: { motion: boolean }) {
 
   useEffect(() => {
     gl.toneMapping = ACESFilmicToneMapping;
-    gl.toneMappingExposure = 1.18;
+    gl.toneMappingExposure = embedded ? 1.34 : 1.18;
     const pmrem = new PMREMGenerator(gl);
     const env = pmrem.fromScene(new RoomEnvironment(), 0.045);
     scene.environment = env.texture;
@@ -424,16 +464,16 @@ function Stage({ motion }: { motion: boolean }) {
       built.winglet.dispose();
       built.shadowMap?.dispose();
     };
-  }, [built, gl, scene]);
+  }, [built, embedded, gl, scene]);
 
   useFrame((state) => {
     if (!rig.current) return;
     const t = state.clock.elapsedTime;
-    const sway = motion ? Math.sin(t * 0.22) * 0.07 : 0;
-    rig.current.rotation.y = -0.5 + sway + offset.current;
-    rig.current.rotation.z = motion ? Math.sin(t * 0.28) * 0.018 : 0;
-    rig.current.rotation.x = -0.06 + (motion ? Math.sin(t * 0.17) * 0.012 : 0);
-    rig.current.position.y = motion ? Math.sin(t * 0.36) * 0.028 : 0;
+    const sway = motion ? Math.sin(t * 0.22) * (embedded ? 0.035 : 0.07) : 0;
+    rig.current.rotation.y = (embedded ? -2.02 : -0.5) + sway + offset.current;
+    rig.current.rotation.z = (embedded ? 0.2 : 0) + (motion ? Math.sin(t * 0.28) * 0.015 : 0);
+    rig.current.rotation.x = (embedded ? 0.16 : -0.06) + (motion ? Math.sin(t * 0.17) * 0.01 : 0);
+    rig.current.position.y = (embedded ? 0.12 : 0) + (motion ? Math.sin(t * 0.36) * 0.02 : 0);
     amber.emissiveIntensity = motion ? 0.4 + Math.sin(t * 2.2) * 0.35 : 0.6;
   });
 
@@ -449,17 +489,23 @@ function Stage({ motion }: { motion: boolean }) {
       <mesh position={[2.86, 0.2, 0]} scale={[0.24, 0.028, 0.09]} material={dark}>
         <sphereGeometry args={[1, 16, 10]} />
       </mesh>
-      <mesh position={[0.05, 0.1, 0.362]} material={teal}>
-        <boxGeometry args={[3.15, 0.032, 0.012]} />
+      <mesh position={[0.2, 0.08, 0.358]} material={cheat}>
+        <boxGeometry args={[4.55, 0.07, 0.02]} />
       </mesh>
-      <mesh position={[0.05, 0.1, -0.362]} material={teal}>
-        <boxGeometry args={[3.15, 0.032, 0.012]} />
+      <mesh position={[0.2, 0.08, -0.358]} material={cheat}>
+        <boxGeometry args={[4.55, 0.07, 0.02]} />
       </mesh>
       <mesh geometry={built.wing} material={pearl} />
       <mesh geometry={built.wingPort} material={pearl} />
       <mesh geometry={built.stab} material={silver} />
       <mesh geometry={built.stabPort} material={silver} />
-      <mesh geometry={built.fin} material={silver} />
+      <mesh geometry={built.fin} material={navy} />
+      <mesh position={[-2.02, 0.78, 0.03]} rotation={[0, 0, 0.85]} material={cheat}>
+        <boxGeometry args={[0.46, 0.05, 0.02]} />
+      </mesh>
+      <mesh position={[-1.92, 0.62, 0.03]} rotation={[0, 0, 0.85]} material={cheat}>
+        <boxGeometry args={[0.28, 0.035, 0.02]} />
+      </mesh>
       <mesh geometry={built.winglet} material={pearl} position={[-0.16, 0.36, 3.18]} />
       <mesh geometry={built.winglet} material={pearl} position={[-0.16, 0.36, -3.18]} />
       <mesh position={[0.12, -0.18, 0]} scale={[0.95, 0.14, 0.26]} material={belly}>
@@ -482,17 +528,20 @@ function Stage({ motion }: { motion: boolean }) {
       <mesh position={[-0.08, 0.38, -3.2]} material={amber}>
         <sphereGeometry args={[0.03, 10, 10]} />
       </mesh>
-      {built.shadowMap ? (
+      <GearLeg position={[1.72, -0.18, 0]} reach={0.36} />
+      <GearLeg position={[0.12, -0.16, 0.58]} reach={0.5} />
+      <GearLeg position={[0.12, -0.16, -0.58]} reach={0.5} />
+      {embedded || !built.shadowMap ? null : (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0.1, -0.78, 0]}>
           <planeGeometry args={[7.2, 2.4]} />
           <meshBasicMaterial map={built.shadowMap} transparent depthWrite={false} />
         </mesh>
-      ) : null}
+      )}
     </group>
   );
 }
 
-export function HeroAircraftCanvas({ motion }: { motion: boolean }) {
+export function HeroAircraftCanvas({ motion, embedded = false }: { motion: boolean; embedded?: boolean }) {
   return (
     <Canvas
       camera={{ position: [2.2, 2.4, 6.6], fov: 25 }}
@@ -505,13 +554,25 @@ export function HeroAircraftCanvas({ motion }: { motion: boolean }) {
         invalidate();
       }}
     >
-      <CameraFit />
-      <ambientLight intensity={0.38} />
-      <hemisphereLight args={["#e7eef6", "#0b1522", 0.62]} />
-      <directionalLight position={[5.5, 7, 4]} intensity={2.7} color="#f7f9fc" />
-      <directionalLight position={[-6, 2.4, -2]} intensity={1.55} color="#b7fff6" />
-      <directionalLight position={[-1, 1.2, 6]} intensity={0.4} color="#d5e2f0" />
-      <Stage motion={motion} />
+      <CameraFit embedded={embedded} />
+      {embedded ? (
+        <>
+          <ambientLight intensity={0.46} />
+          <hemisphereLight args={["#d5e7f8", "#6a3d1c", 0.72]} />
+          <directionalLight position={[6.5, 2.4, 2.2]} intensity={2.9} color="#ffd7a8" />
+          <directionalLight position={[-5, 5.5, -2]} intensity={0.9} color="#9ec6ea" />
+          <directionalLight position={[0.4, -1.2, 5]} intensity={0.4} color="#ffb56a" />
+        </>
+      ) : (
+        <>
+          <ambientLight intensity={0.38} />
+          <hemisphereLight args={["#e7eef6", "#0b1522", 0.62]} />
+          <directionalLight position={[5.5, 7, 4]} intensity={2.7} color="#f7f9fc" />
+          <directionalLight position={[-6, 2.4, -2]} intensity={1.55} color="#b7fff6" />
+          <directionalLight position={[-1, 1.2, 6]} intensity={0.4} color="#d5e2f0" />
+        </>
+      )}
+      <Stage motion={motion} embedded={embedded} />
     </Canvas>
   );
 }

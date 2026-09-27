@@ -97,7 +97,7 @@ export function AdminFrame({ children }: { children: ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`rounded-full px-3 py-2 text-sm no-underline whitespace-nowrap ${active ? "bg-white/15 text-white" : "text-white/75"}`}
+                  className={`inline-flex min-h-11 items-center rounded-full px-3 py-2 text-sm no-underline whitespace-nowrap ${active ? "bg-white/15 text-white" : "text-white/75"}`}
                 >
                   {item.label}
                 </Link>

@@ -57,7 +57,7 @@ export function EvidenceBoard({
             <button
               key={item.id}
               type="button"
-              className={`rounded-full border px-3 py-1.5 text-sm whitespace-nowrap ${
+              className={`inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm whitespace-nowrap ${
                 active.id === item.id ? "border-[var(--color-copper)] bg-[var(--color-copper)] text-[#1a1203]" : "border-[var(--color-line)] bg-transparent"
               }`}
               onClick={() => onStage(item.id)}
