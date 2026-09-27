@@ -8,7 +8,9 @@ import { HttpError } from "./http";
 
 const scryptAsync = promisify(scrypt);
 const SESSION_COOKIE = "nkdon_session";
-const SESSION_HOURS = 12;
+const IDLE_MS = 12 * 60 * 60 * 1000;
+const ABSOLUTE_MS = 14 * 24 * 60 * 60 * 1000;
+const TOUCH_MS = 5 * 60 * 1000;
 
 export type StaffUser = {
   id: string;
@@ -78,9 +80,16 @@ export async function countUsers() {
   return rows[0]?.count ?? 0;
 }
 
+export function secretsMatch(left: string, right: string) {
+  const a = Buffer.from(left);
+  const b = Buffer.from(right);
+  if (a.length === 0 || a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
+
 export async function createSession(userId: string, ip: string, userAgent: string) {
   const token = newToken();
-  const expires = new Date(Date.now() + SESSION_HOURS * 60 * 60 * 1000);
+  const expires = new Date(Date.now() + IDLE_MS);
   await query(
     `insert into admin_sessions (user_id, token_hash, expires_at, ip, user_agent)
      values ($1, $2, $3, $4, $5)`,
@@ -90,17 +99,29 @@ export async function createSession(userId: string, ip: string, userAgent: strin
   return { token, expires };
 }
 
-export function sessionCookie(token: string, expires: Date) {
+function cookieOptions(maxAge: number) {
+  return {
+    httpOnly: true,
+    sameSite: "lax" as const,
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge,
+  };
+}
+
+export function sessionCookie(token: string) {
   return {
     name: SESSION_COOKIE,
     value: token,
-    options: {
-      httpOnly: true,
-      sameSite: "lax" as const,
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      expires,
-    },
+    options: cookieOptions(Math.floor(ABSOLUTE_MS / 1000)),
+  };
+}
+
+export function clearSessionCookie() {
+  return {
+    name: SESSION_COOKIE,
+    value: "",
+    options: cookieOptions(0),
   };
 }
 
@@ -110,9 +131,10 @@ export async function revokeSession(token: string) {
 }
 
 export async function userFromToken(token: string | undefined | null): Promise<StaffUser | null> {
-  if (!token) return null;
-  const rows = await query<UserRow & { session_id: string; last_seen_at: string }>(
-    `select u.*, s.id as session_id, s.last_seen_at
+  if (!token || token.length < 32) return null;
+  const rows = await query<UserRow & { session_id: string; last_seen_at: string; session_created_at: string }>(
+    `select u.id, u.email, u.name, u.role, u.is_active, u.auth_provider, u.password_hash,
+            s.id as session_id, s.last_seen_at, s.created_at as session_created_at
      from admin_sessions s
      join admin_users u on u.id = s.user_id
      where s.token_hash = $1
@@ -124,9 +146,20 @@ export async function userFromToken(token: string | undefined | null): Promise<S
   );
   const row = rows[0];
   if (!row) return null;
+  const now = Date.now();
+  const created = new Date(row.session_created_at).getTime();
+  const cap = (Number.isFinite(created) ? created : now) + ABSOLUTE_MS;
+  if (now >= cap) {
+    await query("update admin_sessions set revoked_at = now() where id = $1 and revoked_at is null", [row.session_id]);
+    return null;
+  }
   const lastSeen = new Date(row.last_seen_at).getTime();
-  if (Date.now() - lastSeen > 5 * 60 * 1000) {
-    await query("update admin_sessions set last_seen_at = now() where id = $1", [row.session_id]);
+  if (!Number.isFinite(lastSeen) || now - lastSeen > TOUCH_MS) {
+    const nextExpiry = new Date(Math.min(now + IDLE_MS, cap));
+    await query("update admin_sessions set last_seen_at = now(), expires_at = $2 where id = $1", [
+      row.session_id,
+      nextExpiry.toISOString(),
+    ]);
   }
   return mapUser(row);
 }
@@ -194,7 +227,23 @@ async function verifySupabasePassword(email: string, password: string) {
     },
     body: JSON.stringify({ email, password }),
   });
-  return response.ok;
+  if (response.ok) return true;
+  const detail = await response.json().catch(() => ({}));
+  const code = typeof detail?.error_code === "string" ? detail.error_code : "";
+  if (code === "email_not_confirmed") {
+    throw new HttpError(403, "email_unconfirmed", "This staff account exists but is not confirmed in Supabase Auth.");
+  }
+  return false;
+}
+
+function providerMessage(detail: unknown, fallback: string) {
+  if (!detail || typeof detail !== "object") return fallback;
+  const record = detail as Record<string, unknown>;
+  const raw = [record.msg, record.message, record.error_description].find((item) => typeof item === "string");
+  if (typeof raw !== "string") return fallback;
+  const text = raw.replace(/\s+/g, " ").trim().slice(0, 180);
+  if (!text || /bearer|service_role|sb_secret|sb_publishable|eyJ/i.test(text)) return fallback;
+  return text;
 }
 
 export async function createSupabaseUser(email: string, password: string, name: string) {
@@ -208,16 +257,25 @@ export async function createSupabaseUser(email: string, password: string, name: 
       authorization: `Bearer ${service}`,
       "content-type": "application/json",
     },
-    body: JSON.stringify({ email, password, email_confirm: true, user_metadata: { name } }),
+    body: JSON.stringify({ email, password, email_confirm: true, user_metadata: { name, app: "nkdon-staff" } }),
   });
+  const detail = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const detail = await response.json().catch(() => ({}));
-    const message = typeof detail?.msg === "string" ? detail.msg : "Supabase Auth could not create this user.";
-    throw new HttpError(400, "auth_provider", message);
+    throw new HttpError(400, "auth_provider", providerMessage(detail, "Supabase Auth could not create this staff account."));
   }
-  const body = (await response.json()) as { id?: string };
-  if (!body.id) throw new HttpError(502, "auth_provider", "Supabase Auth did not return a user id.");
-  return body.id;
+  const id = typeof detail?.id === "string" ? detail.id : "";
+  if (!id) throw new HttpError(502, "auth_provider", "Supabase Auth did not return a user id.");
+  return id;
+}
+
+export async function deleteSupabaseUser(id: string) {
+  const url = supabaseUrl();
+  const service = supabaseSecretKey();
+  if (!url || !service || !id) return;
+  await fetch(`${url}/auth/v1/admin/users/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    headers: { apikey: service, authorization: `Bearer ${service}` },
+  }).catch(() => undefined);
 }
 
 export function notificationChannels() {

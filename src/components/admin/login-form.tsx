@@ -6,7 +6,7 @@ import { FormEvent, useState, type ReactNode } from "react";
 import { ApiError, api } from "@/lib/client-api";
 import { Banner } from "./ui";
 
-export function LoginForm({ nextPath }: { nextPath: string }) {
+export function LoginForm({ nextPath, notice = "" }: { nextPath: string; notice?: string }) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
@@ -43,6 +43,7 @@ export function LoginForm({ nextPath }: { nextPath: string }) {
           <span>Password</span>
           <input name="password" type="password" autoComplete="current-password" required maxLength={128} />
         </label>
+        {notice ? <Banner tone={notice.startsWith("You have signed out") ? "ok" : "warn"}>{notice}</Banner> : null}
         {error ? <Banner>{error}</Banner> : null}
         <button className="btn btn-primary" type="submit" disabled={pending}>
           {pending ? "Checking…" : "Enter the desk"}

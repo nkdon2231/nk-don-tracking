@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 import {
   assertCan,
   countUsers,
+  clearSessionCookie,
   createSession,
   createSupabaseUser,
   currentUser,
+  deleteSupabaseUser,
   findUserByEmail,
   hashPassword,
   loginLocked,
@@ -12,6 +14,7 @@ import {
   recordLoginAttempt,
   requireUser,
   revokeSession,
+  secretsMatch,
   sessionCookie,
   userFromToken,
   verifyCredentials,
@@ -97,8 +100,14 @@ export async function GET(request: Request, context: { params: Promise<{ path: s
     const url = new URL(request.url);
 
     if (key === "auth/session") {
+      const token = readCookie(request, "nkdon_session");
       const user = await currentUser();
-      return jsonOk({ user, database: databaseMode(), storage: storageMode(), notifications: notificationChannels() });
+      const response = jsonOk({ user, database: databaseMode(), storage: storageMode(), notifications: notificationChannels() });
+      if (token && !user) {
+        const cookie = clearSessionCookie();
+        response.cookies.set(cookie.name, cookie.value, cookie.options);
+      }
+      return response;
     }
     if (key === "stats") {
       await actor(request, "shipments:read");
@@ -215,7 +224,7 @@ export async function POST(request: Request, context: { params: Promise<{ path: 
       const session = await createSession(user.id, ip, userAgent(request));
       await audit({ ...meta(request, user), action: "login", resource: "auth", resourceId: user.id });
       const response = jsonOk({ user });
-      const cookie = sessionCookie(session.token, session.expires);
+      const cookie = sessionCookie(session.token);
       response.cookies.set(cookie.name, cookie.value, cookie.options);
       return response;
     }
@@ -227,7 +236,8 @@ export async function POST(request: Request, context: { params: Promise<{ path: 
       await revokeSession(token);
       if (user) await audit({ ...meta(request, user), action: "logout", resource: "auth", resourceId: user.id });
       const response = jsonOk({ ok: true });
-      response.cookies.set("nkdon_session", "", { httpOnly: true, path: "/", maxAge: 0 });
+      const cookie = clearSessionCookie();
+      response.cookies.set(cookie.name, cookie.value, cookie.options);
       return response;
     }
 
@@ -240,7 +250,7 @@ export async function POST(request: Request, context: { params: Promise<{ path: 
         return jsonError(503, "setup_unconfigured", "Set SETUP_TOKEN on the server before creating the first administrator.");
       }
       const input = parseBody(setupSchema, await body(request));
-      if (input.token !== expected) return jsonError(403, "invalid_token", "The setup token is incorrect.");
+      if (!secretsMatch(input.token, expected)) return jsonError(403, "invalid_token", "The setup token is incorrect.");
       let id: string | null = null;
       let provider: "local" | "supabase" = "local";
       let passwordHash: string | null = await hashPassword(input.password);
@@ -249,11 +259,20 @@ export async function POST(request: Request, context: { params: Promise<{ path: 
         provider = "supabase";
         passwordHash = null;
       }
-      await query(
-        `insert into admin_users (id, email, name, role, auth_provider, password_hash)
-         values (coalesce($1::uuid, gen_random_uuid()), $2, $3, 'super_admin', $4, $5)`,
-        [id, input.email.toLowerCase(), input.name, provider, passwordHash],
-      );
+      try {
+        await query(
+          `insert into admin_users (id, email, name, role, auth_provider, password_hash)
+           values (coalesce($1::uuid, gen_random_uuid()), $2, $3, 'super_admin', $4, $5)`,
+          [id, input.email.toLowerCase(), input.name, provider, passwordHash],
+        );
+      } catch (error) {
+        if (id) await deleteSupabaseUser(id);
+        const message = error instanceof Error ? error.message : "";
+        if (/duplicate|unique/i.test(message)) {
+          return jsonError(403, "setup_closed", "An administrator already exists. Setup is closed.");
+        }
+        throw error;
+      }
       const created = await findUserByEmail(input.email);
       await audit({
         actor: created ? { id: created.id, email: created.email } : null,
@@ -358,11 +377,18 @@ export async function POST(request: Request, context: { params: Promise<{ path: 
         provider = "supabase";
         passwordHash = null;
       }
-      await query(
-        `insert into admin_users (id, email, name, role, auth_provider, password_hash, is_active)
-         values (coalesce($1::uuid, gen_random_uuid()), $2, $3, $4, $5, $6, $7)`,
-        [id, input.email.toLowerCase(), input.name, input.role, provider, passwordHash, input.isActive],
-      );
+      try {
+        await query(
+          `insert into admin_users (id, email, name, role, auth_provider, password_hash, is_active)
+           values (coalesce($1::uuid, gen_random_uuid()), $2, $3, $4, $5, $6, $7)`,
+          [id, input.email.toLowerCase(), input.name, input.role, provider, passwordHash, input.isActive],
+        );
+      } catch (error) {
+        if (id) await deleteSupabaseUser(id);
+        const message = error instanceof Error ? error.message : "";
+        if (/duplicate|unique/i.test(message)) return jsonError(409, "duplicate_email", "An account with that email already exists.");
+        throw error;
+      }
       const created = await findUserByEmail(input.email);
       await audit({ ...meta(request, user), action: "user_created", resource: "user", resourceId: created?.id, metadata: { role: input.role } });
       return jsonOk({ ok: true }, 201);
@@ -503,7 +529,12 @@ export async function PATCH(request: Request, context: { params: Promise<{ path:
         await query("update admin_users set password_hash = $2 where id = $1", [user.id, await hashPassword(parsed.data.password)]);
       }
       await audit({ ...meta(request, user), action: "password_changed", resource: "user", resourceId: user.id });
-      return jsonOk({ ok: true });
+      await query("update admin_sessions set revoked_at = now() where user_id = $1 and revoked_at is null", [user.id]);
+      const session = await createSession(user.id, clientIp(request), userAgent(request));
+      const response = jsonOk({ ok: true });
+      const cookie = sessionCookie(session.token);
+      response.cookies.set(cookie.name, cookie.value, cookie.options);
+      return response;
     }
 
     return jsonError(404, "not_found", "Not found.");

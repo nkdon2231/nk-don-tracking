@@ -51,11 +51,13 @@ Accepted evidence is JPG, JPEG, PNG, WEBP, and PDF. Images are limited to 10 MB 
 
 ## Authentication
 
-`/admin/setup` creates the first super admin only while `admin_users` is empty, and only with `SETUP_TOKEN`. There is no default password. After that account exists, setup closes.
+`/admin/setup` creates the first super admin only while `admin_users` is empty, and only with `SETUP_TOKEN`. There is no default password. After that account exists, setup closes. Enter the name, email, and password on that page. Do not send the password in chat.
 
-Later accounts are created from Team by a super admin. When the Supabase URL and secret key are set, the account is also created in Supabase Auth and sign-in checks the password there. Otherwise a server-side password hash is stored for development.
+When the Supabase URL and secret key are set, setup also creates a confirmed user in Supabase Auth. Sign-in then checks the password with Supabase and stores an httpOnly `nkdon_session` cookie. The cookie can last up to 14 days, but the server ends it after 12 hours without use. Logout, a bad token, an inactive account, and expiry all fail closed. Changing your own password revokes older sessions and issues a new one.
 
-Sessions are httpOnly cookies. Mutations require a same-origin CSRF token. Roles are `super_admin`, `admin`, `operations`, `support`, and `viewer`.
+Later accounts are created from Team by a super admin. Roles are `super_admin`, `admin`, `operations`, `support`, and `viewer`. Mutations from the browser also require a same-origin CSRF token. Staff sign-in does not use a browser OAuth redirect. In Supabase Auth, keep Email enabled. Site URL should be the production domain (`NEXT_PUBLIC_SITE_URL`). Extra redirect URLs are not required for this desk. The publishable key is used only for the password check. The secret key stays on the server.
+
+Every `/admin` page except sign-in and setup is checked on the server. Admin APIs check the session again and the role in `admin_users`. The anon and authenticated Supabase roles cannot read those tables.
 
 ## What staff can do
 

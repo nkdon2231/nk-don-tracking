@@ -38,7 +38,9 @@ export function AdminFrame({ children }: { children: ReactNode }) {
       .then((data) => {
         if (cancel) return;
         if (!data.user) {
-          router.replace(`/admin/login?next=${encodeURIComponent(pathname || "/admin")}`);
+          const params = new URLSearchParams({ reason: "expired" });
+          if (pathname?.startsWith("/admin/") && !pathname.startsWith("/admin/login")) params.set("next", pathname);
+          router.replace(`/admin/login?${params.toString()}`);
           return;
         }
         setSession(data);
@@ -115,7 +117,7 @@ function SignOut({ user, compact = false }: { user: Staff; compact?: boolean }) 
     try {
       await api("/api/admin/auth/logout", { method: "POST" });
     } finally {
-      router.replace("/admin/login");
+      router.replace("/admin/login?reason=signed-out");
       router.refresh();
     }
   }

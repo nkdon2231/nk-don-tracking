@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { publicSiteUrl } from "./env";
 
@@ -62,8 +63,10 @@ export function assertSameOrigin(req: Request) {
 export function assertCsrf(req: Request) {
   assertSameOrigin(req);
   const cookie = readCookie(req, "nkdon_csrf");
-  const header = req.headers.get("x-csrf-token");
-  if (!cookie || !header || cookie.length < 32 || cookie !== header) {
+  const header = req.headers.get("x-csrf-token") ?? "";
+  const left = Buffer.from(cookie);
+  const right = Buffer.from(header);
+  if (left.length < 32 || left.length !== right.length || !timingSafeEqual(left, right)) {
     throw new HttpError(403, "csrf", "The security token was missing or expired. Refresh the page and try again.");
   }
 }
