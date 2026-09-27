@@ -2,27 +2,52 @@
 
 @theme {
   --font-sans: "Outfit", "Avenir Next", "Segoe UI", sans-serif;
-  --font-serif: "Fraunces", "Iowan Old Style", "Palatino Linotype", serif;
-  --color-ink: #1b1914;
-  --color-pine: #1d3b32;
-  --color-pine-2: #2f5b4c;
-  --color-copper: #9a5732;
-  --color-sand: #f4efe6;
-  --color-paper: #fbf8f2;
-  --color-line: #e3d9cb;
-  --color-muted: #6d655c;
+  --font-display: "Sora", "Avenir Next", sans-serif;
+  --color-ink: #e7eef6;
+  --color-pine: #10263c;
+  --color-pine-2: #17324d;
+  --color-copper: #ffb703;
+  --color-lane: #3ec6c0;
+  --color-sand: #071018;
+  --color-paper: #f4f7fb;
+  --color-panel: #101c2e;
+  --color-line: #24384c;
+  --color-muted: #9eb0c3;
 }
 
 html {
   scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--color-sand);
+  background:
+    radial-gradient(980px 460px at 100% -12%, rgba(62, 198, 192, 0.11), transparent 52%),
+    radial-gradient(760px 380px at -8% 0%, rgba(255, 183, 3, 0.08), transparent 48%),
+    var(--color-sand);
   color: var(--color-ink);
-  font-family: var(--font-sans);
+  font-family: var(--font-outfit), Outfit, sans-serif;
+}
+
+body::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 72%);
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
 }
 
 button,
@@ -37,11 +62,22 @@ button:disabled {
 }
 
 ::selection {
-  background: #e7c7ae;
+  background: #ffb703;
+  color: #1a1203;
 }
 
 [id] {
-  scroll-margin-top: 5.5rem;
+  scroll-margin-top: 6rem;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 summary::-webkit-details-marker {
@@ -49,7 +85,102 @@ summary::-webkit-details-marker {
 }
 
 .serif {
-  font-family: var(--font-serif);
+  font-family: var(--font-sora), Sora, sans-serif;
+  letter-spacing: -0.035em;
+}
+
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.brand-name {
+  display: block;
+  font-family: var(--font-sora), Sora, sans-serif;
+  font-weight: 700;
+  font-size: 1.08rem;
+  letter-spacing: 0.12em;
+  line-height: 1;
+}
+
+.brand-sub {
+  display: block;
+  margin-top: 0.28rem;
+  color: var(--color-lane);
+  font-size: 0.62rem;
+  font-weight: 650;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.brand-hero-name {
+  display: block;
+  font-family: var(--font-sora), Sora, sans-serif;
+  font-weight: 700;
+  font-size: clamp(3.4rem, 18vw, 8.4rem);
+  letter-spacing: -0.055em;
+  line-height: 0.84;
+}
+
+.brand-hero-sub {
+  display: block;
+  margin-top: 0.85rem;
+  color: var(--color-copper);
+  font-family: var(--font-sora), Sora, sans-serif;
+  font-size: clamp(0.78rem, 1.7vw, 1.05rem);
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+
+.site-header {
+  transition:
+    background-color 280ms ease,
+    border-color 280ms ease,
+    box-shadow 280ms ease;
+}
+
+.site-header.is-solid {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  background: rgba(7, 16, 24, 0.9);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(16px);
+}
+
+.nk-hero-image {
+  animation: nk-drift 32s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes nk-drift {
+  0%,
+  100% {
+    transform: scale(1.04) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.08) translate3d(-1.5%, 1%, 0);
+  }
+}
+
+@media (max-width: 420px) {
+  .brand-name {
+    font-size: 0.92rem;
+    letter-spacing: 0.06em;
+  }
+  .brand-sub {
+    letter-spacing: 0.12em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nk-hero-image {
+    animation: none;
+    transform: none;
+  }
 }
 
 .field {
@@ -58,8 +189,8 @@ summary::-webkit-details-marker {
 }
 
 .field span {
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-muted);
 }
@@ -69,10 +200,10 @@ summary::-webkit-details-marker {
 .field textarea {
   width: 100%;
   border: 1px solid var(--color-line);
-  background: white;
+  background: #0b1624;
   color: var(--color-ink);
-  border-radius: 0.75rem;
-  padding: 0.72rem 0.85rem;
+  border-radius: 0.8rem;
+  padding: 0.78rem 0.9rem;
   font: inherit;
 }
 
@@ -87,33 +218,39 @@ summary::-webkit-details-marker {
   justify-content: center;
   gap: 0.45rem;
   border-radius: 999px;
-  padding: 0.72rem 1.15rem;
+  padding: 0.75rem 1.2rem;
   border: 1px solid transparent;
-  font-weight: 600;
+  font-weight: 650;
+  letter-spacing: 0.01em;
   text-decoration: none;
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease;
 }
 
-.btn-primary {
-  background: var(--color-ink);
-  color: var(--color-paper);
+.btn:hover {
+  transform: translateY(-1px);
 }
 
+.btn-primary,
 .btn-copper {
   background: var(--color-copper);
-  color: white;
+  color: #1a1203;
 }
 
 .btn-ghost {
   background: transparent;
-  border-color: var(--color-line);
+  border-color: rgba(231, 238, 246, 0.22);
   color: var(--color-ink);
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid var(--color-line);
+  background: linear-gradient(180deg, rgba(18, 36, 58, 0.94), rgba(12, 24, 40, 0.94));
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 1.25rem;
   min-width: 0;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
 }
 
 svg {
@@ -125,25 +262,25 @@ svg {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  padding: 0.2rem 0.6rem;
+  padding: 0.2rem 0.65rem;
   font-size: 0.75rem;
   font-weight: 650;
   letter-spacing: 0.02em;
-  background: #efe7db;
-  color: var(--color-ink);
+  background: #163049;
+  color: #d7e4f2;
 }
 
 .badge-live {
-  background: #e5f2ea;
-  color: #1d3b32;
+  background: rgba(62, 198, 192, 0.16);
+  color: #9af3ee;
 }
 
 .badge-warn {
-  background: #f8e7dc;
-  color: #7a3e22;
+  background: rgba(255, 138, 106, 0.16);
+  color: #ffd0c4;
 }
 
 .badge-muted {
-  background: #eceae6;
-  color: #5c564e;
+  background: #1a2838;
+  color: #9eb0c3;
 }

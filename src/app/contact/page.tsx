@@ -23,7 +23,7 @@ export default async function ContactPage() {
     <PublicFrame>
       <section className="mx-auto grid max-w-6xl gap-8 px-4 py-12 lg:grid-cols-[0.85fr_1.15fr]">
         <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-copper)]">Contact</p>
+          <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-copper)]">Support</p>
           <h1 className="serif mt-2 text-5xl">Send a message</h1>
           <p className="mt-4 leading-7 text-[var(--color-muted)]">
             Quotes, document questions, and tracking help are saved for staff. Email and SMS are not sent until a provider is connected, so this form does not promise an automatic reply.

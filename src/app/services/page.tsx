@@ -27,7 +27,7 @@ export default function ServicesPage() {
       </section>
       <section className="mx-auto grid max-w-6xl gap-5 px-4 pb-8">
         {SERVICES.map((service, index) => (
-          <article id={service.value} key={service.value} className="scroll-mt-24 grid overflow-hidden rounded-[1.5rem] bg-white md:grid-cols-[0.86fr_1.14fr]">
+          <article id={service.value} key={service.value} className="card scroll-mt-28 grid overflow-hidden md:grid-cols-[0.86fr_1.14fr]">
             <img src={service.image} alt={service.alt} className={`h-56 w-full object-cover md:h-full md:min-h-72 ${index % 2 ? "md:order-2" : ""}`} />
             <div className="flex flex-col justify-center p-6 sm:p-8">
               <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-copper)]">{String(index + 1).padStart(2, "0")}</p>
@@ -39,7 +39,7 @@ export default function ServicesPage() {
                   <li key={item}>{item}</li>
                 ))}
               </ul>
-              <p className="mt-4 text-sm text-[var(--color-pine)]">{service.suited}</p>
+              <p className="mt-4 text-sm text-[var(--color-lane)]">{service.suited}</p>
             </div>
           </article>
         ))}

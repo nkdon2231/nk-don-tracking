@@ -1,9 +1,35 @@
 export const PUBLIC_LINKS = [
   { href: "/services", label: "Services" },
+  { href: "/solutions", label: "Solutions" },
   { href: "/about", label: "About" },
+  { href: "/contact", label: "Support" },
+] as const;
+
+export const FOOTER_LINKS = [
+  ...PUBLIC_LINKS,
   { href: "/track", label: "Track" },
   { href: "/faq", label: "FAQ" },
-  { href: "/contact", label: "Contact" },
+] as const;
+
+export const SOLUTIONS = [
+  {
+    id: "courier",
+    title: "Courier and last mile",
+    summary: "Parcels, documents, and booked handovers that stay on one NKDON number from collection to signature.",
+    services: ["express_courier", "pickup_delivery", "secure_tracking"],
+  },
+  {
+    id: "freight",
+    title: "Freight and air",
+    summary: "Heavier movements — road, air, and cross-border loads — recorded as events, not as a separate file.",
+    services: ["international_freight", "air_cargo", "ground_transportation"],
+  },
+  {
+    id: "control",
+    title: "Storage, papers, and control",
+    summary: "Warehouse holds, customs papers, and consignment control, published only when staff release them.",
+    services: ["warehousing", "customs_documentation", "business_logistics", "consignment"],
+  },
 ] as const;
 
 export const SERVICES = [

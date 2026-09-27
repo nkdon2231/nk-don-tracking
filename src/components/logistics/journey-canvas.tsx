@@ -143,10 +143,10 @@ function Markers({
         const angle = -0.95 + (index / Math.max(1, markers.length - 1)) * 1.9;
         const color =
           marker.state === "current" || marker.state === "alert"
-            ? "#d08a5a"
+            ? "#ffb703"
             : marker.state === "done"
-              ? "#8fbfa8"
-              : "#355248";
+              ? "#3ec6c0"
+              : "#2c4158";
         const active = selected === marker.id;
         return (
           <mesh
@@ -184,7 +184,7 @@ function Globe({ points }: { points: RoutePoint[] }) {
     buffer.setAttribute("position", new BufferAttribute(positions, 3));
     return buffer;
   }, [points]);
-  const line = useMemo(() => new Line(geometry, new LineBasicMaterial({ color: "#e7c7ae" })), [geometry]);
+  const line = useMemo(() => new Line(geometry, new LineBasicMaterial({ color: "#ffb703" })), [geometry]);
 
   useEffect(() => {
     return () => {
@@ -197,7 +197,7 @@ function Globe({ points }: { points: RoutePoint[] }) {
     <group position={[1.35, 0.02, 0]}>
       <mesh>
         <sphereGeometry args={[radius, 28, 20]} />
-        <meshStandardMaterial color="#1b3330" roughness={0.72} metalness={0.18} />
+        <meshStandardMaterial color="#123049" roughness={0.72} metalness={0.18} />
       </mesh>
       {points.length > 1 ? <primitive object={line} /> : null}
       {points.map((point, index) => {
@@ -206,7 +206,7 @@ function Globe({ points }: { points: RoutePoint[] }) {
         return (
           <mesh key={`${point.role}-${index}`} position={[x, y, z]}>
             <sphereGeometry args={[emphasis ? 0.038 : 0.024, 10, 10]} />
-            <meshStandardMaterial color={point.role === "destination" ? "#f4efe6" : "#d08a5a"} />
+            <meshStandardMaterial color={point.role === "destination" ? "#e7eef6" : "#3ec6c0"} />
           </mesh>
         );
       })}
@@ -239,7 +239,7 @@ export function JourneyCanvas({
       gl={{ antialias: true, powerPreference: "high-performance", alpha: false }}
       style={{ width: "100%", height: "100%", touchAction: "none" }}
     >
-      <color attach="background" args={["#14241e"]} />
+      <color attach="background" args={["#071018"]} />
       <Refresh token={token} />
       <ambientLight intensity={0.62} />
       <directionalLight position={[3.2, 4.5, 2.4]} intensity={1.35} />

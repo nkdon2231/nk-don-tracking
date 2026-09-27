@@ -59,7 +59,7 @@ export function ContactForm() {
         <textarea name="message" required minLength={10} maxLength={4000} />
       </label>
       {error ? <p className="text-sm text-[#7a3e22]">{error}</p> : null}
-      {message ? <p className="text-sm text-[var(--color-pine)]">{message}</p> : null}
+      {message ? <p className="text-sm text-[var(--color-lane)]">{message}</p> : null}
       <button className="btn btn-primary" disabled={pending} type="submit">
         {pending ? "Sending…" : "Send to operations"}
       </button>

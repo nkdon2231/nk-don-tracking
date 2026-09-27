@@ -1,8 +1,8 @@
 export const BRAND = {
-  name: "NKDON Global Logistics",
+  name: "NKDON Tracking Logistics",
   short: "NKDON",
   tagline: "Moving what matters. Across borders. With confidence.",
-  positioning: "Global Logistics · Freight · Courier · Consignment · Shipment Tracking",
+  positioning: "Courier · Freight · Consignment",
 } as const;
 
 export const STATUSES = [

@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { ApiError, api } from "@/lib/client-api";
 import { can, ROLE_LABEL, type Action } from "@/lib/constants";
+import { BrandLockup } from "@/components/brand-mark";
 import type { SessionInfo, Staff } from "./types";
 
 const SessionContext = createContext<SessionInfo | null>(null);
@@ -75,8 +76,7 @@ export function AdminFrame({ children }: { children: ReactNode }) {
         <aside className="border-b border-white/10 bg-[var(--color-pine)] text-[var(--color-paper)] lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col lg:border-b-0 lg:border-r">
           <div className="flex items-end justify-between px-4 py-4 lg:block">
             <Link href="/admin" className="no-underline">
-              <span className="serif block text-2xl leading-none">NKDON</span>
-              <span className="mt-1 block text-[0.68rem] uppercase tracking-[0.16em] text-white/70">Operations desk</span>
+              <BrandLockup subtitle="Operations" />
             </Link>
             <div className="flex items-center gap-3 lg:block">
               <Link href="/" className="text-xs text-white/70 no-underline lg:mt-4 lg:inline-block">

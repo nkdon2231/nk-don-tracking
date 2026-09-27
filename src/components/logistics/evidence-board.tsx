@@ -58,7 +58,7 @@ export function EvidenceBoard({
               key={item.id}
               type="button"
               className={`rounded-full border px-3 py-1.5 text-sm whitespace-nowrap ${
-                active.id === item.id ? "border-[var(--color-ink)] bg-[var(--color-ink)] text-white" : "border-[var(--color-line)] bg-white"
+                active.id === item.id ? "border-[var(--color-copper)] bg-[var(--color-copper)] text-[#1a1203]" : "border-[var(--color-line)] bg-transparent"
               }`}
               onClick={() => onStage(item.id)}
             >
@@ -73,13 +73,13 @@ export function EvidenceBoard({
         {visible.map((item) => {
           const image = item.fileType.startsWith("image/");
           return (
-            <article key={item.key} className="grid gap-3 rounded-2xl border border-[var(--color-line)] bg-white p-3">
+            <article key={item.key} className="grid gap-3 rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3">
               {image ? (
                 <button type="button" className="overflow-hidden rounded-xl" onClick={() => setOpen(item)}>
                   <img src={item.href} alt="" className="h-40 w-full object-cover" loading="lazy" />
                 </button>
               ) : (
-                <div className="flex h-40 flex-col justify-between rounded-xl bg-[#14241e] p-4 text-[#f4efe6]">
+                <div className="flex h-40 flex-col justify-between rounded-xl bg-[#071018] p-4 text-[#e7eef6]">
                   <p className="text-xs uppercase tracking-[0.16em] text-[#e7c7ae]">Document</p>
                   <p className="serif text-3xl">PDF</p>
                   <a className="text-sm text-white" href={item.href} target="_blank" rel="noreferrer">
@@ -147,7 +147,7 @@ function Lightbox({
   }, [item.key]);
 
   return (
-    <div className="fixed inset-0 z-50 grid content-end bg-[#10211c]/92 p-3 text-[#f4efe6] sm:content-center sm:p-8" role="dialog" aria-modal="true" aria-label={item.title}>
+    <div className="fixed inset-0 z-50 grid content-end bg-[#071018]/94 p-3 text-[#f4f7fb] sm:content-center sm:p-8" role="dialog" aria-modal="true" aria-label={item.title}>
       <div className="mx-auto grid w-full max-w-5xl gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>

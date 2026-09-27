@@ -9,32 +9,35 @@ const featured = ["air_cargo", "international_freight", "warehousing", "pickup_d
 export default function HomePage() {
   const spotlight = SERVICES.filter((service) => featured.includes(service.value));
   return (
-    <PublicFrame>
-      <section className="mx-auto max-w-6xl px-4 pt-6">
-        <div className="relative min-h-[34rem] overflow-hidden rounded-[1.8rem] bg-[var(--color-pine)]">
-          <img src="/images/hero.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#10211c] via-[#10211c]/88 to-[#10211c]/25" />
-          <div className="relative flex min-h-[34rem] max-w-xl flex-col justify-end p-7 text-[var(--color-paper)] sm:p-12">
-            <p className="text-xs uppercase tracking-[0.22em] text-[#e7c7ae]">{BRAND.positioning}</p>
-            <h1 className="serif mt-4 text-5xl leading-[0.95] sm:text-6xl">{BRAND.tagline}</h1>
-            <p className="mt-5 text-base leading-7 text-white/80">
-              Parcels, documents, freight, and consignments stay on one NKDON record. Customers follow the tracking number. The operational file stays with staff.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link className="btn btn-copper" href="/track">
-                Track a shipment
-              </Link>
-              <Link className="btn border border-white/30 text-white" href="/services">
-                View services
-              </Link>
-            </div>
+    <PublicFrame hero>
+      <section className="relative min-h-[92vh] overflow-hidden">
+        <img src="/images/hero.jpg" alt="" className="nk-hero-image absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#071018] via-[#071018]/82 to-[#071018]/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#071018] via-[#071018]/15 to-[#071018]/55" />
+        <div className="relative mx-auto flex min-h-[92vh] max-w-6xl flex-col justify-end px-4 pb-16 pt-32">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--color-lane)]">{BRAND.positioning}</p>
+          <h1 className="mt-5">
+            <span className="brand-hero-name">NKDON</span>
+            <span className="brand-hero-sub">Tracking Logistics</span>
+          </h1>
+          <p className="mt-6 max-w-xl text-lg leading-8 text-white/80">{BRAND.tagline}</p>
+          <p className="mt-3 max-w-xl text-sm leading-6 text-white/65">
+            Parcels, documents, freight, and consignments stay on one record. Customers follow the tracking number. The operational file stays with staff.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link className="btn btn-primary" href="/track">
+              Track a shipment
+            </Link>
+            <Link className="btn btn-ghost" href="/services">
+              View services
+            </Link>
           </div>
         </div>
       </section>
-      <section className="mx-auto max-w-6xl px-4 py-8">
+      <section className="relative z-10 mx-auto -mt-10 max-w-6xl px-4">
         <TrackPanel />
       </section>
-      <section className="mx-auto grid max-w-6xl gap-4 px-4 pb-6 md:grid-cols-3">
+      <section className="mx-auto grid max-w-6xl gap-4 px-4 py-10 md:grid-cols-3">
         {STEPS.map((step, index) => (
           <article key={step.title} className="card p-5">
             <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-copper)]">0{index + 1}</p>
@@ -43,16 +46,16 @@ export default function HomePage() {
           </article>
         ))}
       </section>
-      <section className="mx-auto max-w-6xl px-4 py-8">
+      <section className="mx-auto max-w-6xl px-4 py-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <h2 className="serif text-4xl">Movements we book</h2>
-          <Link href="/services" className="text-sm">
+          <Link href="/services" className="text-sm text-[var(--color-lane)] no-underline">
             All services
           </Link>
         </div>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           {spotlight.map((service) => (
-            <Link key={service.value} href={`/services#${service.value}`} className="group overflow-hidden rounded-[1.4rem] bg-white no-underline">
+            <Link key={service.value} href={`/services#${service.value}`} className="card group overflow-hidden no-underline">
               <img src={service.image} alt={service.alt} className="h-52 w-full object-cover" />
               <div className="p-5">
                 <h3 className="font-semibold">{service.label}</h3>
@@ -62,7 +65,7 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-      <section className="mx-auto grid max-w-6xl items-center gap-6 px-4 py-10 lg:grid-cols-2">
+      <section className="mx-auto grid max-w-6xl items-center gap-6 px-4 py-12 lg:grid-cols-2">
         <img src="/images/documents.jpg" alt="Shipping documents prepared for a consignment" className="h-80 w-full rounded-[1.6rem] object-cover" />
         <div>
           <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-copper)]">Evidence</p>
@@ -75,26 +78,26 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
-      <section className="mx-auto max-w-6xl px-4 pb-14">
-        <div className="grid gap-6 rounded-[1.5rem] bg-white p-6 sm:grid-cols-3 sm:p-8">
+      <section className="mx-auto max-w-6xl px-4 pb-16">
+        <div className="card grid gap-6 p-6 sm:grid-cols-3 sm:p-8">
           <div>
             <h2 className="serif text-2xl">Book</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">Tell operations what is moving. The number comes back from the desk.</p>
-            <Link className="mt-3 inline-block text-sm font-semibold" href="/contact">
+            <Link className="mt-3 inline-block text-sm font-semibold text-[var(--color-copper)] no-underline" href="/contact">
               Request a movement
             </Link>
           </div>
           <div>
             <h2 className="serif text-2xl">Follow</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">Enter NKD-YYYYMMDD-XXXX. Names and internal notes are not on that page.</p>
-            <Link className="mt-3 inline-block text-sm font-semibold" href="/track">
+            <Link className="mt-3 inline-block text-sm font-semibold text-[var(--color-copper)] no-underline" href="/track">
               Open tracking
             </Link>
           </div>
           <div>
             <h2 className="serif text-2xl">Ask</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">Number format, public files, and what the contact form does not send.</p>
-            <Link className="mt-3 inline-block text-sm font-semibold" href="/faq">
+            <Link className="mt-3 inline-block text-sm font-semibold text-[var(--color-copper)] no-underline" href="/faq">
               Read the FAQ
             </Link>
           </div>

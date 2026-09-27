@@ -120,7 +120,7 @@ export function TrackPanel({ initialNumber = "" }: { initialNumber?: string }) {
           {pending ? "Looking up…" : "Track shipment"}
         </button>
       </form>
-      {error ? <p className="rounded-xl bg-[#f8e7dc] px-4 py-3 text-sm text-[#7a3e22]">{error}</p> : null}
+      {error ? <p className="rounded-xl border border-[#8a4a32] bg-[#2a1814] px-4 py-3 text-sm text-[#ffd0c2]">{error}</p> : null}
       {!result && !error && !pending ? (
         <p className="text-sm text-[var(--color-muted)]">Use the number issued by NKDON. It looks like NKD-YYYYMMDD-XXXX.</p>
       ) : null}
@@ -162,7 +162,7 @@ function TrackingResult({
           </div>
           <StatusPill status={result.status} />
         </div>
-        {result.isDemo ? <p className="mt-3 text-sm text-[#7a3e22]">TEST / DEMO. This is not a customer shipment.</p> : null}
+        {result.isDemo ? <p className="mt-3 text-sm text-[#ffd0c2]">TEST / DEMO. This is not a customer shipment.</p> : null}
         <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <dt className="text-[var(--color-muted)]">Service</dt>
@@ -236,7 +236,7 @@ function TrackingResult({
         <RecordedRouteView points={result.route?.points ?? []} />
       </div>
       {result.status === "exception" || result.status === "cancelled" ? (
-        <p className="rounded-xl bg-[#f8e7dc] px-4 py-3 text-sm text-[#7a3e22]">
+        <p className="rounded-xl border border-[#8a4a32] bg-[#2a1814] px-4 py-3 text-sm text-[#ffd0c2]">
           This shipment is {result.statusLabel.toLowerCase()}. It is off the usual path. The events below are the record.
         </p>
       ) : (
@@ -248,9 +248,9 @@ function TrackingResult({
                 key={step.status}
                 className={`rounded-xl border px-2 py-3 text-center text-[0.7rem] leading-4 ${
                   step.current
-                    ? "border-[var(--color-copper)] bg-white"
+                    ? "border-[var(--color-copper)] bg-[color:rgba(255,183,3,0.14)]"
                     : step.occurred
-                      ? "border-[var(--color-pine)] bg-[#e7f0eb]"
+                      ? "border-[var(--color-lane)] bg-[color:rgba(62,198,192,0.12)]"
                       : "border-[var(--color-line)] text-[var(--color-muted)]"
                 }`}
               >

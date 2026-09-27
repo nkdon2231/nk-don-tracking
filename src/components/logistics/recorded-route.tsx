@@ -41,19 +41,19 @@ function layout(points: RoutePoint[]) {
 }
 
 const ROLE_COLOR: Record<RoutePoint["role"], string> = {
-  origin: "#e7c7ae",
-  recorded: "#8fbfa8",
-  current: "#d08a5a",
-  destination: "#f7f3ea",
+  origin: "#3ec6c0",
+  recorded: "#8fd0ea",
+  current: "#ffb703",
+  destination: "#e7eef6",
 };
 
 export function RecordedRoute({ points }: { points: RoutePoint[] }) {
   const drawn = points.length ? layout(points) : null;
   return (
-    <section className="min-w-0 overflow-hidden rounded-[1.4rem] bg-[#14241e] text-[#f4efe6]">
+    <section className="min-w-0 overflow-hidden rounded-[1.4rem] bg-[#0c1a2c] text-[#e7eef6]">
       <div className="flex items-start justify-between gap-3 px-5 pt-5">
         <div>
-          <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[#e7c7ae]">Recorded route</p>
+          <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[var(--color-copper)]">Recorded route</p>
           <h3 className="serif text-2xl">Locations on the file</h3>
         </div>
         <p className="text-right text-[0.68rem] uppercase tracking-[0.14em] text-white/55">Not live GPS</p>
@@ -68,14 +68,14 @@ export function RecordedRoute({ points }: { points: RoutePoint[] }) {
           ))}
           <polyline
             fill="none"
-            stroke="#e7c7ae"
+            stroke="#ffb703"
             strokeWidth="1.6"
             points={drawn.placed.map((point) => `${point.x},${point.y}`).join(" ")}
           />
           {drawn.placed.map((point) => (
             <g key={`${point.role}-${point.index}`}>
               <circle cx={point.x} cy={point.y} r={point.role === "current" || point.role === "destination" ? 7 : 5} fill={ROLE_COLOR[point.role]} />
-              <text x={point.x + 10} y={point.y - 8} fill="#f4efe6" fontSize="11">
+              <text x={point.x + 10} y={point.y - 8} fill="#e7eef6" fontSize="11">
                 {point.index + 1}
               </text>
             </g>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState, type ReactNode } from "react";
+import { BrandLockup } from "@/components/brand-mark";
 import { ApiError, api } from "@/lib/client-api";
 import { Banner } from "./ui";
 
@@ -61,16 +62,16 @@ export function AuthSplit({ title, lede, children }: { title: string; lede: stri
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="relative hidden min-h-screen lg:block">
         <img src="/images/control.jpg" alt="" className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#142820] via-[#1d3b32]/55 to-[#1d3b32]/15" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#071018] via-[#071018]/55 to-[#10263c]/20" />
         <div className="absolute bottom-10 left-10 right-10 text-[var(--color-paper)]">
-          <p className="text-xs uppercase tracking-[0.2em] text-white/70">NKDON Global Logistics</p>
-          <p className="serif mt-2 text-5xl leading-none">The desk stays private.</p>
+          <BrandLockup />
+          <p className="serif mt-6 text-5xl leading-none">The desk stays private.</p>
         </div>
       </div>
       <div className="flex items-center justify-center px-5 py-14">
         <div className="w-full max-w-md">
-          <Link href="/" className="text-xs uppercase tracking-[0.16em] text-[var(--color-muted)] no-underline">
-            NKDON
+          <Link href="/" className="no-underline">
+            <BrandLockup />
           </Link>
           <h1 className="serif mt-3 text-4xl">{title}</h1>
           <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">{lede}</p>

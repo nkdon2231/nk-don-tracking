@@ -39,10 +39,10 @@ export function ShipmentJourney({
   }
 
   return (
-    <section className="min-w-0 overflow-hidden rounded-[1.4rem] bg-[#14241e] text-[#f4efe6]">
+    <section className="min-w-0 overflow-hidden rounded-[1.4rem] bg-[#0c1a2c] text-[#e7eef6]">
       <div className="flex items-start justify-between gap-3 px-5 pt-5">
         <div>
-          <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[#e7c7ae]">Shipment model</p>
+          <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[var(--color-copper)]">Shipment model</p>
           <h3 className="serif text-2xl">Status, not a simulation</h3>
         </div>
         <p className="max-w-[9rem] text-right text-[0.68rem] uppercase tracking-[0.14em] text-white/55">

@@ -5,10 +5,10 @@ export const PASSWORD_HINT = "At least 12 characters, with an uppercase letter, 
 export function Banner({ tone = "warn", children }: { tone?: "warn" | "ok" | "muted"; children: ReactNode }) {
   const toneClass =
     tone === "ok"
-      ? "border-[#c9dfd2] bg-[#e5f2ea] text-[#1d3b32]"
+      ? "border-[#1d6b62] bg-[#0e2a28] text-[#b7f3ee]"
       : tone === "muted"
-        ? "border-[var(--color-line)] bg-white text-[var(--color-muted)]"
-        : "border-[#efd2c2] bg-[#f8e7dc] text-[#7a3e22]";
+        ? "border-[var(--color-line)] bg-[var(--color-panel)] text-[var(--color-muted)]"
+        : "border-[#8a4a32] bg-[#2a1814] text-[#ffd0c2]";
   return <p className={`rounded-2xl border px-4 py-3 text-sm leading-6 ${toneClass}`}>{children}</p>;
 }
 
