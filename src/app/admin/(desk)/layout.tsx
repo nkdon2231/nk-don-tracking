@@ -11,6 +11,7 @@ export default async function DeskLayout({ children }: { children: ReactNode }) 
     await ensureReady();
     const user = await currentUser();
     if (!user) redirect("/admin/login?reason=expired");
+    if (user.mustChangePassword) redirect("/admin/password");
   } catch (error) {
     if (error instanceof HttpError) {
       return (

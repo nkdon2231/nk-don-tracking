@@ -87,6 +87,9 @@ export const runtime = "nodejs";
 async function actor(request: Request, action?: Action) {
   const user = await userFromToken(readCookie(request, "nkdon_session"));
   if (!user) throw new HttpError(401, "unauthorized", "Sign in to continue.");
+  if (user.mustChangePassword) {
+    throw new HttpError(403, "password_change_required", "Change the temporary password before using the desk.");
+  }
   if (action) assertCan(user, action);
   return user;
 }
@@ -637,8 +640,8 @@ export async function PATCH(request: Request, context: { params: Promise<{ path:
         }
       }
       await query(
-        "update admin_users set name = coalesce($2, name), role = $3, is_active = $4, password_hash = $5 where id = $1",
-        [target.id, input.name ?? null, nextRole, nextActive, passwordHash],
+        "update admin_users set name = coalesce($2, name), role = $3, is_active = $4, password_hash = $5, must_change_password = case when $6 then false else must_change_password end where id = $1",
+        [target.id, input.name ?? null, nextRole, nextActive, passwordHash, Boolean(input.password)],
       );
       if (input.password) {
         await query("update admin_sessions set revoked_at = now() where user_id = $1 and revoked_at is null", [target.id]);
@@ -660,12 +663,22 @@ export async function PATCH(request: Request, context: { params: Promise<{ path:
         if (row?.auth_provider === "supabase") {
           const ok = await verifyCredentials(user.email, current);
           if (!ok) return jsonError(401, "invalid_login", "The current password is incorrect.");
+          if (await verifyCredentials(user.email, parsed.data.password)) {
+            return jsonError(400, "invalid_input", "Choose a different password from the temporary one.");
+          }
           await updateSupabasePassword(user.id, parsed.data.password);
+          await query("update admin_users set must_change_password = false where id = $1", [user.id]);
         } else {
           return jsonError(401, "invalid_login", "The current password is incorrect.");
         }
       } else {
-        await query("update admin_users set password_hash = $2 where id = $1", [user.id, await hashPassword(parsed.data.password)]);
+        if (await verifyPassword(parsed.data.password, row.password_hash)) {
+          return jsonError(400, "invalid_input", "Choose a different password from the temporary one.");
+        }
+        await query("update admin_users set password_hash = $2, must_change_password = false where id = $1", [
+          user.id,
+          await hashPassword(parsed.data.password),
+        ]);
       }
       await audit({ ...meta(request, user), action: "password_changed", resource: "user", resourceId: user.id });
       await query("update admin_sessions set revoked_at = now() where user_id = $1 and revoked_at is null", [user.id]);

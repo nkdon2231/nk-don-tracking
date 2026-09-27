@@ -48,6 +48,10 @@ export function AdminFrame({ children }: { children: ReactNode }) {
           router.replace(`/admin/login?${params.toString()}`);
           return;
         }
+        if (data.user.mustChangePassword) {
+          router.replace("/admin/password");
+          return;
+        }
         setSession(data);
       })
       .catch((caught) => {

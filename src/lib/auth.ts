@@ -19,6 +19,7 @@ export type StaffUser = {
   role: Role;
   isActive: boolean;
   authProvider: "local" | "supabase";
+  mustChangePassword: boolean;
 };
 
 type UserRow = {
@@ -29,6 +30,7 @@ type UserRow = {
   is_active: boolean;
   auth_provider: "local" | "supabase";
   password_hash: string | null;
+  must_change_password?: boolean;
 };
 
 export function demoSeedAllowed() {
@@ -67,6 +69,7 @@ function mapUser(row: UserRow): StaffUser {
     role: row.role,
     isActive: row.is_active,
     authProvider: row.auth_provider,
+    mustChangePassword: row.must_change_password === true,
   };
 }
 
@@ -133,7 +136,7 @@ export async function revokeSession(token: string) {
 export async function userFromToken(token: string | undefined | null): Promise<StaffUser | null> {
   if (!token || token.length < 32) return null;
   const rows = await query<UserRow & { session_id: string; last_seen_at: string; session_created_at: string }>(
-    `select u.id, u.email, u.name, u.role, u.is_active, u.auth_provider, u.password_hash,
+    `select u.id, u.email, u.name, u.role, u.is_active, u.auth_provider, u.password_hash, u.must_change_password,
             s.id as session_id, s.last_seen_at, s.created_at as session_created_at
      from admin_sessions s
      join admin_users u on u.id = s.user_id

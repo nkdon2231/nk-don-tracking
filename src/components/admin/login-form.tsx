@@ -18,11 +18,11 @@ export function LoginForm({ nextPath, notice = "" }: { nextPath: string; notice?
     setPending(true);
     setError("");
     try {
-      await api("/api/admin/auth/login", {
+      const data = await api<{ user?: { mustChangePassword?: boolean } }>("/api/admin/auth/login", {
         method: "POST",
         body: JSON.stringify({ email: form.get("email"), password: form.get("password") }),
       });
-      router.replace(nextPath);
+      router.replace(data.user?.mustChangePassword ? "/admin/password" : nextPath);
       router.refresh();
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : "Sign-in failed.");

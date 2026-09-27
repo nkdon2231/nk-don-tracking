@@ -7,6 +7,7 @@ export type Staff = {
   role: Role;
   isActive: boolean;
   authProvider: "local" | "supabase";
+  mustChangePassword: boolean;
 };
 
 export type SessionInfo = {
