@@ -3,6 +3,7 @@ import { promisify } from "node:util";
 import { cookies } from "next/headers";
 import { can, type Action, type Role } from "./constants";
 import { query } from "./db";
+import { supabaseAnonKey, supabaseServiceRoleKey, supabaseUrl } from "./env";
 import { HttpError } from "./http";
 
 const scryptAsync = promisify(scrypt);
@@ -175,10 +176,10 @@ export async function verifyCredentials(email: string, password: string) {
 }
 
 async function verifySupabasePassword(email: string, password: string) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const url = supabaseUrl();
+  const anon = supabaseAnonKey();
   if (!url || !anon) return false;
-  const response = await fetch(`${url.replace(/\/$/, "")}/auth/v1/token?grant_type=password`, {
+  const response = await fetch(`${url}/auth/v1/token?grant_type=password`, {
     method: "POST",
     headers: {
       apikey: anon,
@@ -190,10 +191,10 @@ async function verifySupabasePassword(email: string, password: string) {
 }
 
 export async function createSupabaseUser(email: string, password: string, name: string) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const service = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = supabaseUrl();
+  const service = supabaseServiceRoleKey();
   if (!url || !service) return null;
-  const response = await fetch(`${url.replace(/\/$/, "")}/auth/v1/admin/users`, {
+  const response = await fetch(`${url}/auth/v1/admin/users`, {
     method: "POST",
     headers: {
       apikey: service,
