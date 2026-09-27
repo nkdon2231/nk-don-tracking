@@ -10,3 +10,6 @@ tsconfig.tsbuildinfo
 coverage
 .vercel
 supabase/.temp
+.open-next
+.wrangler
+.dev.vars*

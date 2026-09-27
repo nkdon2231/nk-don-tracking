@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 8080",
-    "build": "next build",
+    "build": "node scripts/pin-cloudflare-worker.mjs && next build",
     "start": "next start -H 0.0.0.0 -p 8080",
     "typecheck": "tsc --noEmit"
   },
@@ -22,6 +22,7 @@
     "zod": "^3.25.67"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.20.6",
     "@tailwindcss/postcss": "^4.1.12",
     "@types/node": "^22.16.5",
     "@types/pg": "^8.15.5",
@@ -29,6 +30,7 @@
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
     "tailwindcss": "^4.1.12",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "wrangler": "^4.141.0"
   }
 }

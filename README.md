@@ -2,7 +2,7 @@
 
 Production platform for shipment management, public tracking, and operations.
 
-This repository’s default branch still contains the previous static tracking site and is intentionally unchanged. New work lives on `nkdon-global-logistics-rebuild`.
+The Next.js application is the production app on `main`. The original static pages remain in the repository and are not the Cloudflare Worker.
 
 ## Stack
 
