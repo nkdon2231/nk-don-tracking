@@ -301,28 +301,27 @@ async function baselineState(name: string): Promise<{ state: "present" | "absent
 }
 
 async function preserveLegacyTables() {
-  const rows = await query<{ legacy: boolean }>(
-    `select (
-      to_regclass('public.shipments') is not null
-      and to_regclass('public.legacy_shipments') is null
-      and exists (
-        select 1 from information_schema.columns
-        where table_schema = 'public' and table_name = 'shipments' and column_name = 'package_description'
-      )
-      and not exists (
-        select 1 from information_schema.columns
-        where table_schema = 'public' and table_name = 'shipments' and column_name = 'public_description'
-      )
-    ) as legacy`,
-  );
-  if (!rows[0]?.legacy) return;
-  await withTransaction(async (q) => {
-    await q("alter table shipments rename to legacy_shipments");
-    await q("alter table if exists shipment_events rename to legacy_shipment_events");
-    await q("alter table if exists admin_users rename to legacy_admin_users");
-    await q("alter table if exists admin_activity rename to legacy_admin_activity");
-  });
-  console.log("[nkdon] preserved previous tables as legacy_shipments, legacy_shipment_events, legacy_admin_users, legacy_admin_activity");
+  await query(`
+    do $$
+    begin
+      if to_regclass('public.shipments') is not null
+         and to_regclass('public.legacy_shipments') is null
+         and exists (
+           select 1 from information_schema.columns
+           where table_schema = 'public' and table_name = 'shipments' and column_name = 'package_description'
+         )
+         and not exists (
+           select 1 from information_schema.columns
+           where table_schema = 'public' and table_name = 'shipments' and column_name = 'public_description'
+         )
+      then
+        execute 'alter table public.shipments rename to legacy_shipments';
+        execute 'alter table public.shipment_events rename to legacy_shipment_events';
+        execute 'alter table public.admin_users rename to legacy_admin_users';
+        execute 'alter table public.admin_activity rename to legacy_admin_activity';
+      end if;
+    end $$;
+  `);
 }
 
 async function recordExistingMigration(name: string) {
@@ -383,7 +382,18 @@ export async function migrate() {
       });
     } catch (error) {
       if (error instanceof HttpError) {
-        throw new HttpError(503, "migration_failed", `Migration ${name} failed (${error.message}).`);
+        let extra = "";
+        if (name === "0001_init.sql") {
+          try {
+            const tables = await query<{ table_name: string }>(
+              "select table_name from information_schema.tables where table_schema = 'public' order by table_name",
+            );
+            extra = ` Remaining tables: ${tables.map((row) => row.table_name).join(", ")}.`;
+          } catch {
+            extra = "";
+          }
+        }
+        throw new HttpError(503, "migration_failed", `Migration ${name} failed (${error.message}).${extra}`);
       }
       throw error;
     }
