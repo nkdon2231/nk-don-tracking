@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const message =
       saved.kind === "booking"
         ? "The pickup request is pending staff review. It is not a tracking number, and it does not confirm collection or a price. Email replies are not active yet."
-        : "The quote request is pending staff review. NKDON has not calculated a price. Email replies are not active yet.";
+        : "The quote request is pending staff review. QCORVAZENT has not calculated a price. Email replies are not active yet.";
     return jsonOk({ saved: true, kind: saved.kind, status: saved.status, message });
   });
 }

@@ -1,8 +1,10 @@
-# NKDON Global Logistics
+# QCORVAZENT International Courier & Express
 
-Shipment management, public tracking, and the operations desk for NKDON.
+Shipment management, public tracking, and the operations desk for QCORVAZENT.
 
-The Next.js application in this repository is the production app. The original static pages (`index.html`, `tracking.html`, `text.txt`) are kept and are not the live product.
+The Next.js application in this repository is the production app. It is deployed on the existing Vercel project. When the custom domain `qcorvazent.com` is connected later, set `NEXT_PUBLIC_SITE_URL=https://qcorvazent.com` and redeploy. Until then the current Vercel hostname remains the public site. Do not require the custom domain for the app to run.
+
+The original static pages (`index.html`, `tracking.html`, `text.txt`) are kept and are not the live product.
 
 ## Stack
 

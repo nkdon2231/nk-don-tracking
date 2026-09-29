@@ -47,13 +47,13 @@ export function assertSameOrigin(req: Request) {
   const origin = req.headers.get("origin");
   const host = req.headers.get("host");
   if (!origin || !host) {
-    throw new HttpError(403, "forbidden", "This action must be sent from the NKDON site.");
+    throw new HttpError(403, "forbidden", "This action must be sent from the QCORVAZENT site.");
   }
   let originHost = "";
   try {
     originHost = new URL(origin).host;
   } catch {
-    throw new HttpError(403, "forbidden", "This action must be sent from the NKDON site.");
+    throw new HttpError(403, "forbidden", "This action must be sent from the QCORVAZENT site.");
   }
   if (originHost !== host) {
     throw new HttpError(403, "forbidden", "Cross-origin request blocked.");

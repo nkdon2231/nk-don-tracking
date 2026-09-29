@@ -63,7 +63,7 @@ function LibraryBody({ documents }: { documents: boolean }) {
         <h1 className="serif text-4xl">{documents ? "Documents" : "Evidence"}</h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--color-muted)]">
           {documents
-            ? "Waybills, customs files, clearance papers, and signatures staff uploaded. NKDON does not generate government forms, stamps, or labels."
+            ? "Waybills, customs files, clearance papers, and signatures staff uploaded. QCORVAZENT does not generate government forms, stamps, or labels."
             : "Private files stored with a shipment. Upload from the shipment itself. A public link appears only after the file is marked public."}
         </p>
       </div>

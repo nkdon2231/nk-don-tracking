@@ -5,7 +5,7 @@ import { QUESTIONS } from "@/lib/site-content";
 
 export const metadata = {
   title: "FAQ",
-  description: "How NKDON tracking numbers, public updates, documents, and contact messages work.",
+  description: "How QCORVAZENT tracking numbers, public updates, documents, and contact messages work.",
 };
 
 export default function FaqPage() {

@@ -6,8 +6,8 @@
   --color-ink: #e7eef6;
   --color-pine: #10263c;
   --color-pine-2: #17324d;
-  --color-copper: #ffb703;
-  --color-lane: #3ec6c0;
+  --color-copper: #e6c98a;
+  --color-lane: #9fd4cf;
   --color-sand: #071018;
   --color-paper: #f4f7fb;
   --color-panel: #101c2e;
@@ -26,8 +26,8 @@ body {
   min-height: 100vh;
   overflow-x: clip;
   background:
-    radial-gradient(980px 460px at 100% -12%, rgba(62, 198, 192, 0.11), transparent 52%),
-    radial-gradient(760px 380px at -8% 0%, rgba(255, 183, 3, 0.08), transparent 48%),
+    radial-gradient(980px 460px at 100% -12%, rgba(159, 212, 207, 0.1), transparent 52%),
+    radial-gradient(760px 380px at -8% 0%, rgba(230, 201, 138, 0.09), transparent 48%),
     var(--color-sand);
   color: var(--color-ink);
   font-family: var(--font-outfit), Outfit, sans-serif;
@@ -63,8 +63,8 @@ button:disabled {
 }
 
 ::selection {
-  background: #ffb703;
-  color: #1a1203;
+  background: #e6c98a;
+  color: #1a1408;
 }
 
 [id] {
@@ -102,8 +102,8 @@ summary::-webkit-details-marker {
   display: block;
   font-family: var(--font-sora), Sora, sans-serif;
   font-weight: 700;
-  font-size: 1.08rem;
-  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
   line-height: 1;
 }
 
@@ -167,13 +167,13 @@ summary::-webkit-details-marker {
   }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 720px) {
   .brand-name {
-    font-size: 0.92rem;
-    letter-spacing: 0.06em;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
   }
   .brand-sub {
-    letter-spacing: 0.12em;
+    display: none;
   }
 }
 
@@ -289,9 +289,9 @@ summary::-webkit-details-marker {
 .home-hero-title {
   margin: 0.7rem 0 0;
   font-family: var(--font-sora), Sora, sans-serif;
-  font-size: clamp(3.4rem, 7.4vw, 6.6rem);
+  font-size: clamp(1.9rem, 6.2vw, 4.7rem);
   font-weight: 750;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.045em;
   line-height: 0.86;
   text-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 }
@@ -299,10 +299,10 @@ summary::-webkit-details-marker {
 .home-hero-title span {
   display: block;
   margin-top: 0.28rem;
-  color: #2ee0d4;
-  font-size: 0.34em;
+  color: #e6c98a;
+  font-size: 0.42em;
   font-weight: 700;
-  letter-spacing: 0.045em;
+  letter-spacing: 0.12em;
   line-height: 1.05;
   text-transform: uppercase;
 }
@@ -470,7 +470,7 @@ summary::-webkit-details-marker {
   }
 
   .home-hero-title {
-    font-size: clamp(2.8rem, 16vw, 4.4rem);
+    font-size: clamp(1.65rem, 8.2vw, 2.7rem);
   }
 }
 

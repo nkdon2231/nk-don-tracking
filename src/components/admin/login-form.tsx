@@ -33,7 +33,7 @@ export function LoginForm({ nextPath, notice = "" }: { nextPath: string; notice?
   return (
     <AuthSplit
       title="Staff sign in"
-      lede="Use the administrator account created for this NKDON desk. There is no shared default password."
+      lede="Use the administrator account for this QCORVAZENT desk. There is no shared default password."
     >
       <form className="grid gap-4" onSubmit={onSubmit}>
         <label className="field">

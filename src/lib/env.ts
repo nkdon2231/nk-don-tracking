@@ -2,7 +2,7 @@ import "server-only";
 
 // Server-only configuration. Do not import this file from client components.
 // Values are never logged. Names match the Vercel Supabase integration and the
-// variables already set on the NKDON Vercel project. Dynamic reads stay at
+// variables already set on the current Vercel project. Dynamic reads stay at
 // runtime so secrets are not inlined into the client bundle.
 
 function read(name: string) {

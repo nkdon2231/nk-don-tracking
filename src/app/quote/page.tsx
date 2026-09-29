@@ -5,7 +5,7 @@ import { SERVICE_TYPES } from "@/lib/constants";
 
 export const metadata = {
   title: "Get a quote",
-  description: "Ask NKDON Global Logistics to review a shipment. The site does not calculate a price.",
+  description: "Ask QCORVAZENT to review an international shipment from Dubai. The site does not calculate a price.",
 };
 
 export default async function QuotePage({ searchParams }: { searchParams: Promise<{ service?: string }> }) {
@@ -18,7 +18,7 @@ export default async function QuotePage({ searchParams }: { searchParams: Promis
           <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-copper)]">Get a quote</p>
           <h1 className="serif mt-3 text-5xl leading-[0.95]">Ask the desk to price the movement.</h1>
           <p className="mt-4 leading-7 text-[var(--color-muted)]">
-            NKDON does not run an automatic price. The form saves a pending request. Staff reply from the operations queue. Email delivery is not active, so do not wait for an automatic message.
+            QCORVAZENT does not run an automatic price. The form saves a pending request for an international courier or express movement. Staff reply from the operations queue. Email delivery is not active, so do not wait for an automatic message.
           </p>
           <p className="mt-4 text-sm leading-6">
             Need the goods collected? <Link href="/book">Request a pickup</Link> instead. That still waits for staff before a tracking number exists.

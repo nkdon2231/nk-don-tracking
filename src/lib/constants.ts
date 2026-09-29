@@ -1,8 +1,9 @@
 export const BRAND = {
-  name: "NKDON Global Logistics",
-  short: "NKDON",
-  tagline: "Moving what matters. Across borders. With confidence.",
-  positioning: "Courier · Freight · Consignment",
+  name: "QCORVAZENT",
+  short: "QCORVAZENT",
+  legal: "QCORVAZENT International Courier & Express",
+  tagline: "International courier and express from Dubai.",
+  positioning: "Dubai · International Courier · Express",
 } as const;
 
 export const SUPPORT_EMAIL = "bennethmayor@hotmail.com";

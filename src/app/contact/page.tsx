@@ -6,7 +6,7 @@ import { publicCompany } from "@/server/public-profile";
 
 export const metadata = {
   title: "Contact",
-  description: "Send a pickup, quote, or tracking question to the NKDON operations desk.",
+  description: "Send a pickup, quote, or tracking question to the QCORVAZENT operations desk.",
 };
 
 export default async function ContactPage({ searchParams }: { searchParams: Promise<{ topic?: string; number?: string }> }) {

@@ -30,7 +30,7 @@ export async function seedDemo() {
       'DEMO — Sample Sorting Desk',
       'DEMO-SORT-01',
       'Sorting Center',
-      'TEST / DEMO DATA. Not a real NKDON facility.',
+      'TEST / DEMO DATA. Not a real QCORVAZENT facility.',
       'Sample City',
       '',
       'Demo',

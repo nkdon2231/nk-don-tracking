@@ -320,8 +320,8 @@ export async function getSettings() {
   const row = rows[0];
   if (!row) {
     return {
-      companyName: "NKDON Global Logistics",
-      tagline: "Moving what matters. Across borders. With confidence.",
+      companyName: "QCORVAZENT",
+      tagline: "International Courier & Express",
       phone: "",
       email: "",
       address: "",
@@ -1514,7 +1514,7 @@ export async function estimateTransit(input: { serviceType: string; originCountr
   if (!row) {
     return {
       available: false as const,
-      message: "NKDON has not published a transit window for this lane. Staff confirmation is required before any delivery date is given. This is not a price.",
+      message: "QCORVAZENT has not published a transit window for this lane. Staff confirmation is required before any delivery date is given. This is not a price.",
     };
   }
   const min = Number(row.transit_min_days);

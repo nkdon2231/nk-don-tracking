@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const service = SERVICES.find((item) => item.value === slug);
   return {
     title: service?.label ?? "Service",
-    description: service?.summary ?? "An NKDON service.",
+    description: service?.summary ?? "A QCORVAZENT service.",
   };
 }
 

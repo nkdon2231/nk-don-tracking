@@ -4,7 +4,7 @@ import { SERVICES, SOLUTIONS } from "@/lib/site-content";
 
 export const metadata = {
   title: "Solutions",
-  description: "Courier, freight, air, warehousing, and customs movements booked as one NKDON record.",
+  description: "Courier, freight, air, warehousing, and customs movements booked as one QCORVAZENT record.",
 };
 
 export default function SolutionsPage() {
@@ -14,7 +14,7 @@ export default function SolutionsPage() {
         <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-copper)]">Solutions</p>
         <h1 className="serif mt-3 max-w-3xl text-5xl leading-[0.95] sm:text-6xl">One record. Three ways a movement is booked.</h1>
         <p className="mt-5 max-w-2xl text-lg leading-8 text-[var(--color-muted)]">
-          These are groupings of the services NKDON already books. They are not extra products, and they do not add offices, fleets, or people that are not on the file.
+          These are groupings of the services QCORVAZENT already books. They are not extra products, and they do not add offices, fleets, or people that are not on the file.
         </p>
       </section>
       <section className="mx-auto grid max-w-6xl gap-5 px-4 pb-16">

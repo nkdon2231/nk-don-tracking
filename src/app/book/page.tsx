@@ -5,7 +5,7 @@ import { SERVICE_TYPES } from "@/lib/constants";
 
 export const metadata = {
   title: "Request a pickup",
-  description: "Ask NKDON to review a pickup. A tracking number is issued only after staff open the shipment.",
+  description: "Ask QCORVAZENT to review a pickup. A tracking number is issued only after staff open the shipment.",
 };
 
 export default async function BookPage({ searchParams }: { searchParams: Promise<{ service?: string }> }) {
@@ -18,7 +18,7 @@ export default async function BookPage({ searchParams }: { searchParams: Promise
           <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-copper)]">Shipment request</p>
           <h1 className="serif mt-3 text-5xl leading-[0.95]">Request a pickup. Staff confirm it.</h1>
           <p className="mt-4 leading-7 text-[var(--color-muted)]">
-            The recipient name has to be yours to give. Operations will not invent one. If they open the shipment, its first status is pickup scheduled, and that is when the NKDON number exists.
+            The recipient name has to be yours to give. Operations will not invent one. If they open the shipment, its first status is pickup scheduled, and that is when the QCORVAZENT tracking number exists.
           </p>
           <p className="mt-4 text-sm leading-6">
             Only pricing so far? <Link href="/quote">Get a quote</Link>. Already booked? <Link href="/track">Track the number</Link>.

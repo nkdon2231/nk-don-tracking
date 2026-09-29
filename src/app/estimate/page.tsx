@@ -4,7 +4,7 @@ import { PublicFrame } from "@/components/site-chrome";
 
 export const metadata = {
   title: "Delivery window",
-  description: "Check a transit window only when NKDON staff have published one for that lane.",
+  description: "Check a transit window only when QCORVAZENT staff have published one for that lane.",
 };
 
 export default function EstimatePage() {

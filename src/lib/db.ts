@@ -374,7 +374,7 @@ async function recordExistingMigration(name: string) {
   if (name === "0001_init.sql") {
     await query(
       `insert into company_settings (id, company_name, tagline)
-       values (1, 'NKDON Global Logistics', 'Moving what matters. Across borders. With confidence.')
+       values (1, 'QCORVAZENT', 'International Courier & Express')
        on conflict (id) do nothing`,
     );
   }

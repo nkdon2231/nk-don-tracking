@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, api } from "@/lib/client-api";
-import { DOCUMENT_EVIDENCE, HAPPY_PATH } from "@/lib/constants";
+import { BRAND, DOCUMENT_EVIDENCE, HAPPY_PATH } from "@/lib/constants";
 import { formatWhen } from "@/lib/format";
 import { journeyMarkers, type EvidenceStageId } from "@/lib/stages";
 import type { RecordedRoute } from "@/lib/route";
@@ -170,7 +170,7 @@ export function TrackPanel({ initialNumber = "" }: { initialNumber?: string }) {
         </div>
       ) : null}
       {!result && !error && !pending ? (
-        <p className="text-sm text-[var(--color-muted)]">Use the number issued by NKDON. It looks like NKD-YYYYMMDD-XXXX.</p>
+        <p className="text-sm text-[var(--color-muted)]">Use the number issued by {BRAND.short}. It looks like NKD-YYYYMMDD-XXXX.</p>
       ) : null}
       {pending && !result ? <p className="text-sm text-[var(--color-muted)]">Looking up the shipment…</p> : null}
       {result ? <TrackingResult result={result} stage={stage} onStage={setStage} /> : null}
@@ -232,7 +232,7 @@ function TrackingResult({
   return (
     <article className="grid min-w-0 gap-5">
       <header className="card p-5">
-        <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-muted)]">NKDON Global Logistics</p>
+        <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-muted)]">{BRAND.legal}</p>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-copper)]">Tracking</p>
@@ -374,7 +374,7 @@ function TrackingResult({
         <section className="card p-5">
           <h3 className="serif text-2xl">Documents</h3>
           <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
-            Public waybills, customs files, clearance papers, and signatures. PDFs open in a new tab. NKDON does not generate official forms.
+            Public waybills, customs files, clearance papers, and signatures. PDFs open in a new tab. QCORVAZENT does not generate official forms.
           </p>
           <ul className="mt-4 grid gap-2 text-sm">
             {documents.map((file) => (

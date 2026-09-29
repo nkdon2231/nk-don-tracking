@@ -15,11 +15,11 @@ export default function HomePage() {
         <div className="home-hero-copy">
           <p className="home-hero-kicker">{BRAND.positioning}</p>
           <h1 className="home-hero-title">
-            NKDON
-            <span>Global Logistics</span>
+            {BRAND.short}
+            <span>International Courier & Express</span>
           </h1>
           <p className="home-hero-lead">
-            Parcels, documents, freight, and consignments stay on one record. Staff open the shipment. You follow the tracking number they issue.
+            International courier and express from Dubai to the destination on the file. Staff open the shipment. You follow the tracking number they issue. A lane is a planning window, not a guarantee.
           </p>
         </div>
         <div className="home-hero-track-wrap">

@@ -4,7 +4,7 @@ import { SERVICES } from "@/lib/site-content";
 
 export const metadata = {
   title: "Services",
-  description: "Express courier, international freight, air cargo, warehousing, customs papers, and consignment tracking from NKDON.",
+  description: "Express courier, international freight, air cargo, warehousing, customs papers, and consignment tracking from QCORVAZENT.",
 };
 
 export default function ServicesPage() {

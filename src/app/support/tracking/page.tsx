@@ -5,7 +5,7 @@ import { STATUS_HELP } from "@/lib/site-content";
 
 export const metadata = {
   title: "Tracking help",
-  description: "How to find an NKDON tracking number, what each status means, and what to do if it has not updated.",
+  description: "How to find a QCORVAZENT tracking number, what each status means, and what to do if it has not updated.",
 };
 
 export default function TrackingHelpPage() {

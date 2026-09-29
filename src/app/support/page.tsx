@@ -5,7 +5,7 @@ import { SERVICES } from "@/lib/site-content";
 
 export const metadata = {
   title: "Support",
-  description: "Shipment support, tracking help, quotes, and customs questions for NKDON Global Logistics.",
+  description: "Shipment support, tracking help, quotes, and customs questions for QCORVAZENT International Courier & Express.",
 };
 
 const PATHS = [
@@ -17,7 +17,7 @@ const PATHS = [
   {
     href: "/contact?topic=Tracking%20assistance",
     title: "Shipment support",
-    copy: "Send the NKDON number and what you expected to see. Staff read it in Messages.",
+    copy: "Send the tracking number and what you expected to see. Staff read it in Messages.",
   },
   {
     href: "/support/tracking",
@@ -64,7 +64,7 @@ export default function SupportPage() {
         <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-copper)]">Support</p>
         <h1 className="serif mt-3 max-w-3xl text-5xl leading-[0.95]">Help that reaches the desk, or explains the record.</h1>
         <p className="mt-4 max-w-2xl leading-7 text-[var(--color-muted)]">
-          NKDON Global Logistics does not run a chatbot and does not send automatic status mail. Use a form when a person needs to see the question. Use the guides when the answer is how the record works.
+          QCORVAZENT does not run a chatbot and does not send automatic status mail. Use a form when a person needs to see the question. Use the guides when the answer is how the record works.
         </p>
         <p className="mt-6 text-sm leading-6">
           <span className="block text-xs uppercase tracking-[0.14em] text-[var(--color-copper)]">Customer Support Email</span>

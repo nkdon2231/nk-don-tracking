@@ -8,8 +8,16 @@ const sans = Outfit({ subsets: ["latin"], variable: "--font-outfit", weight: ["4
 const display = Sora({ subsets: ["latin"], variable: "--font-sora", weight: ["500", "600", "700"] });
 
 export const metadata: Metadata = {
-  title: { default: BRAND.name, template: `%s · ${BRAND.short}` },
-  description: "Courier, freight, and consignment tracking from NKDON Global Logistics.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://nk-don-tracking.vercel.app"),
+  title: { default: `${BRAND.legal}`, template: `%s · ${BRAND.short}` },
+  description: "QCORVAZENT is an international courier and express desk shipping from Dubai. Follow a shipment with the tracking number staff issued.",
+  applicationName: BRAND.name,
+  openGraph: {
+    title: BRAND.legal,
+    description: "International courier and express from Dubai. Tracking shows recorded events, not a live position.",
+    siteName: BRAND.name,
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

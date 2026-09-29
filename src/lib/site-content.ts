@@ -34,7 +34,7 @@ export const SOLUTIONS = [
   {
     id: "courier",
     title: "Courier and last mile",
-    summary: "Parcels, documents, and booked handovers that stay on one NKDON number from collection to signature.",
+    summary: "Parcels, documents, and booked handovers that stay on one tracking number from collection to signature.",
     services: ["express_courier", "pickup_delivery", "secure_tracking"],
   },
   {
@@ -59,7 +59,7 @@ export const SERVICES = [
     alt: "A courier van ready for a parcel collection",
     summary: "Time-boxed parcels and documents, collected and handed over on a booked window.",
     detail:
-      "Express is for envelopes and parcels that move as courier, not as a container. The desk writes the collection, each hub the piece passes, and the final signature as separate events on one NKDON number.",
+      "Express is for envelopes and parcels that move as courier, not as a container. The desk writes the collection, each hub the piece passes, and the final signature as separate events on one tracking number.",
     covers: ["Envelopes and parcels", "A booked pickup window", "Proof of handover, public only if staff release it"],
     suited: "When the shipment is small enough to ride as courier.",
   },
@@ -92,7 +92,7 @@ export const SERVICES = [
     alt: "Road freight prepared for a ground leg",
     summary: "Truck legs between hubs, ports, airports, and the delivery point, on the shipment that already exists.",
     detail:
-      "A road move is not a second, disconnected job. It is the next leg of the NKDON number the customer already has, whether that leg is hub to hub or the run out of a port or airport.",
+      "A road move is not a second, disconnected job. It is the next leg of the tracking number the customer already has, whether that leg is hub to hub or the run out of a port or airport.",
     covers: ["Hub-to-hub trucking", "Port and airport transfers", "Regional runs to the delivery point"],
     suited: "When the next physical move is by road.",
   },
@@ -134,11 +134,11 @@ export const SERVICES = [
     label: "Business Logistics",
     image: "/images/control.jpg",
     alt: "An operations desk reviewing a company movement",
-    summary: "Repeat company movements, each dispatch with its own NKDON number and your reference beside it.",
+    summary: "Repeat company movements, each dispatch with its own tracking number and your reference beside it.",
     detail:
-      "A standing lane is not one endless shipment. Every dispatch gets a new record so the timeline, weight, and proof belong to that movement. Your reference is stored for the desk. The customer still tracks the NKDON number.",
+      "A standing lane is not one endless shipment. Every dispatch gets a new record so the timeline, weight, and proof belong to that movement. Your reference is stored for the desk. The customer still tracks the tracking number.",
     covers: ["Recurring company lanes", "Your reference next to our number", "A separate file for each dispatch"],
-    suited: "Companies that ship with NKDON more than once.",
+    suited: "Companies that ship with QCORVAZENT more than once.",
   },
   {
     value: "consignment",
@@ -147,7 +147,7 @@ export const SERVICES = [
     alt: "Grouped freight held as one consignment",
     summary: "Many pieces, one consignment: count, weight, events, and evidence stay on a single file.",
     detail:
-      "Splitting a lot across unnamed records is how pieces go missing. A consignment keeps the package count on the shipment, and every scan after that refers to the same NKDON number.",
+      "Splitting a lot across unnamed records is how pieces go missing. A consignment keeps the package count on the shipment, and every scan after that refers to the same tracking number.",
     covers: ["Multi-piece consignments", "Package count and weight together", "One timeline for the whole lot"],
     suited: "When several packages must travel and be answered for as one consignment.",
   },
@@ -156,18 +156,18 @@ export const SERVICES = [
     label: "Secure Shipment Tracking",
     image: "/images/documents.jpg",
     alt: "A tracking record prepared for the customer",
-    summary: "The customer page for a live NKDON number. Names, phone numbers, and internal notes are not on it.",
+    summary: "The customer page for a live tracking number. Names, phone numbers, and internal notes are not on it.",
     detail:
       "Tracking is part of every booked movement. It can also be the service itself when the job is a controlled handoff and the customer only needs the published record: status, cities, events, and files staff have marked public.",
     covers: ["Lookup with NKD-YYYYMMDD-XXXX", "Public events only", "Evidence that stays private until released"],
-    suited: "Anyone who was given an NKDON tracking number.",
+    suited: "Anyone who was given a QCORVAZENT tracking number.",
   },
 ] as const;
 
 export const STEPS = [
   {
     title: "A number is issued",
-    copy: "Staff book the shipment and NKDON assigns NKD-YYYYMMDD-XXXX. That is the number the customer uses. A company reference is kept on the desk, not substituted for it.",
+    copy: "Staff book the shipment and QCORVAZENT assigns NKD-YYYYMMDD-XXXX. That is the number the customer uses. A company reference is kept on the desk, not substituted for it.",
   },
   {
     title: "Movement is appended",
@@ -184,7 +184,7 @@ export const STATUS_HELP = [
     status: "pickup_scheduled",
     label: "Pickup Scheduled",
     means: "Staff created the shipment and recorded that collection is still ahead.",
-    next: "Use the window you were given. If that window has passed and the status has not changed, send the NKDON number to support.",
+    next: "Use the window you were given. If that window has passed and the status has not changed, send the tracking number to support.",
   },
   {
     status: "picked_up",
@@ -232,7 +232,7 @@ export const STATUS_HELP = [
     status: "exception",
     label: "Exception",
     means: "The movement left the usual path. The events are the record of what was written.",
-    next: "Contact support with the NKDON number. The page will not guess the cause.",
+    next: "Contact support with the tracking number. The page will not guess the cause.",
   },
   {
     status: "cancelled",
@@ -244,12 +244,12 @@ export const STATUS_HELP = [
 
 export const QUESTIONS = [
   {
-    q: "What does an NKDON tracking number look like?",
-    a: "NKD-YYYYMMDD-XXXX. Example shape: NKD-20260927-1042. The date is the day the number was issued. The last four characters are assigned by the desk, not chosen by the customer.",
+    q: "What does a QCORVAZENT tracking number look like?",
+    a: "NKD-YYYYMMDD-XXXX. Example shape: NKD-20260927-1042. Issued numbers keep this form, including shipments opened before the QCORVAZENT name. The date is the day the number was issued. The last four digits are assigned by the desk, not chosen by the customer.",
   },
   {
     q: "Can I track with my company’s reference instead?",
-    a: "No. The public page accepts only the NKDON number. Staff can search a reference inside the desk. If you were given both, use the NKD number here.",
+    a: "No. The public page accepts only the QCORVAZENT tracking number, in the form NKD-YYYYMMDD-XXXX. Staff can search a reference inside the desk. If you were given both, use the NKD number here.",
   },
   {
     q: "Why are names missing from the tracking page?",
@@ -277,7 +277,7 @@ export const QUESTIONS = [
   },
   {
     q: "Why has tracking not updated?",
-    a: "The page changes when staff record an event. It does not poll a vehicle. If the window you were given has passed, send the NKDON number through Contact and choose Tracking assistance.",
+    a: "The page changes when staff record an event. It does not poll a vehicle. If the window you were given has passed, send the tracking number through Contact and choose Tracking assistance.",
   },
   {
     q: "Can the website tell me a delivery date?",

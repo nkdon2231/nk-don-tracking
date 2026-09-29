@@ -45,7 +45,7 @@ export function HeroAircraft({ embedded = false }: { embedded?: boolean }) {
       <figure className={embedded ? "absolute inset-0 overflow-hidden" : "hero-stage overflow-hidden"}>
         <img
           src={embedded ? "/images/hero-freighter.jpg" : "/images/aircargo.jpg"}
-          alt="A silver NKDON freighter over a dusk harbor"
+          alt="A silver freighter used as the QCORVAZENT night photograph"
           className="h-full w-full object-cover"
         />
         {embedded ? null : (
@@ -61,7 +61,7 @@ export function HeroAircraft({ embedded = false }: { embedded?: boolean }) {
     <div
       className={embedded ? "absolute inset-0" : "hero-stage"}
       role="img"
-      aria-label="NKDON Global Logistics freighter in silver, with a teal cheatline, over a dusk harbor"
+      aria-label="QCORVAZENT international freighter in silver, with a pale gold line, over open water at dusk"
     >
       {embedded ? null : <div className="hero-harbor" aria-hidden="true" />}
       {mode === "model" ? (
