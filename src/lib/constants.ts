@@ -80,16 +80,20 @@ export const FACILITY_TYPES = [
 export const EVIDENCE_TYPES = [
   "Package",
   "Package Condition",
+  "Package Before",
+  "Package After",
   "Pickup/Handover",
   "Transportation",
   "Air Cargo",
   "Vehicle",
   "Facility",
   "Courier",
+  "Driver Video",
   "Customs",
   "Clearance",
   "Documents",
   "Waybill",
+  "Receipt",
   "Delivery",
   "Signature",
   "Exception",
@@ -114,12 +118,13 @@ export const SPEEDS = [
   { value: "freight", label: "Freight timing" },
 ] as const;
 
-export const DOCUMENT_EVIDENCE = ["Documents", "Waybill", "Clearance", "Customs", "Signature"] as const;
+export const DOCUMENT_EVIDENCE = ["Documents", "Waybill", "Receipt", "Clearance", "Customs", "Signature"] as const;
 
 export const TRACKING_RE = /^NKD-\d{8}-\d{4}$/;
 
 export const IMAGE_MAX_BYTES = 10 * 1024 * 1024;
 export const PDF_MAX_BYTES = 20 * 1024 * 1024;
+export const VIDEO_MAX_BYTES = 20 * 1024 * 1024;
 
 export type Action =
   | "shipments:read"

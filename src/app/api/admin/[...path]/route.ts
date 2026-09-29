@@ -22,6 +22,7 @@ import {
   type StaffUser,
 } from "@/lib/auth";
 import { barcodeSvg, qrSvg } from "@/lib/codes";
+import { bytesResponse } from "@/lib/file-response";
 import { audit } from "@/lib/audit";
 import { databaseMode, ensureReady, query, storageMode } from "@/lib/db";
 import { deleteEvidenceFile, detectFileType, readEvidenceFile, readUpload, saveCourierPhoto, saveEvidenceFile } from "@/lib/files";
@@ -153,7 +154,7 @@ export async function GET(request: Request, context: { params: Promise<{ path: s
       if (!detail) return jsonError(404, "not_found", "Shipment not found.");
       const svg =
         path[2] === "qr"
-          ? await qrSvg(`${siteBase(request)}/track?number=${encodeURIComponent(detail.shipment.trackingNumber)}`)
+          ? await qrSvg(`${siteBase(request)}/proof?number=${encodeURIComponent(detail.shipment.trackingNumber)}`)
           : barcodeSvg(detail.shipment.trackingNumber);
       return new NextResponse(svg, {
         headers: {
@@ -194,15 +195,7 @@ export async function GET(request: Request, context: { params: Promise<{ path: s
       if (!evidence) return jsonError(404, "not_found", "File not found.");
       const bytes = await readEvidenceFile(evidence.filePath);
       const download = url.searchParams.get("download") === "1";
-      const filename = evidence.title.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80) || "evidence";
-      return new NextResponse(new Uint8Array(bytes), {
-        headers: {
-          "content-type": evidence.fileType,
-          "content-disposition": `${download ? "attachment" : "inline"}; filename="${filename}"`,
-          "cache-control": "private, no-store",
-          "x-content-type-options": "nosniff",
-        },
-      });
+      return bytesResponse(request, bytes, evidence.fileType, evidence.title, download);
     }
     if (path[0] === "couriers" && path[2] === "photo" && path[1]) {
       await actor(request, "shipments:read");

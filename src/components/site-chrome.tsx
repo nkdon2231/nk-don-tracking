@@ -7,7 +7,7 @@ import { SiteHeader } from "./site-nav";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-16 border-t border-white/10 bg-[#060d14]">
+    <footer className="no-print mt-16 border-t border-white/10 bg-[#060d14]">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-[1.4fr_1fr_1fr]">
         <div>
           <BrandLockup />

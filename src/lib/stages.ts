@@ -2,14 +2,14 @@ import { HAPPY_PATH, SERVICE_TYPES, STATUS_LABEL, type ShipmentStatus } from "./
 
 export const EVIDENCE_STAGES = [
   { id: "all", label: "All", types: null },
-  { id: "package", label: "Package", types: ["Package", "Package Condition"] },
+  { id: "package", label: "Package", types: ["Package", "Package Condition", "Package Before", "Package After"] },
   { id: "pickup", label: "Pickup", types: ["Pickup/Handover"] },
   { id: "warehouse", label: "Warehouse", types: ["Facility"] },
   { id: "transit", label: "Transit", types: ["Transportation", "Air Cargo", "Vehicle"] },
   { id: "customs", label: "Customs", types: ["Customs", "Clearance"] },
-  { id: "documents", label: "Documents", types: ["Documents", "Waybill"] },
-  { id: "courier", label: "Courier", types: ["Courier"] },
-  { id: "delivery", label: "Delivery", types: ["Delivery", "Signature"] },
+  { id: "documents", label: "Documents", types: ["Documents", "Waybill", "Receipt"] },
+  { id: "courier", label: "Driver", types: ["Courier", "Driver Video", "Vehicle"] },
+  { id: "delivery", label: "Delivery", types: ["Delivery", "Signature", "Package After", "Driver Video"] },
   { id: "exception", label: "Exception", types: ["Exception"] },
 ] as const;
 

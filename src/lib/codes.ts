@@ -43,24 +43,30 @@ const CODE39: Record<string, string> = {
   "*": "nwnnwnwnn",
 };
 
-export function barcodeSvg(value: string) {
+export function barcodeLayout(value: string) {
   const text = `*${value.toUpperCase()}*`;
   const narrow = 2;
   const wide = 5;
   const height = 70;
   let x = 0;
-  const rects: string[] = [];
+  const rects: { x: number; y: number; width: number; height: number }[] = [];
   for (const char of text) {
     const pattern = CODE39[char];
     if (!pattern) continue;
     pattern.split("").forEach((bar, index) => {
       const width = bar === "w" ? wide : narrow;
-      if (index % 2 === 0) rects.push(`<rect x="${x}" y="0" width="${width}" height="${height}" />`);
+      if (index % 2 === 0) rects.push({ x, y: 0, width, height });
       x += width;
     });
     x += narrow;
   }
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${x} ${height}" role="img" aria-label="Barcode ${value}">${rects.join("")}</svg>`;
+  return { width: x, height, rects };
+}
+
+export function barcodeSvg(value: string) {
+  const layout = barcodeLayout(value);
+  const rects = layout.rects.map((bar) => `<rect x="${bar.x}" y="${bar.y}" width="${bar.width}" height="${bar.height}" />`);
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${layout.width} ${layout.height}" role="img" aria-label="Barcode ${value}">${rects.join("")}</svg>`;
 }
 
 export async function qrSvg(value: string) {

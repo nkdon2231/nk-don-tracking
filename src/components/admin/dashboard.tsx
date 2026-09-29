@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ApiError, api } from "@/lib/client-api";
 import { can } from "@/lib/constants";
 import { formatWhen } from "@/lib/format";
+import { EvidenceTimeline } from "@/components/evidence-timeline";
 import { StatusPill } from "@/components/status-pill";
 import { AdminFrame, useStaff } from "./shell";
 import type { EvidenceItem, Shipment, ShipmentEvent } from "./types";
@@ -164,6 +165,23 @@ function Desk() {
           {stats && stats.recentRequests.length === 0 ? <li className="text-sm text-[var(--color-muted)]">No customer requests yet.</li> : null}
         </ul>
       </section>
+      {stats ? (
+        <EvidenceTimeline
+          title="Evidence timeline"
+          events={[]}
+          files={stats.recentEvidence.map((item) => ({
+            key: item.id,
+            href: `/admin/shipments/${item.shipmentId}`,
+            title: `${item.trackingNumber} · ${item.title}`,
+            evidenceType: item.evidenceType,
+            fileType: item.fileType,
+            capturedAt: item.capturedAt ?? item.createdAt,
+            location: item.location,
+            description: item.isPublic ? "Public" : "Private",
+            isDemo: item.isDemo,
+          }))}
+        />
+      ) : null}
       <section className="card p-5">
         <div className="flex items-center justify-between gap-3">
           <h2 className="serif text-2xl">Messages</h2>

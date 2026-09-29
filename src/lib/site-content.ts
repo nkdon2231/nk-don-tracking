@@ -10,6 +10,7 @@ export const FOOTER_LINKS = [
   { href: "/services", label: "Services" },
   { href: "/solutions", label: "Solutions" },
   { href: "/track", label: "Track a shipment" },
+  { href: "/proof", label: "Proof of delivery" },
   { href: "/quote", label: "Get a quote" },
   { href: "/book", label: "Request a pickup" },
   { href: "/estimate", label: "Delivery window" },
@@ -252,8 +253,8 @@ export const QUESTIONS = [
     a: "No. The public page accepts only the QCORVAZENT tracking number, in the form NKD-YYYYMMDD-XXXX. Staff can search a reference inside the desk. If you were given both, use the NKD number here.",
   },
   {
-    q: "Why are names missing from the tracking page?",
-    a: "Sender and recipient names, phone numbers, street addresses, and internal notes are operational. They are stored, and they are not published.",
+    q: "Why are some details missing from tracking?",
+    a: "The proof page shows the recipient name on the file, plus the delivery time and place when staff recorded them. Phone numbers, email addresses, street addresses, sender name, and internal notes are not published.",
   },
   {
     q: "Which statuses can a shipment show?",
@@ -265,7 +266,7 @@ export const QUESTIONS = [
   },
   {
     q: "Can I open a photo or PDF from the tracking page?",
-    a: "Only when operations marked that file public. Other evidence stays in the private shipment-evidence bucket. Images are accepted up to 10 MB and PDFs up to 20 MB.",
+    a: "Only when operations marked that file public. Other evidence stays in the private shipment-evidence bucket. Images are accepted up to 10 MB. PDFs and driver video (MP4 or WEBM) are accepted up to 20 MB. A missing photo or video is left blank. The site does not invent one.",
   },
   {
     q: "What if the number is not found?",

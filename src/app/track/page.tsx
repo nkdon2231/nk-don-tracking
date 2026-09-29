@@ -4,7 +4,7 @@ import { TrackPanel } from "@/components/track-panel";
 
 export const metadata = {
   title: "Track a shipment",
-  description: "Follow a QCORVAZENT shipment with the number NKD-YYYYMMDD-XXXX. Names and internal notes are not shown.",
+  description: "Follow a QCORVAZENT shipment with the number NKD-YYYYMMDD-XXXX. Proof files appear only when staff release them.",
 };
 
 export default async function TrackPage({ searchParams }: { searchParams: Promise<{ number?: string }> }) {
@@ -15,7 +15,7 @@ export default async function TrackPage({ searchParams }: { searchParams: Promis
         <p className="text-xs uppercase tracking-[0.18em] text-[var(--color-copper)]">QCORVAZENT Tracking</p>
         <h1 className="serif mt-2 text-5xl">Follow a consignment</h1>
         <p className="mt-3 max-w-2xl leading-7 text-[var(--color-muted)]">
-          Use the number issued by QCORVAZENT. It looks like NKD-YYYYMMDD-XXXX. You will see status, cities, the recorded route when coordinates exist, and files marked public. Sender, recipient, staff notes, and courier contact details are not on this page. Locations are recorded events, not live GPS.
+          Use the number issued by QCORVAZENT. It looks like NKD-YYYYMMDD-XXXX. Proof shows the recipient name and any public photos, driver video, or signature staff released. Phone numbers, email addresses, street addresses, and internal notes stay off this page. Locations are recorded events, not live GPS.
         </p>
         <div className="mt-6">
           <TrackPanel initialNumber={number ?? ""} />

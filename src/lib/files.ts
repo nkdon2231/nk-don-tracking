@@ -1,6 +1,6 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { IMAGE_MAX_BYTES, PDF_MAX_BYTES } from "./constants";
+import { IMAGE_MAX_BYTES, PDF_MAX_BYTES, VIDEO_MAX_BYTES } from "./constants";
 import { storageMode } from "./db";
 import { supabaseSecretKey, supabaseUrl } from "./env";
 import { HttpError } from "./http";
@@ -12,7 +12,8 @@ export type StoredFile = {
   bytes: Buffer;
 };
 
-const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
+const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf", "video/mp4", "video/webm"]);
+const BUCKET_MIME = ["image/jpeg", "image/png", "image/webp", "application/pdf", "video/mp4", "video/webm"];
 
 export function detectFileType(bytes: Buffer): string | null {
   if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
@@ -23,6 +24,8 @@ export function detectFileType(bytes: Buffer): string | null {
     return "image/webp";
   }
   if (bytes.length >= 5 && bytes.subarray(0, 5).toString("ascii") === "%PDF-") return "application/pdf";
+  if (bytes.length >= 4 && bytes[0] === 0x1a && bytes[1] === 0x45 && bytes[2] === 0xdf && bytes[3] === 0xa3) return "video/webm";
+  if (bytes.length >= 12 && bytes.subarray(4, 8).toString("ascii") === "ftyp") return "video/mp4";
   return null;
 }
 
@@ -38,11 +41,16 @@ export async function readUpload(file: File): Promise<StoredFile> {
   const bytes = Buffer.from(await file.arrayBuffer());
   const detected = detectFileType(bytes);
   if (!detected || !ALLOWED.has(detected)) {
-    throw new HttpError(400, "invalid_file", "Only JPG, PNG, WEBP, and PDF files are accepted.");
+    throw new HttpError(400, "invalid_file", "Only JPG, PNG, WEBP, PDF, MP4, and WEBM files are accepted.");
   }
-  const limit = detected === "application/pdf" ? PDF_MAX_BYTES : IMAGE_MAX_BYTES;
+  const limit = detected.startsWith("video/") ? VIDEO_MAX_BYTES : detected === "application/pdf" ? PDF_MAX_BYTES : IMAGE_MAX_BYTES;
   if (bytes.length > limit) {
-    throw new HttpError(400, "file_too_large", detected === "application/pdf" ? "PDFs must be 20 MB or smaller." : "Images must be 10 MB or smaller.");
+    const message = detected.startsWith("video/")
+      ? "Driver video must be 20 MB or smaller."
+      : detected === "application/pdf"
+        ? "PDFs must be 20 MB or smaller."
+        : "Images must be 10 MB or smaller.";
+    throw new HttpError(400, "file_too_large", message);
   }
   return { filePath: "", fileType: detected, fileSize: bytes.length, bytes };
 }
@@ -96,7 +104,7 @@ export async function saveEvidenceFile(shipmentId: string, originalName: string,
 
 export async function saveCourierPhoto(courierId: string, originalName: string, file: StoredFile) {
   if (!/^[0-9a-f-]{36}$/i.test(courierId)) throw new HttpError(400, "invalid_input", "Choose a courier.");
-  if (file.fileType === "application/pdf") {
+  if (!file.fileType.startsWith("image/")) {
     throw new HttpError(400, "invalid_file", "Courier photos must be JPG, PNG, or WEBP.");
   }
   const relative = path.posix.join("couriers", courierId, safeObjectName(originalName));
@@ -139,12 +147,17 @@ export async function deleteEvidenceFile(filePath: string) {
 export async function ensureStorageBucket() {
   if (storageMode() !== "supabase") return;
   const supabase = await storageClient();
-  const { error } = await supabase.storage.createBucket("shipment-evidence", {
+  const options = {
     public: false,
     fileSizeLimit: 20 * 1024 * 1024,
-    allowedMimeTypes: ["image/jpeg", "image/png", "image/webp", "application/pdf"],
-  });
-  if (error && !/already exists/i.test(error.message)) {
-    console.error("[nkdon] bucket", error.message);
+    allowedMimeTypes: BUCKET_MIME,
+  };
+  const { error } = await supabase.storage.createBucket("shipment-evidence", options);
+  if (!error) return;
+  if (/already exists/i.test(error.message)) {
+    const updated = await supabase.storage.updateBucket("shipment-evidence", options);
+    if (updated.error) console.error("[nkdon] bucket", updated.error.message);
+    return;
   }
+  console.error("[nkdon] bucket", error.message);
 }

@@ -812,6 +812,7 @@ export async function publicTracking(trackingNumber: string) {
     weightUnit: asString(row.weight_unit || "kg"),
     dimensions: asString(row.dimensions),
     publicDescription: asString(row.public_description),
+    recipientName: asString(row.recipient_name),
     estimatedDeliveryDate: dateOnly(row.estimated_delivery_date),
     actualDeliveryDate: dateOnly(row.actual_delivery_date),
     isDemo: asBool(row.is_demo),
@@ -883,7 +884,7 @@ export async function listEvidence(input: { q?: string; type?: string; shipmentI
     where.push(`ev.evidence_type = $${params.length}`);
   }
   if (input.group === "documents") {
-    where.push(`ev.evidence_type in ('Documents', 'Waybill', 'Clearance', 'Customs', 'Signature')`);
+    where.push(`ev.evidence_type in ('Documents', 'Waybill', 'Receipt', 'Clearance', 'Customs', 'Signature')`);
   }
   if (input.visibility === "public") where.push("ev.is_public = true");
   if (input.visibility === "private") where.push("ev.is_public = false");

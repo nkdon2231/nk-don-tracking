@@ -9,11 +9,12 @@ values (
   'shipment-evidence',
   false,
   20971520,
-  array['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
+  array['image/jpeg', 'image/png', 'image/webp', 'application/pdf', 'video/mp4', 'video/webm']
 )
 on conflict (id) do update
 set public = false,
-    file_size_limit = 20971520;
+    file_size_limit = 20971520,
+    allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp', 'application/pdf', 'video/mp4', 'video/webm'];
 
 -- No select/insert/update/delete policies for anon or authenticated.
 -- Absence of a policy denies access under RLS.

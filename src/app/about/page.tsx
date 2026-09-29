@@ -47,14 +47,14 @@ export default function AboutPage() {
           <ul className="mt-4 grid gap-2 text-sm leading-6">
             <li>Status, and the timeline that produced it</li>
             <li>Origin and destination cities, when they were recorded</li>
-            <li>Package count, weight, and the public description</li>
-            <li>Photos and PDFs staff marked public</li>
+            <li>Recipient name on the proof receipt</li>
+            <li>Public photos, driver video, and a signature, when staff release them</li>
           </ul>
         </article>
         <article className="rounded-[1.5rem] bg-[var(--color-pine)] p-6 text-[var(--color-paper)] sm:p-8">
           <h2 className="serif text-3xl">Kept on the desk</h2>
           <ul className="mt-4 grid gap-2 text-sm leading-6 text-white/80">
-            <li>Sender and recipient names</li>
+            <li>Sender name</li>
             <li>Phone numbers, emails, and street addresses</li>
             <li>Internal notes and the staff activity log</li>
             <li>Private evidence in the shipment-evidence bucket</li>

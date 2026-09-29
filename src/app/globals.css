@@ -585,3 +585,21 @@ svg {
   background: #1a2838;
   color: #9eb0c3;
 }
+
+@media print {
+  body {
+    background: #fff;
+    color: #142033;
+  }
+  .no-print,
+  .site-header {
+    display: none !important;
+  }
+  .proof-sheet,
+  .proof-sheet .card {
+    break-inside: avoid;
+    color: #142033;
+    background: #fff;
+    box-shadow: none;
+  }
+}

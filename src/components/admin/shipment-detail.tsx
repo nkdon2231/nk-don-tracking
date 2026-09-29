@@ -9,6 +9,7 @@ import { journeyMarkers } from "@/lib/stages";
 import type { EvidenceStageId } from "@/lib/stages";
 import type { RecordedRoute } from "@/lib/route";
 import { StatusPill } from "@/components/status-pill";
+import { EvidenceTimeline } from "@/components/evidence-timeline";
 import { EvidenceBoard, type EvidenceView } from "@/components/logistics/evidence-board";
 import { CustomsPanel, DeliveryPanel } from "@/components/logistics/movement-panels";
 import { RecordedRoute as RecordedRouteView } from "@/components/logistics/recorded-route";
@@ -181,6 +182,10 @@ function DetailBody({ id }: { id: string }) {
           >
             Copy tracking number
           </button>
+          <div className="mt-3 flex flex-wrap gap-3 text-sm">
+            <Link href={`/proof?number=${encodeURIComponent(shipment.trackingNumber)}`}>Customer proof page</Link>
+            <a href={`/api/tracking/proof?number=${encodeURIComponent(shipment.trackingNumber)}`}>Download certificate</a>
+          </div>
         </div>
       </section>
       {write ? (
@@ -231,6 +236,20 @@ function DetailBody({ id }: { id: string }) {
           />
         ) : null}
       </section>
+      <EvidenceTimeline
+        events={detail.events}
+        files={detail.evidence.map((item) => ({
+          key: item.id,
+          href: `/api/admin/evidence/${item.id}/file`,
+          title: item.title,
+          evidenceType: item.evidenceType,
+          fileType: item.fileType,
+          capturedAt: item.capturedAt ?? item.createdAt,
+          location: item.location,
+          description: item.description,
+          isDemo: item.isDemo,
+        }))}
+      />
       <EvidenceBoard
         items={detail.evidence.map(staffEvidence)}
         stage={stage}
@@ -503,7 +522,7 @@ function UploadForm({
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="field sm:col-span-2">
           <span>Files</span>
-          <input name="files" type="file" required multiple accept="image/jpeg,image/png,image/webp,application/pdf,.jpg,.jpeg,.png,.webp,.pdf" />
+          <input name="files" type="file" required multiple accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,.jpg,.jpeg,.png,.webp,.pdf,.mp4,.webm" />
         </label>
         <label className="field">
           <span>Type</span>
@@ -514,7 +533,7 @@ function UploadForm({
           </select>
         </label>
         <p className="text-xs leading-5 text-[var(--color-muted)] sm:col-span-2">
-          Package and Package Condition are the parcel. Pickup/Handover is collection. Facility is the warehouse. Transportation, Air Cargo, and Vehicle are transit. Courier is a file about the assignment, separate from the courier profile photo. Customs and Clearance are clearance files. Documents and Waybill are papers. Delivery and Signature are proof of delivery. Exception is a problem record.
+          Package Before and Package After are parcel photos. Pickup/Handover is collection. Driver Video is an MP4 or WEBM of the assigned driver, up to 20 MB. Vehicle and Courier identify the assignment. Delivery and Signature are the handover. Receipt, Waybill, and Documents are papers. Leave “show on the public tracking page” off unless that file should be customer proof. Empty proof slots stay blank. Nothing is generated.
         </p>
         <label className="field">
           <span>Title</span>

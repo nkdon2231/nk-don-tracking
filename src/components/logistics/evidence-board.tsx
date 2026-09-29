@@ -46,7 +46,7 @@ export function EvidenceBoard({
         <div>
           <h3 className="serif text-3xl">Evidence</h3>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--color-muted)]">
-            Files stay as photos and PDFs. The stages only group what staff uploaded. An empty stage means that record has not been added.
+            Files stay as uploaded photos, video, and PDFs. An empty stage means that record has not been added. Nothing is simulated.
           </p>
         </div>
       </div>
@@ -72,16 +72,19 @@ export function EvidenceBoard({
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {visible.map((item) => {
           const image = item.fileType.startsWith("image/");
+          const video = item.fileType.startsWith("video/");
           return (
             <article key={item.key} className="grid gap-3 rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3">
               {image ? (
                 <button type="button" className="overflow-hidden rounded-xl" onClick={() => setOpen(item)}>
                   <img src={item.href} alt="" className="h-40 w-full object-cover" loading="lazy" />
                 </button>
+              ) : video ? (
+                <video className="h-40 w-full rounded-xl bg-black object-cover" controls preload="metadata" src={item.href} />
               ) : (
                 <div className="flex h-40 flex-col justify-between rounded-xl bg-[#071018] p-4 text-[#e7eef6]">
-                  <p className="text-xs uppercase tracking-[0.16em] text-[#e7c7ae]">Document</p>
-                  <p className="serif text-3xl">PDF</p>
+                  <p className="text-xs uppercase tracking-[0.16em] text-[#e7c7ae]">{video ? "Video" : "Document"}</p>
+                  <p className="serif text-3xl">{video ? "MP4" : "PDF"}</p>
                   <a className="text-sm text-white" href={item.href} target="_blank" rel="noreferrer">
                     Open in a new tab
                   </a>

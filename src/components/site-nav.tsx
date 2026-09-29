@@ -36,7 +36,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
   const solid = scrolled || open || !overlay;
 
   return (
-    <header className={`site-header fixed inset-x-0 top-0 z-40 border-b border-transparent ${solid ? "is-solid" : ""}`}>
+    <header className={`site-header no-print fixed inset-x-0 top-0 z-40 border-b border-transparent ${solid ? "is-solid" : ""}`}>
       <div className="mx-auto flex h-[4.5rem] max-w-6xl items-center justify-between gap-4 px-4">
         <Link href="/" className="no-underline" aria-label={BRAND.legal}>
           <BrandLockup />

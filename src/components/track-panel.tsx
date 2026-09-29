@@ -11,6 +11,8 @@ import { EvidenceBoard } from "./logistics/evidence-board";
 import { CustomsPanel, DeliveryPanel } from "./logistics/movement-panels";
 import { RecordedRoute as RecordedRouteView } from "./logistics/recorded-route";
 import { ShipmentJourney } from "./logistics/shipment-journey";
+import { EvidenceTimeline } from "./evidence-timeline";
+import { ProofDossier } from "./proof-dossier";
 import { StatusPill } from "./status-pill";
 
 type TrackingEvent = {
@@ -50,6 +52,7 @@ type Tracking = {
   weightUnit: string;
   dimensions: string;
   publicDescription: string;
+  recipientName: string;
   estimatedDeliveryDate: string | null;
   actualDeliveryDate: string | null;
   isDemo: boolean;
@@ -218,6 +221,7 @@ function TrackingResult({
     files.some((file) => file.evidenceType === "Delivery" || file.evidenceType === "Signature");
   const sections = [
     { id: "overview", label: "Overview", show: true },
+    { id: "proof", label: "Proof", show: true },
     { id: "timeline", label: "Timeline", show: result.events.length > 0 },
     { id: "map", label: "Map", show: (result.route?.points.length ?? 0) > 0 },
     { id: "evidence", label: "Evidence", show: files.length > 0 },
@@ -340,26 +344,33 @@ function TrackingResult({
       </div>
       {active === "overview" ? (
         <p className="text-sm leading-6 text-[var(--color-muted)]">
-          Open Timeline, Map, Evidence, Documents, Courier, Customs, or Delivery when that record exists. Empty sections stay hidden.
+          Open Proof for the receipt, QR code, barcode, and only the photos or video staff released. Other sections stay hidden until that record exists.
         </p>
       ) : null}
+      {active === "proof" ? (
+        <ProofDossier
+          shipment={{
+            trackingNumber: result.trackingNumber,
+            status: result.status,
+            statusLabel: result.statusLabel,
+            serviceType: result.serviceType,
+            shipmentType: result.shipmentType,
+            origin: result.origin,
+            destination: result.destination,
+            packageCount: result.packageCount,
+            weight: result.weight,
+            weightUnit: result.weightUnit,
+            recipientName: result.recipientName,
+            actualDeliveryDate: result.actualDeliveryDate,
+            isDemo: result.isDemo,
+            courier: result.courier,
+            events: result.events,
+            evidence: files,
+          }}
+        />
+      ) : null}
       {active === "timeline" ? (
-        <section className="card p-5">
-          <h3 className="serif text-2xl">Timeline</h3>
-          <ol className="mt-4 grid gap-4">
-            {result.events.map((event) => (
-              <li key={`${event.eventTime}-${event.title}`} className="border-l-2 border-[var(--color-copper)] pl-4">
-                <p className="text-xs text-[var(--color-muted)]">{formatWhen(event.eventTime, true)}</p>
-                <p className="font-semibold">{event.title}</p>
-                {event.location ? <p className="text-sm">{event.location}</p> : null}
-                {event.description ? <p className="text-sm text-[var(--color-muted)]">{event.description}</p> : null}
-                {event.latitude != null && event.longitude != null ? (
-                  <p className="text-xs text-[var(--color-muted)]">A recorded coordinate is on the map. It is not a live position.</p>
-                ) : null}
-              </li>
-            ))}
-          </ol>
-        </section>
+        <EvidenceTimeline events={result.events} files={files} title="Tracking timeline" />
       ) : null}
       {active === "map" ? <RecordedRouteView points={result.route?.points ?? []} /> : null}
       {active === "evidence" ? (
