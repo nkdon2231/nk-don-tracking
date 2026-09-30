@@ -12,6 +12,7 @@ import { CustomsPanel, DeliveryPanel } from "./logistics/movement-panels";
 import { RecordedRoute as RecordedRouteView } from "./logistics/recorded-route";
 import { ShipmentJourney } from "./logistics/shipment-journey";
 import { EvidenceTimeline } from "./evidence-timeline";
+import { BrandLockup } from "./brand-mark";
 import { ProofDossier } from "./proof-dossier";
 import { StatusPill } from "./status-pill";
 
@@ -236,7 +237,7 @@ function TrackingResult({
   return (
     <article className="grid min-w-0 gap-5">
       <header className="card p-5">
-        <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-muted)]">{BRAND.legal}</p>
+        <BrandLockup />
         <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-copper)]">Tracking</p>

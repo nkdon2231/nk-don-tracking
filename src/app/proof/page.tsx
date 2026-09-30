@@ -2,10 +2,13 @@ import Link from "next/link";
 import { PublicFrame } from "@/components/site-chrome";
 import { ProofLookup } from "@/components/proof-dossier";
 
-export const metadata = {
+import { pageMeta } from "@/lib/seo";
+
+export const metadata = pageMeta({
   title: "Proof of delivery",
   description: "QCORVAZENT shipment receipt and proof of delivery. Shows stored records only. Photos, video, and signatures appear when staff release them.",
-};
+  path: "/proof",
+});
 
 export default async function ProofPage({ searchParams }: { searchParams: Promise<{ number?: string }> }) {
   const { number } = await searchParams;

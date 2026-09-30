@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { PublicFrame } from "@/components/site-chrome";
+import { pageMeta } from "@/lib/seo";
 import { SUPPORT_EMAIL } from "@/lib/constants";
 import { STATUS_HELP } from "@/lib/site-content";
 
-export const metadata = {
+export const metadata = pageMeta({
   title: "Tracking help",
   description: "How to find a QCORVAZENT tracking number, what each status means, and what to do if it has not updated.",
-};
+  path: "/support/tracking",
+});
 
 export default function TrackingHelpPage() {
   return (

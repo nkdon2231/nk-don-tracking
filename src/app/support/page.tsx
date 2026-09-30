@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { PublicFrame } from "@/components/site-chrome";
+import { pageMeta } from "@/lib/seo";
 import { SUPPORT_EMAIL } from "@/lib/constants";
 import { SERVICES } from "@/lib/site-content";
 
-export const metadata = {
+export const metadata = pageMeta({
   title: "Support",
   description: "Shipment support, tracking help, quotes, and customs questions for QCORVAZENT International Courier & Express.",
-};
+  path: "/support",
+});
 
 const PATHS = [
   {

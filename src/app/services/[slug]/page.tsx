@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PublicFrame } from "@/components/site-chrome";
+import { pageMeta } from "@/lib/seo";
 import { SERVICES } from "@/lib/site-content";
 
 export function generateStaticParams() {
@@ -10,10 +11,11 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const service = SERVICES.find((item) => item.value === slug);
-  return {
+  return pageMeta({
     title: service?.label ?? "Service",
     description: service?.summary ?? "A QCORVAZENT service.",
-  };
+    path: `/services/${service?.value ?? slug}`,
+  });
 }
 
 export default async function ServicePage({ params }: { params: Promise<{ slug: string }> }) {

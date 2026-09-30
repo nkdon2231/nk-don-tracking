@@ -64,7 +64,7 @@ export function AuthSplit({ title, lede, children }: { title: string; lede: stri
         <img src="/images/control.jpg" alt="" className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#071018] via-[#071018]/55 to-[#10263c]/20" />
         <div className="absolute bottom-10 left-10 right-10 text-[var(--color-paper)]">
-          <BrandLockup />
+          <BrandLockup tone="gold" />
           <p className="serif mt-6 text-5xl leading-none">The desk stays private.</p>
         </div>
       </div>

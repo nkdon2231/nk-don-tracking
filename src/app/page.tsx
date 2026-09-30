@@ -2,7 +2,16 @@ import Link from "next/link";
 import { HeroBackdrop } from "@/components/hero-aircraft";
 import { PublicFrame } from "@/components/site-chrome";
 import { BRAND } from "@/lib/constants";
+import { pageMeta } from "@/lib/seo";
 import { SERVICES, STEPS } from "@/lib/site-content";
+
+export const metadata = pageMeta({
+  title: BRAND.legal,
+  description:
+    "QCORVAZENT is an international courier and express desk shipping from Dubai. Follow a shipment with the tracking number staff issued.",
+  path: "/",
+  absolute: true,
+});
 
 const featured = ["air_cargo", "international_freight", "warehousing", "pickup_delivery"];
 

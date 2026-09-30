@@ -2,10 +2,13 @@ import Link from "next/link";
 import { PublicFrame } from "@/components/site-chrome";
 import { TrackPanel } from "@/components/track-panel";
 
-export const metadata = {
+import { pageMeta } from "@/lib/seo";
+
+export const metadata = pageMeta({
   title: "Track a shipment",
   description: "Follow a QCORVAZENT shipment with the number NKD-YYYYMMDD-XXXX. Proof files appear only when staff release them.",
-};
+  path: "/track",
+});
 
 export default async function TrackPage({ searchParams }: { searchParams: Promise<{ number?: string }> }) {
   const { number } = await searchParams;

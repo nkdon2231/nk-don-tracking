@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { RequestForm } from "@/components/request-form";
 import { PublicFrame } from "@/components/site-chrome";
+import { pageMeta } from "@/lib/seo";
 import { SERVICE_TYPES } from "@/lib/constants";
 
-export const metadata = {
+export const metadata = pageMeta({
   title: "Get a quote",
   description: "Ask QCORVAZENT to review an international shipment from Dubai. The site does not calculate a price.",
-};
+  path: "/quote",
+});
 
 export default async function QuotePage({ searchParams }: { searchParams: Promise<{ service?: string }> }) {
   const { service } = await searchParams;

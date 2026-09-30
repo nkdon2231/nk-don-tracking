@@ -7,6 +7,7 @@ import { BRAND, SUPPORT_EMAIL } from "@/lib/constants";
 import { formatWhen } from "@/lib/format";
 import { deliveryRecord, isImage, isVideo, proofGroups, type ProofEvent, type ProofFile } from "@/lib/proof";
 import { EvidenceTimeline } from "./evidence-timeline";
+import { BrandLockup } from "./brand-mark";
 import { StatusPill } from "./status-pill";
 
 type ProofShipment = {
@@ -106,7 +107,7 @@ export function ProofDossier({ shipment }: { shipment: ProofShipment }) {
       <header className="card overflow-hidden p-0">
         <div className="flex flex-wrap items-end justify-between gap-4 bg-[#071422] px-5 py-5 text-white">
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-[#e6c98a]">{BRAND.legal}</p>
+            <BrandLockup tone="gold" />
             <h2 className="serif mt-2 text-4xl">{delivery.confirmed ? "Proof of delivery" : "Shipment receipt"}</h2>
             <p className="mt-2 font-semibold tracking-wide">{shipment.trackingNumber}</p>
           </div>

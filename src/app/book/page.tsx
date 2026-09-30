@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { RequestForm } from "@/components/request-form";
 import { PublicFrame } from "@/components/site-chrome";
+import { pageMeta } from "@/lib/seo";
 import { SERVICE_TYPES } from "@/lib/constants";
 
-export const metadata = {
+export const metadata = pageMeta({
   title: "Request a pickup",
   description: "Ask QCORVAZENT to review a pickup. A tracking number is issued only after staff open the shipment.",
-};
+  path: "/book",
+});
 
 export default async function BookPage({ searchParams }: { searchParams: Promise<{ service?: string }> }) {
   const { service } = await searchParams;

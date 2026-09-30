@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { PublicFrame } from "@/components/site-chrome";
+import { pageMeta } from "@/lib/seo";
 import { SERVICES } from "@/lib/site-content";
 
-export const metadata = {
+export const metadata = pageMeta({
   title: "Services",
   description: "Express courier, international freight, air cargo, warehousing, customs papers, and consignment tracking from QCORVAZENT.",
-};
+  path: "/services",
+});
 
 export default function ServicesPage() {
   return (

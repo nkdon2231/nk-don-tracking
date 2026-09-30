@@ -1,18 +1,26 @@
 import "server-only";
 
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 import QRCode from "qrcode";
 import { barcodeLayout } from "@/lib/codes";
 import { BRAND, SUPPORT_EMAIL } from "@/lib/constants";
 import { query } from "@/lib/db";
-import { publicSiteUrl } from "@/lib/env";
 import { readEvidenceFile } from "@/lib/files";
 import { formatWhen } from "@/lib/format";
 import { deliveryRecord, isImage, isVideo } from "@/lib/proof";
+import { publicOrigin } from "@/lib/site-url";
 import { publicTracking } from "./operations";
 
 function pdfText(value: string) {
   return value.normalize("NFKD").replace(/[^\x20-\x7E]/g, "").replace(/\s+/g, " ").trim().slice(0, 180);
+}
+
+function drawTracked(page: PDFPage, text: string, x: number, y: number, size: number, font: PDFFont, color: ReturnType<typeof rgb>, tracking: number) {
+  let cursor = x;
+  for (const char of text) {
+    page.drawText(char, { x: cursor, y, size, font, color });
+    cursor += font.widthOfTextAtSize(char, size) + tracking;
+  }
 }
 
 function place(city: string, country: string) {
@@ -42,22 +50,24 @@ export async function buildProofPdf(trackingNumber: string) {
       )
     : [];
   const delivery = deliveryRecord(shipment.status, shipment.actualDeliveryDate, shipment.events);
-  const site = (publicSiteUrl() || "https://nk-don-tracking.vercel.app").replace(/\/$/, "");
+  const site = publicOrigin();
   const proofUrl = `${site}/proof?number=${encodeURIComponent(shipment.trackingNumber)}`;
 
   const pdf = await PDFDocument.create();
   const page = pdf.addPage([595.28, 841.89]);
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+  const wordmark = await pdf.embedFont(StandardFonts.TimesRoman);
   const navy = rgb(0.027, 0.078, 0.133);
   const gold = rgb(0.902, 0.788, 0.541);
+  const cream = rgb(0.953, 0.937, 0.902);
   const ink = rgb(0.12, 0.14, 0.16);
   const muted = rgb(0.35, 0.4, 0.45);
 
   page.drawRectangle({ x: 0, y: 790, width: 595.28, height: 52, color: navy });
   page.drawRectangle({ x: 0, y: 786, width: 595.28, height: 4, color: gold });
-  page.drawText(pdfText(BRAND.short), { x: 40, y: 812, size: 13, font: bold, color: gold });
-  page.drawText("International Courier & Express", { x: 148, y: 814, size: 9, font, color: rgb(0.91, 0.93, 0.95) });
+  drawTracked(page, pdfText(BRAND.short), 40, 816, 13, wordmark, cream, 2.1);
+  drawTracked(page, "INTERNATIONAL COURIER & EXPRESS", 40, 800, 7, font, rgb(0.82, 0.84, 0.86), 1.15);
 
   page.drawText(delivery.confirmed ? "Proof of delivery" : "Shipment receipt", { x: 40, y: 752, size: 22, font: bold, color: navy });
   page.drawText(pdfText(shipment.trackingNumber), { x: 40, y: 726, size: 15, font: bold, color: ink });

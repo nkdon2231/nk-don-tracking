@@ -86,36 +86,56 @@ summary::-webkit-details-marker {
 }
 
 .serif {
-  font-family: var(--font-sora), Sora, sans-serif;
-  letter-spacing: -0.035em;
+  font-family: var(--font-wordmark), "Bodoni Moda", "Iowan Old Style", Palatino, "Palatino Linotype", serif;
+  font-weight: 500;
+  letter-spacing: -0.02em;
 }
 
 .brand-lockup {
   display: inline-flex;
-  align-items: center;
-  gap: 0.7rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.28rem;
   color: inherit;
   text-decoration: none;
 }
 
 .brand-name {
   display: block;
-  font-family: var(--font-sora), Sora, sans-serif;
-  font-weight: 700;
-  font-size: 0.78rem;
-  letter-spacing: 0.14em;
+  color: inherit;
+  font-family: var(--font-wordmark), "Bodoni Moda", "Iowan Old Style", Palatino, serif;
+  font-weight: 500;
+  font-size: 1.05rem;
+  letter-spacing: 0.2em;
   line-height: 1;
+  text-transform: uppercase;
 }
 
 .brand-sub {
   display: block;
-  margin-top: 0.28rem;
-  color: var(--color-lane);
-  font-size: 0.62rem;
-  font-weight: 650;
-  letter-spacing: 0.16em;
-  line-height: 1;
+  margin: 0;
+  color: inherit;
+  font-family: var(--font-outfit), Outfit, "Avenir Next", sans-serif;
+  font-size: 0.5rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  line-height: 1.25;
+  opacity: 0.72;
   text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.brand-lockup.is-gold .brand-sub {
+  color: #e6c98a;
+  opacity: 1;
+}
+
+.brand-lockup.is-gold .brand-name {
+  padding-bottom: 0.32rem;
+  background-image: linear-gradient(#e6c98a, #e6c98a);
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  background-size: 2.2rem 1px;
 }
 
 .brand-hero-name {
@@ -169,8 +189,8 @@ summary::-webkit-details-marker {
 
 @media (max-width: 720px) {
   .brand-name {
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
   }
   .brand-sub {
     display: none;
@@ -287,23 +307,25 @@ summary::-webkit-details-marker {
 }
 
 .home-hero-title {
-  margin: 0.7rem 0 0;
-  font-family: var(--font-sora), Sora, sans-serif;
-  font-size: clamp(1.9rem, 6.2vw, 4.7rem);
-  font-weight: 750;
-  letter-spacing: -0.045em;
-  line-height: 0.86;
+  margin: 0.85rem 0 0;
+  font-family: var(--font-wordmark), "Bodoni Moda", "Iowan Old Style", Palatino, serif;
+  font-size: clamp(2.15rem, 6.4vw, 4.35rem);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  line-height: 0.95;
+  text-transform: uppercase;
   text-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 }
 
 .home-hero-title span {
   display: block;
-  margin-top: 0.28rem;
-  color: #e6c98a;
-  font-size: 0.42em;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  line-height: 1.05;
+  margin-top: 0.85rem;
+  color: rgba(243, 239, 230, 0.88);
+  font-family: var(--font-outfit), Outfit, "Avenir Next", sans-serif;
+  font-size: clamp(0.62rem, 1.35vw, 0.82rem);
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  line-height: 1.45;
   text-transform: uppercase;
 }
 
@@ -470,7 +492,12 @@ summary::-webkit-details-marker {
   }
 
   .home-hero-title {
-    font-size: clamp(1.65rem, 8.2vw, 2.7rem);
+    font-size: clamp(1.7rem, 8.6vw, 2.35rem);
+    letter-spacing: 0.08em;
+  }
+
+  .home-hero-title span {
+    letter-spacing: 0.16em;
   }
 }
 

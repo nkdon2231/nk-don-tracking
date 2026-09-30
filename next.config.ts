@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
     if (!dev) config.cache = false;
     return config;
   },
+  async redirects() {
+    return [{ source: "/tracking", destination: "/track", permanent: true }];
+  },
   async headers() {
     return [
       {

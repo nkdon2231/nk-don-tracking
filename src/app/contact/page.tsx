@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { ContactForm } from "@/components/contact-form";
 import { PublicFrame } from "@/components/site-chrome";
+import { pageMeta } from "@/lib/seo";
 import { SUPPORT_EMAIL } from "@/lib/constants";
 import { publicCompany } from "@/server/public-profile";
 
-export const metadata = {
+export const metadata = pageMeta({
   title: "Contact",
   description: "Send a pickup, quote, or tracking question to the QCORVAZENT operations desk.",
-};
+  path: "/contact",
+});
 
 export default async function ContactPage({ searchParams }: { searchParams: Promise<{ topic?: string; number?: string }> }) {
   const params = await searchParams;

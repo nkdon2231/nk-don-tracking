@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { PublicFrame } from "@/components/site-chrome";
+import { pageMeta } from "@/lib/seo";
 import { SUPPORT_EMAIL } from "@/lib/constants";
 import { QUESTIONS } from "@/lib/site-content";
 
-export const metadata = {
+export const metadata = pageMeta({
   title: "FAQ",
   description: "How QCORVAZENT tracking numbers, public updates, documents, and contact messages work.",
-};
+  path: "/faq",
+});
 
 export default function FaqPage() {
   return (

@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { PublicFrame } from "@/components/site-chrome";
 import { BRAND } from "@/lib/constants";
+import { pageMeta } from "@/lib/seo";
 import { STEPS } from "@/lib/site-content";
 
-export const metadata = {
+export const metadata = pageMeta({
   title: "About",
   description: "QCORVAZENT is an international courier and express company shipping from Dubai, and publishes only what the customer should see.",
-};
+  path: "/about",
+});
 
 export default function AboutPage() {
   return (

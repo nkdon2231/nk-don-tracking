@@ -2,10 +2,13 @@ import Link from "next/link";
 import { EstimateForm } from "@/components/estimate-form";
 import { PublicFrame } from "@/components/site-chrome";
 
-export const metadata = {
+import { pageMeta } from "@/lib/seo";
+
+export const metadata = pageMeta({
   title: "Delivery window",
   description: "Check a transit window only when QCORVAZENT staff have published one for that lane.",
-};
+  path: "/estimate",
+});
 
 export default function EstimatePage() {
   return (
